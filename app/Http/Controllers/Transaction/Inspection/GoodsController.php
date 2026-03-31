@@ -52,7 +52,7 @@ class GoodsController extends Controller
                 'subdetailRelation',
                 'headerRelation.LocationRelation'
             ])->where('inspection_code', $request->inspection_code)->get();
-      
+
         return response()->json([
             'data'=>$data
         ]);
@@ -73,7 +73,7 @@ class GoodsController extends Controller
                     $ticket_code = '1/INSG/'.$month_convert.'/'.$year;
                 }else{
                     $ticket_code = $month_before[0] + 1 .'/INSG/'.$month_convert.'/'.$year;
-                }   
+                }
             }
 
             $post = [
@@ -85,9 +85,9 @@ class GoodsController extends Controller
                 'status'  =>0,
             ];
             DB::transaction(function() use($post,$request,$ticket_code) {
-           
+
                 $detail_ticket = '';
-           
+
                 InspectionGood::create($post);
                 for($i = 0 ; $i < 3 ; $i++){
                     $increment_code_detail= InspectionGoodsDetail::orderBy('id','desc')->first();
@@ -103,7 +103,7 @@ class GoodsController extends Controller
                             $detail_ticket = '1/DINSG/'.$month_convert_detail.'/'.$year_detail;
                         }else{
                             $detail_ticket = $month_before[0] + 1 .'/DINSG/'.$month_convert_detail.'/'.$year_detail;
-                        }   
+                        }
                     }
                     $post_log = [
                         'inspection_code'   =>$ticket_code,
@@ -117,11 +117,11 @@ class GoodsController extends Controller
                     InspectionGoodsDetail ::create($post_log);
                 }
             });
-           
+
             return ResponseFormatter::success(
                 $post,
                 'Machine successfully updated'
-            );            
+            );
         // } catch (\Throwable $th) {
         //     return ResponseFormatter::error(
         //         $th,
@@ -129,13 +129,13 @@ class GoodsController extends Controller
         //         500
         //     );
         // }
-        
+
     }
     function addSubDetailInspectionGoods(Request $request, StoreSubDetailInspectionRequest $storeSubDetailInspectionRequest) {
-    
+
 
            // try {
-          
+
             $storeSubDetailInspectionRequest->validated();
             $increment_code= InspectionGoodsSubDetail::orderBy('id','desc')->first();
             $date_month =strtotime(date('Y-m-d'));
@@ -152,7 +152,7 @@ class GoodsController extends Controller
                     $ticket_code = '1/SDINSG/'.$month_convert.'/'.$year;
                 }else{
                     $ticket_code = $month_before[0] + 1 .'/SDINSG/'.$month_convert.'/'.$year;
-                }   
+                }
             }
             $post = [
                 'inspection_header'                 => $detail->inspection_code,
@@ -218,7 +218,7 @@ class GoodsController extends Controller
                 'status'                            => 0,
                 'inspector'                         => $request->inspector,
             ];
-        
+
             $post_log_wt = [
                 'inspection_code'               => $detail->inspection_code,
                 'detail_inspection_code'        => $request->detail_inspection_code_id,
@@ -234,19 +234,19 @@ class GoodsController extends Controller
                 'remark'                            => 'created by system',
                 'creator' => $detail->user_id,
             ];
-            DB::transaction(function() use($post,$request,$ticket_code,$post_wt,$postDetail,$detail,$post_log,$post_log_wt) { 
+            DB::transaction(function() use($post,$request,$ticket_code,$post_wt,$postDetail,$detail,$post_log,$post_log_wt) {
                 InspectionGoodsSubDetail::create($post);
                 InspectionGood::where('inspection_code', $detail->inspection_code)->update(['status'    => 1]);
                 WallThickness::create($post_wt);
                 InspectionGoodsDetail::where('detail_inspection_code',$request->detail_inspection_code_id)->update($postDetail);
                 InspectionSubDetailLog::create($post_log);
                 WallThicknessLog::create($post_log_wt);
-          
+
             });
             return ResponseFormatter::success(
                 $post,
                 'Machine successfully updated'
-            );            
+            );
         // } catch (\Throwable $th) {
         //     return ResponseFormatter::error(
         //         $th,
@@ -264,9 +264,9 @@ class GoodsController extends Controller
                'userRelation',
                'materialRelation',
                'inspectorRelation',
-               
+
            ])->where('inspection_detail', $request->inspection_detail)->first();
-         
+
        }else{
         $detail = InspectionGoodsSubDetail::with([
             'machineRelation',
@@ -275,7 +275,7 @@ class GoodsController extends Controller
             'materialRelation',
             'materialRelation',
             'inspectorRelation',
-            
+
         ])->where('inspection_detail', $request->inspection_detail)->where('inspection_sub_detail', $request->inspection_sub_detail)->first();
        }
        $wt     = WallThickness::where('sub_detail_inspection_code',$detail->inspection_sub_detail)->get();
@@ -293,7 +293,7 @@ class GoodsController extends Controller
             'userRelation',
             'materialRelation',
             'inspectorRelation',
-            
+
         ])->where('inspection_sub_detail', $request->inspection_sub_detail)->first();
         $wt     = WallThickness::where('sub_detail_inspection_code',$request->inspection_sub_detail)->first();
         return response()->json([
@@ -310,6 +310,7 @@ class GoodsController extends Controller
             'shift'             => $detail->shift,
             'location'          =>  $header->location_id
         ])->first();
+        
         $approval_id = ApprovalDetail::where([
             'approval_code' => $approval->approval_code,
             'step'          => 1
@@ -322,7 +323,7 @@ class GoodsController extends Controller
         //   dd($approval_id);
           $postUpdate =[
             'status'            => 1 ,
-           
+
           ];
           $postApproval=[
             'transaction_code'  => $detail->detail_inspection_code,
@@ -334,8 +335,8 @@ class GoodsController extends Controller
             'type'              => 1
           ];
 
-          
-            DB::transaction(function() use($post,$postUpdate,$request,$postApproval) { 
+
+            DB::transaction(function() use($post,$postUpdate,$request,$postApproval) {
                 InspectionGoodsDetail::where('detail_inspection_code',$request->detail_inspection_code)->update($post);
                 InspectionGoodsSubDetail::where('inspection_detail',$request->detail_inspection_code)->update($postUpdate);
                 ApprovalHistory::create($postApproval);
@@ -343,7 +344,7 @@ class GoodsController extends Controller
             return ResponseFormatter::success(
                 $post,
                 'Inspection successfully locked, this is approval progress'
-            );            
+            );
         // } catch (\Throwable $th) {
         //     return ResponseFormatter::error(
         //         $th,
@@ -360,9 +361,9 @@ class GoodsController extends Controller
             'productRelation',
             'materialRelation',
             'inspectorRelation',
-            
-            ])->where('inspection_sub_detail', $request->inspection_sub_detail === null ? $data[0]->inspection_sub_detail : $request->inspection_sub_detail)->orderBy('id','desc')->get(); 
-        $history_wt    = WallThicknessLog::where('sub_detail_inspection_code', $request->inspection_sub_detail === null ? $data[0]->inspection_sub_detail : $request->inspection_sub_detail)->get(); 
+
+            ])->where('inspection_sub_detail', $request->inspection_sub_detail === null ? $data[0]->inspection_sub_detail : $request->inspection_sub_detail)->orderBy('id','desc')->get();
+        $history_wt    = WallThicknessLog::where('sub_detail_inspection_code', $request->inspection_sub_detail === null ? $data[0]->inspection_sub_detail : $request->inspection_sub_detail)->get();
         return response()->json([
             'data'=>$data,
             'history'=>$history,
@@ -372,11 +373,11 @@ class GoodsController extends Controller
     function updateInspectionGoodSubDetail(Request $request, UpdateInspectionGoodSubDetailRequest $updateInspectionGoodSubDetailRequest) {
         // try {
             $updateInspectionGoodSubDetailRequest->validated();
-        
+
             $detail = InspectionGoodsSubDetail::where('inspection_sub_detail', $request->inspection_sub_detail_edit)->first();
             $product = MasterProduct::where('id', $request->product_edit)->first();
             $material = Material::where('id', $request->material_edit)->first();
-            
+
             $post = [
                 'product_id' => $product->id,
                 'length_of_pipe' => $request->length_of_pipe_edit,
@@ -427,7 +428,7 @@ class GoodsController extends Controller
                 'status' => $detail->status,
                 'inspector' => $request->inspector_edit,
             ];
-        
+
             // $post_log_wt = [
             //     'inspection_code' => $detail->inspection_header,
             //     'detail_inspection_code' => $detail->inspection_detail,
@@ -444,13 +445,13 @@ class GoodsController extends Controller
             //     'creator' => $detail->user_id,
             // ];
             $message = '';
-            DB::transaction(function() use($post, $post_log, $request) { 
+            DB::transaction(function() use($post, $post_log, $request) {
                 InspectionGoodsSubDetail::where('inspection_sub_detail', $request->inspection_sub_detail_edit)->update($post);
                 InspectionSubDetailLog::create($post_log);
                 // WallThickness::where('sub_detail_inspection_code', $request->inspection_sub_detail_edit)->update($post_wt);
                 // WallThicknessLog::create($post_log_wt);
             });
-        
+
             return ResponseFormatter::success(
                 $post,
                 'Machine successfully updated'
@@ -462,7 +463,7 @@ class GoodsController extends Controller
         //         500
         //     );
         // }
-        
+
     }
 
     function exportInspectionGoodProgress($x) {
@@ -496,7 +497,7 @@ class GoodsController extends Controller
             ])->where('approval_code', $approvalHeader->approval_code)->get();
 
         }
-        
+
         $data =[
             'headers'   => $headers,
             'data'   => $data_report,
@@ -519,10 +520,10 @@ class GoodsController extends Controller
                                             <td style="width: 50px; text-align:right;">'.$imageLogo.'
                                         </td>
                                     </tr>
-                                    
+
                                 </table>
                                 <hr>';
-        
+
                                 $footer             = '<hr>
                                 <table width="100%" style="font-size: 8px;margin-top:-5px">
                                 <tr>
@@ -531,12 +532,12 @@ class GoodsController extends Controller
                                     </tr>
                                 </table>';
 
-        
+
             $mpdf           = new PDF();
             $mpdf->SetHTMLHeader($header);
             $mpdf->SetHTMLFooter($footer);
             $mpdf->AddPage(
-                'P', // L - landscape, P - portrait 
+                'P', // L - landscape, P - portrait
                 '',
                 '',
                 '',
@@ -554,7 +555,7 @@ class GoodsController extends Controller
             $mpdf->Output('Report Stock'.'('.date('Y-m-d').').pdf', 'I');
     }
     function getWallThickness(Request $request) {
-    
+
         $subdetail = InspectionGoodsSubDetail::where('inspection_detail', $request->detail_inspection_code)->get();
         $data = WallThickness::where('sub_detail_inspection_code', $request->inspection_sub_detail == null ? $subdetail[0]->inspection_sub_detail : $request->inspection_sub_detail)->get();
         return response()->json([
@@ -564,7 +565,7 @@ class GoodsController extends Controller
     }
     function updateWallThickness(Request $request) {
         $detail = WallThickness::find($request->id);
-       
+
         $post =[
             'wt_1'    => $request->dynamic_wt_1,
             'wt_2'    => $request->dynamic_wt_2,
@@ -590,16 +591,16 @@ class GoodsController extends Controller
             'creator'   => auth()->user()->id,
             'remark'    => 'updated'
         ];
-           DB::transaction(function() use($post,$request, $post_log,$detail) { 
-            
+           DB::transaction(function() use($post,$request, $post_log,$detail) {
+
                 $detail->update($post);
                 WallThicknessLog::create($post_log);
-         
+
            });
            return ResponseFormatter::success(
                $post,
                'Wall Thickness successfully updated'
-           );            
+           );
        // } catch (\Throwable $th) {
        //     return ResponseFormatter::error(
        //         $th,
@@ -643,23 +644,23 @@ class GoodsController extends Controller
                 'creator'   => auth()->user()->id,
                 'remark'    => 'has craeted new data'
             ];
-    
-        
-               DB::transaction(function() use($post,$request, $post_log,$detail) { 
+
+
+               DB::transaction(function() use($post,$request, $post_log,$detail) {
                  WallThickness::create($post);
                  WallThicknessLog::create($post_log);
-             
+
                });
                return ResponseFormatter::success(
                    $post,
                    'Wall Thickness successfully updated'
-               );            
+               );
         }else{
             $post = '';
             return ResponseFormatter::error(
                 $post,
                 'Wall Thickness step is more than 3'
-            );    
+            );
         }
        // } catch (\Throwable $th) {
        //     return ResponseFormatter::error(

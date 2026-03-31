@@ -30,8 +30,14 @@ class UpdateInspectionGoodsApprovalRequest extends FormRequest
                 'imr_remark' =>'required',
                 'approval_resin' =>'required',
             ];
+        }else if($request->inspection_type == 2 && $request->type == 2){
+              $validation =[
+                'imr_pellet_remark' =>'required',
+                'approval_pellet' =>'required',
+                'label_pellet_inspection_code' =>'required',
+
+            ];
         }else{
-            
             $validation =[
                 'approval_insepection_goods_shift_id' =>'required',
                 'ig_remark' =>'required'

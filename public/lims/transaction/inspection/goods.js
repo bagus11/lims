@@ -9,7 +9,7 @@ getCallback('getInspectionGoods',data_start, function(response){
 $('#btn_add_header').on('click', function(){
     $('#location_id').val('')
     $('#machine_id').val('')
-   
+
     getActiveItems('getLocation', null,'select_location','Location')
 })
 onChange('select_location','location_id');
@@ -85,7 +85,7 @@ $('#btn_save_header').on('click', function(){
             confirmButtonText: "Ok"
           }).then((result) => {
             if (result.isConfirmed) {
-             
+
                 postCallback('addSubDetailInspectionGoods',data,function(response){
                     swal.close()
                     toastr['success'](response.meta.message)
@@ -97,8 +97,8 @@ $('#btn_save_header').on('click', function(){
                 })
             }
           });
-        
-  
+
+
     })
 // Add Sub Detail Inspection
 
@@ -148,11 +148,11 @@ $('#btn_save_header').on('click', function(){
             $('#marking_edit').val(response.detail.marking)
             $('#select_marking_edit').val(response.detail.marking)
             $('#select_marking_edit').select2().trigger('change')
-            
+
             $('#condition_pipe_of_cut_edit').val(response.detail.condition_pipe_of_cut)
             $('#select_condition_pipe_of_cut_edit').val(response.detail.condition_pipe_of_cut)
             $('#select_condition_pipe_of_cut_edit').select2().trigger('change')
-            
+
             $('#angle_pipe_of_spigot_edit').val(response.detail.angle_pipe_of_spigot)
             $('#select_angle_pipe_of_spigot_edit').val(response.detail.angle_pipe_of_spigot)
             $('#select_angle_pipe_of_spigot_edit').select2().trigger('change')
@@ -219,6 +219,8 @@ $('#btn_save_header').on('click', function(){
     $('#inspection_header_table').on('click', '.approval_header', function(){
         var inspection = $(this).data('inspection')
         var location = $(this).data('location')
+        $('#approval_location').html(': ' + location)
+        $('#approval_inspection').html(': ' + inspection)
     })
 // Log Approval Hedaer
 
@@ -244,7 +246,14 @@ $('#btn_save_header').on('click', function(){
                 case 2:
                         status = `<span style="font-size:8px !important" class="btn btn-block btn-outline-warning">Approval Progress</span>`
                         button_approval  =`
-                             <button class="approval_header btn btn-sm btn-primary" data-locationid="${response[i].location_id}" data-location="${response[i].location_relation.name}" title="Approval Log" data-inspection="${response[i].inspection_code}" data-toggle="modal" data-target="#logApprovalHeaderModal">
+                             <button class="approval_header btn btn-sm btn-primary"
+                             data-locationid="${response[i].location_id}"
+                             data-location="${response[i].location_relation.name}"
+                             data-shift="${response[i].shift}"
+                             title="Approval Log"
+                             data-inspection="${response[i].inspection_code}"
+                             data-toggle="modal"
+                             data-target="#logApprovalHeaderModal">
                     <i class="fas fa-person-circle-check"></i>
                     </button>
                         `
@@ -258,17 +267,17 @@ $('#btn_save_header').on('click', function(){
                 case '' :
                         status ='Done'
                 break
-              
+
             }
             data += `<tr style="text-align: center;">
-          
+
                             <td class='details-control'></td>
                             <td>${dateTime}</td>
                             <td class="inspection_code">${response[i].inspection_code}</td>
                             <td>${response[i].location_relation.name}</td>
                             <td>${status}</td>
-                           
-          
+
+
                     </tr>
                     `;
         }
@@ -284,7 +293,7 @@ $('#btn_save_header').on('click', function(){
                     next: '<span class="next-icon"><i class="ni ni-bold-right"></i></span>'
                 }
             }
-        }).columns.adjust()    
+        }).columns.adjust()
         $('#inspection_header_table tbody').off().on('click', 'td.details-control', function (e) {
         var tr = $(this).closest("tr");
         var row =   table.row( tr );
@@ -298,7 +307,7 @@ $('#btn_save_header').on('click', function(){
             detail_log(row.child,$(this).parents("tr").find('td.inspection_code').text()) ;
             tr.addClass( 'shown' );
         }
-    } );  
+    } );
     }
     $(document).on('click','.mapping', function(e){
         $('#tab_progress').empty()
@@ -309,31 +318,31 @@ $('#btn_save_header').on('click', function(){
             swal.close()
             var progress_tab = ''; // Initialize the progress_tab variable
             var responseData = response.data; // Use a different variable name to avoid conflicts
-            
+
             for (var i = 0; i < responseData.length; i++) {
                 var is_active = (i === 0) ? 'active' : ''; // Set active class for the first tab
                 progress_tab += `
                     <li class="nav-item">
-                        <a style="font-size: 12px !important" class="nav-link mb-sm-3 mb-md-0 ${is_active} subdetailinspection" 
-                           id="${responseData[i].inspection_sub_detail}-tab" 
-                           data-toggle="tab" 
-                           href="#${responseData[i].inspection_sub_detail}" 
-                           data-subdetail="${responseData[i].inspection_sub_detail}" 
-                           role="tab" 
-                           aria-controls="${responseData[i].inspection_sub_detail}" 
+                        <a style="font-size: 12px !important" class="nav-link mb-sm-3 mb-md-0 ${is_active} subdetailinspection"
+                           id="${responseData[i].inspection_sub_detail}-tab"
+                           data-toggle="tab"
+                           href="#${responseData[i].inspection_sub_detail}"
+                           data-subdetail="${responseData[i].inspection_sub_detail}"
+                           role="tab"
+                           aria-controls="${responseData[i].inspection_sub_detail}"
                            aria-selected="${is_active ? 'true' : 'false'}">
                             <i class="ni ni-sound-wave mr-2"></i>Inspection  ${i + 1}
                         </a>
                     </li>
                 `;
             }
-            
+
             // Update the HTML content of the tab progress element
             $('#tab_progress').html(progress_tab);
             $('#tab_progress').prop('hidden', false)
-          
+
             $('#label_inspector').html(response.detail.inspector ? ': ' + response.detail.inspector_relation.name : ': ')
-           
+
             $('#label_user_id').html(': ' + response.detail.user_relation.name)
             $('#label_time').val(response.detail.time)
             $('#label_machine').html(': ' + response.detail.machine_relation.name)
@@ -344,7 +353,7 @@ $('#btn_save_header').on('click', function(){
             $('#label_tape_diameter').html(': ' + response.detail.tape_diameter)
             $('#label_tape_diameter').html(': ' + response.detail.tape_diameter)
             $('#label_tape_diameter').html(': ' + response.detail.tape_diameter)
-            
+
             $('#label_appearance_of_pipe').html(': ' + response.detail.appearance_of_pipe)
             $('#label_marking').html(': ' + response.detail.marking)
             $('#label_condition_pipe_of_cut').html(': ' + response.detail.condition_pipe_of_cut)
@@ -356,8 +365,8 @@ $('#btn_save_header').on('click', function(){
         })
     });
     $(document).on('click','.add', function(e){
+       
         var inspection = $(this).data('inspection')
-
         $('#detail_inspection_code_id').val(inspection)
         getCallbackNoSwal('getMasterProduct',null, function(response){
             var data = ''
@@ -428,7 +437,7 @@ $('#btn_save_header').on('click', function(){
                 'detail_inspection_code' : detail
             }
             postCallback('lockInspectionGoods',data,function(response){
-                swal.close()     
+                swal.close()
                 Swal.fire({
                   title: "locked!",
                   text: response.meta.message,
@@ -457,7 +466,7 @@ $('#btn_save_header').on('click', function(){
 
     $(document).on('click','.edit', function(e){
         var inspection = $(this).data('inspection')
-      
+
         $('#inspection_detail_edit').val(inspection)
         var data ={
             'inspection_detail' : inspection
@@ -499,11 +508,11 @@ $('#btn_save_header').on('click', function(){
             $('#marking_edit').val(response.detail.marking)
             $('#select_marking_edit').val(response.detail.marking)
             $('#select_marking_edit').select2().trigger('change')
-            
+
             $('#condition_pipe_of_cut_edit').val(response.detail.condition_pipe_of_cut)
             $('#select_condition_pipe_of_cut_edit').val(response.detail.condition_pipe_of_cut)
             $('#select_condition_pipe_of_cut_edit').select2().trigger('change')
-            
+
             $('#angle_pipe_of_spigot_edit').val(response.detail.angle_pipe_of_spigot)
             $('#select_angle_pipe_of_spigot_edit').val(response.detail.angle_pipe_of_spigot)
             $('#select_angle_pipe_of_spigot_edit').select2().trigger('change')
@@ -513,13 +522,13 @@ $('#btn_save_header').on('click', function(){
             $('#select_color_of_pipes_edit').select2().trigger('change')
 
             mappingWT(response.wt,'label_wt')
-           
+
             $('#evaluation_spec_edit').val(response.detail.evaluation_spec)
             $('#select_evaluation_spec_edit').val(response.detail.evaluation_spec)
             $('#select_evaluation_spec_edit').select2().trigger('change')
         })
     });
-   
+
     $(document).on('click','.subdetailinspection', function(e){
         var subdetail = $(this).data('subdetail')
        mapping_progress(subdetail)
@@ -529,11 +538,11 @@ $('#btn_save_header').on('click', function(){
         $('#export_code').val(detail)
     })
     $('#btn_export_progress').on('click', function(){
-        var type        =  $('#select_report').val() 
-        var detail_code        =  $('#export_code').val().replaceAll("/","_"); 
+        var type        =  $('#select_report').val()
+        var detail_code        =  $('#export_code').val().replaceAll("/","_");
         var data = {
             'detail_code' : $('#export_code').val(),
-            'type'        : $('#select_report').val() 
+            'type'        : $('#select_report').val()
         }
         if(type == 1 ){
             window.open(`exportInspectionGoodProgress/${detail_code}`, '_blank');
@@ -548,12 +557,12 @@ $('#btn_save_header').on('click', function(){
         getCallbackNoSwal('getInspectionGoodSubDetailItem',data, function(response){
             var data =''
             // var response = response.data
-           
+
             for(i = 0; i < response.data.length; i++){
                 data +=`<option value="${response.data[i].inspection_sub_detail}"> ${response.data[i].inspection_sub_detail}</option>`
             }
             $('#select_history_subdetail').append(data)
-          
+
             mappingHistory(response.history,response.history_wt)
         })
     })
@@ -561,22 +570,22 @@ $('#btn_save_header').on('click', function(){
         var inspection_sub_detail = $('#select_history_subdetail').val()
         var data ={
             'inspection_sub_detail' :inspection_sub_detail
-        } 
+        }
         getCallbackNoSwal('getInspectionGoodSubDetailItem',data, function(response){
             mappingHistory(response.history,response.history_wt)
-            
+
         })
     })
     function detail_log( callback, inspection_code){
       var data ={
         'inspection_code' : inspection_code
-      }; 
+      };
       getCallbackNoSwal('getInspectionGoodShift',data,function(response){
         if(response){
             response = response.data
             let row = '';
-            for(let i = 0; i < response.length; i++){                    
-                $(document).ready(function() 
+            for(let i = 0; i < response.length; i++){
+                $(document).ready(function()
                 {
                     $('.table_detail').DataTable
                     ({
@@ -586,7 +595,7 @@ $('#btn_save_header').on('click', function(){
                         "aaSorting" : false,
                         "paging":   false,
                         "scrollX":true
-                    }).columns.adjust()    
+                    }).columns.adjust()
                 });
                 $('.table_detail tbody').append(``);
                 const d = new Date(response[i].created_at)
@@ -606,7 +615,7 @@ $('#btn_save_header').on('click', function(){
                    <i class="fa-solid fa-clock-rotate-left"></i>
                 </button>
                 ` : ''
-             
+
 
                 if(response[i].subdetail_relation.length > 0 && response[i].lock == 0 ){
                     lock_button = `<button title="Lock Progress" class="lock btn btn-sm btn-danger" data-detail="${response[i].detail_inspection_code}">
@@ -643,7 +652,7 @@ $('#btn_save_header').on('click', function(){
                             status = 'Approval Progress'
                         break
                 }
-              
+
                     row += `<tr class="table-light" style="width:100% !important">
                                 <td style="text-align:center">${response[i].detail_inspection_code}</td>
                                 <td style="text-align:center">${response[i].shift}</td>
@@ -673,13 +682,13 @@ $('#btn_save_header').on('click', function(){
                 </thead>
               <tbody class="table-bordered">${row}</tbody>
             </table>`)).show();
-         
+
         }else{
             toastr["error"]('Data tidak ada')
             $('#loading').hide();
         }
       })
-   
+
     }
     function mapping_progress(subdetail){
         var data ={
@@ -687,7 +696,7 @@ $('#btn_save_header').on('click', function(){
         }
         getCallback('detailInspectionProgress',data, function(response){
             swal.close()
-          
+
             $('#label_inspector').html(response.detail.inspector_relation !== null ? ': ' + response.detail.inspector_relation.name : ': ')
             $('#label_user_id').html(': ' + response.detail.user_relation.name)
             $('#label_time').val(response.detail.time)
@@ -697,7 +706,7 @@ $('#btn_save_header').on('click', function(){
             $('#label_length_of_pipe').html(': ' + response.detail.length_of_pipe)
             $('#label_material').html(': ' + response.detail.material_relation.name)
             $('#label_tape_diameter').html(': ' + response.detail.tape_diameter)
-            
+
             $('#label_appearance_of_pipe').html(': ' + response.detail.appearance_of_pipe)
             $('#label_marking').html(': ' + response.detail.marking)
             $('#label_condition_pipe_of_cut').html(': ' + response.detail.condition_pipe_of_cut)
@@ -712,13 +721,13 @@ $('#btn_save_header').on('click', function(){
             $('#label_wt_7').val(response.wt.wt_7)
             $('#label_wt_8').val(response.wt.wt_8)
             $('#label_evaluation_spec').html(': ' + response.detail.evaluation_spec)
-    
+
         })
     }
     function mappingApproval(response, history) {
         var data = '';
         $('#history_approval_container').empty();
-    
+
         for (i = 0; i < response.length; i++) {
             var remark = '';
             var date = '';
@@ -745,7 +754,7 @@ $('#btn_save_header').on('click', function(){
                 }
             }
             remark = history[i] != null ? history[i].remark : '...still waiting for approval';
-    
+
             data += `
                 <div class="list-group list-group-flush p-0">
                     <div class="list-group-item list-group-item-action">
@@ -770,14 +779,14 @@ $('#btn_save_header').on('click', function(){
                 </div>
             `;
         }
-    
+
         $('#history_approval_container').html(data);
     }
     function mappingHistory(history, wt) {
         var data = '';
         $('#history_table').DataTable().clear();
         $('#history_table').DataTable().destroy();
-    
+
         for (var i = 0; i < history.length; i++) {
             const d = new Date(history[i].created_at);
             const date = d.toISOString().split('T')[0];
@@ -799,7 +808,7 @@ $('#btn_save_header').on('click', function(){
             var evaluationSpecStyle = '';
             var inspectorStyle = '';
             var remarkStyle = '';
-    
+
             if (i < history.length - 1) {
                 if (history[i].creator_relation.name !== history[i + 1].creator_relation.name) creatorStyle = 'color:red !important;';
                 if (history[i].machine_relation.name !== history[i + 1].machine_relation.name) machineStyle = 'color:red !important;';
@@ -819,27 +828,27 @@ $('#btn_save_header').on('click', function(){
             }
             data += `
                 <tr>
-                    <td style="width:10%;text-align:center">${dateTime}</td>    
-                    <td style="width:10%;${creatorStyle}">${history[i].creator_relation.name}</td>    
-                    <td style="width:10%;${inspectorStyle}">${history[i].inspector_relation.name}</td>    
-                    <td style="width:10%;${machineStyle}">${history[i].machine_relation.name}</td>    
-                    <td style="width:10%;${productStyle}">${history[i].product_relation.marking}</td>    
-                    <td style="width:10%;${manufacturingCodeStyle}">${history[i].manufacturing_code}</td>    
-                    <td style="text-align:center;${lengthOfPipeStyle}">${history[i].length_of_pipe}</td>    
-                    <td style="text-align:center;${appearanceOfPipeStyle}">${history[i].appearance_of_pipe}</td>    
-                    <td style="text-align:center;${markingStyle}">${history[i].marking}</td>    
-                    <td style="text-align:center;${conditionPipeOfCutStyle}">${history[i].condition_pipe_of_cut}</td>    
-                    <td style="text-align:center;${anglePipeOfSpigotStyle}">${history[i].angle_pipe_of_spigot}</td>    
-                    <td style="text-align:center;${colorOfPipesStyle}">${history[i].color_of_pipes}</td>    
-                    <td style="text-align:left;width:10%;${materialStyle}">${history[i].material_relation.name}</td>    
-                    <td style="text-align:center;${tapeDiameterStyle}">${history[i].tape_diameter}</td>    
-                  
-                    <td style="text-align:center;${evaluationSpecStyle}">${history[i].evaluation_spec}</td>    
-                    <td style="width:20%;">${history[i].remark}</td>    
+                    <td style="width:10%;text-align:center">${dateTime}</td>
+                    <td style="width:10%;${creatorStyle}">${history[i].creator_relation.name}</td>
+                    <td style="width:10%;${inspectorStyle}">${history[i].inspector_relation.name}</td>
+                    <td style="width:10%;${machineStyle}">${history[i].machine_relation.name}</td>
+                    <td style="width:10%;${productStyle}">${history[i].product_relation.marking}</td>
+                    <td style="width:10%;${manufacturingCodeStyle}">${history[i].manufacturing_code}</td>
+                    <td style="text-align:center;${lengthOfPipeStyle}">${history[i].length_of_pipe}</td>
+                    <td style="text-align:center;${appearanceOfPipeStyle}">${history[i].appearance_of_pipe}</td>
+                    <td style="text-align:center;${markingStyle}">${history[i].marking}</td>
+                    <td style="text-align:center;${conditionPipeOfCutStyle}">${history[i].condition_pipe_of_cut}</td>
+                    <td style="text-align:center;${anglePipeOfSpigotStyle}">${history[i].angle_pipe_of_spigot}</td>
+                    <td style="text-align:center;${colorOfPipesStyle}">${history[i].color_of_pipes}</td>
+                    <td style="text-align:left;width:10%;${materialStyle}">${history[i].material_relation.name}</td>
+                    <td style="text-align:center;${tapeDiameterStyle}">${history[i].tape_diameter}</td>
+
+                    <td style="text-align:center;${evaluationSpecStyle}">${history[i].evaluation_spec}</td>
+                    <td style="width:20%;">${history[i].remark}</td>
                 </tr>
             `;
         }
-    
+
         $('#history_table > tbody:first').html(data);
         $('#history_table').DataTable({
             scrollX: true,
@@ -855,7 +864,7 @@ $('#btn_save_header').on('click', function(){
     }
     function mappingWT(response,id){
         var data =''
-        
+
         $('#'+id).DataTable().clear();
         $('#'+id).DataTable().destroy();
         for(i = 0; i < response.length; i++ )
@@ -935,7 +944,7 @@ $('#btn_save_header').on('click', function(){
             'dynamic_wt_7': $row.find('#dynamic_wt_7' + i).val(),
             'dynamic_wt_8': $row.find('#dynamic_wt_8' + i).val(),
         };
-      
+
         postCallbackNoSwal('updateWallThickness', data, function(response){
             toastr['success'](response.meta.message)
             var data_test = {
@@ -958,5 +967,5 @@ $('#btn_save_header').on('click', function(){
         })
 
      })
-    
+
 // Function

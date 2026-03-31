@@ -18,7 +18,7 @@
                         <li class="nav-item">
                             <a class="nav-link mb-sm-3 mb-md-0" id="detail_pellet_detail_inspection-tab" data-toggle="tab" href="#detail_pellet_detail_inspection" role="tab" aria-controls="tabs-icons-text-2" aria-selected="false"><i class="ni ni-bell-55 mr-2"></i>Inspection Properties</a>
                         </li>
-                     
+
                     </ul>
                 </div>
                 <div class="card shadow">
@@ -155,15 +155,46 @@
                                          </div>
                                     </div>
                                </fieldset>
-                             
                             </div>
-                         
                         </div>
+
+                    </div>
+                </div>
+                <div class="card shadow approval_pellet_container mt-2" hidden>
+                    <div class="card-body">
+                         <fieldset class="scheduler-border approval_pellet_container" hidden>
+                              <legend class="scheduler-border">Approval</legend>
+                              <div class="row">
+                                  <div class="col-2 mt-2">
+                                      <p>Approval</p>
+                                  </div>
+                                  <div class="col-4">
+                                      <select name="select_approval_pellet" class="select2" id="select_approval_pellet">
+                                        <option value="">Choose Approval</option>
+                                        <option value="1">Approve</option>
+                                        <option value="2">Reject</option>
+                                      </select>
+                                      <input type="hidden" id="approval_pellet">
+                                      <span  style="color:red;" class="message_error text-red block approval_pellet_error"></span>
+                                  </div>
+                              </div>
+                              <div class="row">
+                                   <div class="col-2 mt-2">
+                                        <p>Remark</p>
+                                   </div>
+                                   <div class="col-10">
+                                        <textarea class="form-control" id="imr_pellet_remark" rows="3"></textarea>
+                                        <span  style="color:red;" class="message_error text-red block imr_pellet_remark_error"></span>
+                                   </div>
+                              </div>
+                         </fieldset>
                     </div>
                 </div>
             </div>
             <div class="modal-footer justify-content-end">
-              
+                <button class="btn btn-sm btn-success" id="btn_approval_pellet" hidden>
+                    <i class="fas fa-check"></i>
+                </button>
             </div>
         </div>
     </div>

@@ -13,4 +13,8 @@ class ResinModel extends Model
     function inspectionRelation() {
         return $this->hasOne(InspectionMaterial::class,'inspection_code','inspection_code');
     }
+
+    function detailRelation() {
+        return $this->hasMany(ResinDetail::class,'inspection_code','inspection_code');
+    }
 }

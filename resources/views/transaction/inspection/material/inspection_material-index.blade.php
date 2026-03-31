@@ -14,7 +14,7 @@
                             <button type="button" class="btn btn-sm btn-tool dropdown-toggle" style="margin-top:3px" data-toggle="dropdown">
                                <i class="fas fa-filter"></i>
                             </button>
-                       
+
                             <div class="dropdown-menu dropdown-menu-right" id="filter" role="menu" style="width:250px !important;">
                                 <div class="container">
                                     <div class="row">
@@ -53,12 +53,12 @@
                                             </select>
                                         </div>
                                     </div>
-                        
+
                                     <div class="mt-2 mb-2 d-flex justify-content-end">
                                         <button class="btn btn-info btn-sm mr-1" id="btnReportWO">
                                             <i class="fas fa-print"></i>  Print
                                         </button>
-                                      
+
                                         <button class="btn btn-warning btn-sm" id="btnFilter">
                                             <i class="fa-solid fa-filter"></i> Filter
                                         </button>
@@ -69,9 +69,9 @@
                         <button id="btn_add_header" class="btn btn-sm btn-success mr-2" style="float: right" data-toggle="modal" data-target="#addInspectionHeader">
                             <i class="fa-solid fa-plus"></i>
                         </button>
-                        
+
                     </div>
-                   
+
                 </div>
             </div>
             <div class="card-body p-0">
@@ -93,6 +93,7 @@
         </div>
       </div>
     </div>
+ @include('transaction.inspection.goods.modal.report-progress')
  @include('transaction.inspection.material.modal.add-header_material')
  @include('transaction.inspection.material.modal.resin-inspection')
  @include('transaction.inspection.material.modal.pellet-inspection')

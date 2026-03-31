@@ -50,7 +50,7 @@ Route::group(['middleware' => 'auth'], function () {
 		// Role Permission
 
 		// User Access
-		
+
 		Route::get('/user_access', 'App\Http\Controllers\Setting\UserAccessController@index')->name('user_access');
 		Route::get('getRoleUser', 'App\Http\Controllers\Setting\UserAccessController@getRoleUser')->name('getRoleUser');
 		Route::get('getUser', 'App\Http\Controllers\Setting\UserAccessController@getUser')->name('getUser');
@@ -64,8 +64,8 @@ Route::group(['middleware' => 'auth'], function () {
 		Route::get('destroyRolePermission', 'App\Http\Controllers\Setting\UserAccessController@destroyRolePermission')->name('destroyRolePermission');
 		// User Access
 
-		// Approval	
-		
+		// Approval
+
 		Route::get('/approval', 'App\Http\Controllers\Setting\ApprovalController@index')->name('approval');
 		Route::get('/getApprovalHeader', 'App\Http\Controllers\Setting\ApprovalController@getApprovalHeader')->name('getApprovalHeader');
 		Route::post('/addApprovalHeader', 'App\Http\Controllers\Setting\ApprovalController@addApprovalHeader')->name('addApprovalHeader');
@@ -83,12 +83,12 @@ Route::group(['middleware' => 'auth'], function () {
 			Route::post('/uploadMasterProduct', 'App\Http\Controllers\Master\MasterProductController@uploadMasterProduct')->name('uploadMasterProduct');
 			Route::get('/getDetailProductLog', 'App\Http\Controllers\Master\MasterProductController@getDetailProductLog')->name('getDetailProductLog');
 			Route::post('/updateProduct', 'App\Http\Controllers\Master\MasterProductController@updateProduct')->name('updateProduct');
-			
+
 			Route::get('/category_machine', 'App\Http\Controllers\Master\CategoryMachineController@index')->name('category_machine');
 			Route::get('/getCategoryMachine', 'App\Http\Controllers\Master\CategoryMachineController@getCategoryMachine')->name('getCategoryMachine');
 			Route::post('/addCategoryMachine', 'App\Http\Controllers\Master\CategoryMachineController@addCategoryMachine')->name('addCategoryMachine');
 			Route::post('/updateCategoryMachine', 'App\Http\Controllers\Master\CategoryMachineController@updateCategoryMachine')->name('updateCategoryMachine');
-			
+
 			Route::get('/master_machine', 'App\Http\Controllers\Master\MasterMachineController@index')->name('master_machine');
 			Route::get('/getMachine', 'App\Http\Controllers\Master\MasterMachineController@getMachine')->name('getMachine');
 			Route::get('/getLocation', 'App\Http\Controllers\Master\MasterMachineController@getLocation')->name('getLocation');
@@ -106,8 +106,8 @@ Route::group(['middleware' => 'auth'], function () {
 			Route::post('/udpateStatusMaterial', 'App\Http\Controllers\Master\MaterialController@udpateStatusMaterial')->name('udpateStatusMaterial');
 	// Master
 
-	// Transaction	
-	
+	// Transaction
+
 	Route::get('/inspection-goods', 'App\Http\Controllers\Transaction\Inspection\GoodsController@index')->name('inspection-goods');
 	Route::get('/getInspectionGoods', 'App\Http\Controllers\Transaction\Inspection\GoodsController@getInspectionGoods')->name('getInspectionGoods');
 	Route::post('/addInspectionGoodsHeader', 'App\Http\Controllers\Transaction\Inspection\GoodsController@addInspectionGoodsHeader')->name('addInspectionGoodsHeader');
@@ -121,8 +121,9 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::get('/getWallThickness', 'App\Http\Controllers\Transaction\Inspection\GoodsController@getWallThickness')->name('getWallThickness');
 	Route::post('/updateWallThickness', 'App\Http\Controllers\Transaction\Inspection\GoodsController@updateWallThickness')->name('updateWallThickness');
 	Route::post('/addWallThickness', 'App\Http\Controllers\Transaction\Inspection\GoodsController@addWallThickness')->name('addWallThickness');
-	
+
 	Route::get('exportInspectionGoodProgress/{id}','App\Http\Controllers\Transaction\Inspection\GoodsController@exportInspectionGoodProgress');
+	Route::get('exportInspectionMaterials/{id}','App\Http\Controllers\Transaction\Inspection\InspectionMaterialController@exportInspectionMaterials');
 
 	// Approval
 	Route::get('/getApprovalUser', 'App\Http\Controllers\Setting\ApprovalController@getApprovalUser')->name('getApprovalUser');
@@ -130,7 +131,7 @@ Route::group(['middleware' => 'auth'], function () {
 	// Approval
 
 		// Material
-		
+
 		Route::get('/inspection-material', 'App\Http\Controllers\Transaction\Inspection\InspectionMaterialController@index')->name('inspection-material');
 		Route::get('/getInspectionMaterial', 'App\Http\Controllers\Transaction\Inspection\InspectionMaterialController@getInspectionMaterial')->name('getInspectionMaterial');
 		Route::get('/getSupplier', 'App\Http\Controllers\Transaction\Inspection\InspectionMaterialController@getSupplier')->name('getSupplier');

@@ -92,20 +92,20 @@ $('#inspection_material_table').on('click','.resin',function(){
                     data.push(response.data[i].value);
                     label.push(response.data[i].step);
                     color.push(masterColor); // Assign the same masterColor to each item
-                
+
                     // Ensure the input displays the full precision value
                     const formattedValue = parseFloat(response.data[i].value);
-                
+
                     detail += `
                         <div class="col-3 mt-2">
                             <p>Step ${i + 1}</p>
                         </div>
                         <div class="col-3">
-                            <input class="form-control resin_detail-number" style="text-align:center" 
-                                onchange="updateResin('${response.data[i].inspection_code}', '${response.data[i].step}', this.value)" 
-                                type="text" 
-                                data-step="${response.data[i].step}" 
-                                data-inspection="${response.data[i].inspection_code}" 
+                            <input class="form-control resin_detail-number" style="text-align:center"
+                                onchange="updateResin('${response.data[i].inspection_code}', '${response.data[i].step}', this.value)"
+                                type="text"
+                                data-step="${response.data[i].step}"
+                                data-inspection="${response.data[i].inspection_code}"
                                 value="${formattedValue}">
                         </div>
                     `;
@@ -116,30 +116,30 @@ $('#inspection_material_table').on('click','.resin',function(){
                                 'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter', // Navigation keys
                                 ','
                             ];
-              
+
                             // Allow numbers
                             if (
-                                allowedKeys.includes(event.key) || 
+                                allowedKeys.includes(event.key) ||
                                 (event.key >= '0' && event.key <= '9') // Numbers
                             ) {
                                 return; // Allow these keys
                             }
-              
+
                             // Prevent everything else
                             event.preventDefault();
                         });
-              
+
                         input.addEventListener('input', function () {
                             // As a fallback, sanitize any invalid input
                             this.value = this.value.replace(/[^0-9,]/g, ''); // Remove non-numeric and non-comma characters
-              
+
                             // Prevent consecutive commas or starting with a comma
                             this.value = this.value.replace(/,,+/g, ','); // Replace multiple commas with a single comma
                             this.value = this.value.replace(/^,/, '');   // Remove leading comma
                         });
                     });
-                }                
-                
+                }
+
                 $('#step_container').html(detail)
                 $('#resin_graphic_container').append('<canvas id="resin_graphic" style="width:100px !important; height:100px !important" ></canvas>')
                 var canvas = document.getElementById("resin_graphic");
@@ -257,7 +257,7 @@ $('#btn_save_pellet').on('click', function(){
                   'inspection_code' : inspection
               }
               postCallback('lockInspectionMaterial',data,function(response){
-                  swal.close()     
+                  swal.close()
                   Swal.fire({
                     title: "locked!",
                     text: response.meta.message,
@@ -269,7 +269,7 @@ $('#btn_save_pellet').on('click', function(){
             })
             }
           });
-      
+
     })
 // Lock Inspection
 
@@ -284,7 +284,7 @@ $('#btn_save_pellet').on('click', function(){
             $('#detailResinModal').modal('show')
             getCallback('getResinInspection', data, function(response){
                 swal.close()
-        
+
                 // General Information
                     $('#label_resin_inspection_code').html(': ' + response.detail.inspection_code)
                     $('#label_resin_location').html(': ' + response.detail.location_relation.name)
@@ -318,10 +318,10 @@ $('#btn_save_pellet').on('click', function(){
                             data.push(response.data[i].value);
                             label.push(response.data[i].step);
                             color.push(masterColor); // Assign the same masterColor to each item
-                        
+
                             // Ensure the input displays the full precision value
                             const formattedValue = parseFloat(response.data[i].value);
-                        
+
                             detail += `
                                 <div class="col-6">
                                     <p>Step ${i + 1} : ${formattedValue}</p>
@@ -334,30 +334,30 @@ $('#btn_save_pellet').on('click', function(){
                                         'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter', // Navigation keys
                                         ','
                                     ];
-                      
+
                                     // Allow numbers
                                     if (
-                                        allowedKeys.includes(event.key) || 
+                                        allowedKeys.includes(event.key) ||
                                         (event.key >= '0' && event.key <= '9') // Numbers
                                     ) {
                                         return; // Allow these keys
                                     }
-                      
+
                                     // Prevent everything else
                                     event.preventDefault();
                                 });
-                      
+
                                 input.addEventListener('input', function () {
                                     // As a fallback, sanitize any invalid input
                                     this.value = this.value.replace(/[^0-9,]/g, ''); // Remove non-numeric and non-comma characters
-                      
+
                                     // Prevent consecutive commas or starting with a comma
                                     this.value = this.value.replace(/,,+/g, ','); // Replace multiple commas with a single comma
                                     this.value = this.value.replace(/^,/, '');   // Remove leading comma
                                 });
                             });
-                        }                
-                        
+                        }
+
                         $('#label_step_container').html(detail)
                         $('#label_resin_graphic_container').append('<canvas id="label_resin_graphic" style="width:50px !important; height:50px !important" ></canvas>')
                         var canvas = document.getElementById("label_resin_graphic");
@@ -380,7 +380,7 @@ $('#btn_save_pellet').on('click', function(){
             })
         }else{
             $('#detailPelletModal').modal('show')
-         
+            alert('test')
             getCallback('getPelletInspection',data, function(response){
                 swal.close()
                 // General Information
@@ -395,7 +395,8 @@ $('#btn_save_pellet').on('click', function(){
                     $('#label_pellet_amount').html(': ' + response.detail.amount + ' sak')
                     $('#label_pellet_no_lot').html(': ' + response.detail.no_lot)
                 // General Information
-                console.log(response.header)
+                    console.log(response)
+                    return false
                 // Detail Inspectoin
                         $('#label_pellet_amount_per_sak').html(': ' + response.header.amount_per_sak +  ' sak')
                         $('#label_pellet_visible_properties').html(': ' + response.header.visible_properties)
@@ -405,9 +406,9 @@ $('#btn_save_pellet').on('click', function(){
                         $('#label_pellet_remark').html(': ' + response.detail.remark)
                         $('#label_pellet_pof_number').html(': ' + response.detail.no_pof)
                 // Detail Inspectoin
-        
+
             })
-           
+
         }
     })
 // Detail Inspection
@@ -416,6 +417,7 @@ $('#btn_save_pellet').on('click', function(){
     $('#inspection_material_table').on('click', '.approval',function(){
        var inspection = $(this).data('inspection')
        var location = $(this).data('location')
+       var locations = $(this).data('locations')
        var detail = $(this).data('detail')
        var data ={
         'inspection_type' : 2,
@@ -423,6 +425,8 @@ $('#btn_save_pellet').on('click', function(){
         'detail': detail,
         'shift' : 1
        }
+       $('#approval_location').html(': ' + locations)
+       $('#approval_shift').html(': 1')
         getCallback('getApprovalList',data, function(response){
             swal.close()
             mappingApproval(response.data, response.history)
@@ -430,10 +434,29 @@ $('#btn_save_pellet').on('click', function(){
     })
 // Approval Log
 
+
+// Export
+    $(document).on('click','.export_progress', function(e){
+        var detail = $(this).data('detail')
+        $('#export_code').val(detail)
+    })
+    $('#btn_export_progress').on('click', function(){
+        var type            =  $('#select_report').val()
+        var detail_code     =  $('#export_code').val().replaceAll("/","_");
+
+        var data = {
+            'detail_code' : $('#export_code').val(),
+            'type'        : $('#select_report').val()
+        }
+        if(type == 1 ){
+            window.open(`exportInspectionMaterials/${detail_code}`, '_blank');
+        }
+    })
+// Export
 // Function
 function mappingTable(response){
     var data =''
-        
+
         $('#inspection_material_table').DataTable().clear();
         $('#inspection_material_table').DataTable().destroy();
         for(i = 0; i < response.length; i++ )
@@ -441,7 +464,7 @@ function mappingTable(response){
                 var type = ''
                 var status_table = ''
                 switch(response[i].type){
-                    case  1 : 
+                    case  1 :
                         type = 'Resin'
                         break
                     case 2 :
@@ -449,7 +472,7 @@ function mappingTable(response){
                 }
 
                 switch(response[i].status){
-                    case 0 : 
+                    case 0 :
                         status_table = 'Draft'
                         break
                     case 1 :
@@ -462,15 +485,25 @@ function mappingTable(response){
                         status_table = 'DONE'
                         break
 
+                    case 4:
+                        status_table="Rejected"
+
                 }
                 var btn_lock =''
                 var btn_edit = ''
                 var btn_approval = ''
+                var btn_report = ''
                 var btn_detail = `
-                  <button class="detail btn btn-sm btn-info" data-inspection="${response[i].inspection_code}" data-type="${response[i].type}">
+                  <button class="detail btn btn-sm btn-info"
+                        data-inspection="${response[i].inspection_code}"
+                        data-location="${response[i].location_relation.name}"
+                        data-type="${response[i].type}"
+                        data-shift="${response[i].shift}
+                  ">
                                     <i class="fa-solid fa-eye"></i>
-                                   </button>
+                  </button>
                 `
+                var btn_print = ''
                 const d = new Date(response[i].created_at)
                 const date = d.toISOString().split('T')[0];
                 const time = d.toTimeString().split(' ')[0];
@@ -481,7 +514,7 @@ function mappingTable(response){
                               <i class="fa-solid fa-lock"></i>
                              </button>
                   `:''
-                   
+
                     if(response[i].status == 0 || response[i].status == 1){
                         btn_edit = response[i].type ==1 ? `
                          <button class="resin btn btn-sm btn-dark" data-inspection="${response[i].inspection_code}" data-toggle="modal" data-target="#resinInspectionModal">
@@ -495,8 +528,20 @@ function mappingTable(response){
                     }
                 }else{
                     btn_approval =`
-                         <button class="approval btn btn-sm btn-primary" data-location="${response[i].location}" data-detail="${response[i].inspection_code}" title="Approval Log" data-inspection="${response[i].inspection_code}" data-toggle="modal" data-target="#logApprovalModal">
+                         <button class="approval btn btn-sm btn-primary"
+                           data-location="${response[i].location}"
+                           data-locations="${response[i].location_relation.name}"
+                         data-detail="${response[i].inspection_code}"
+                         data-shift="${response[i].shift}"
+                         title="Approval Log"
+                         data-inspection="${response[i].inspection_code}"
+                         data-toggle="modal" data-target="#logApprovalModal">
                     <i class="fas fa-person-circle-check"></i>
+                    </button>
+                    `
+                    btn_print =`
+                     <button class="export_progress btn btn-sm btn-success" data-detail="${response[i].inspection_code}" data-toggle="modal" title="Export Progress" data-target="#reportProgressModal">
+                            <i class="fa-solid fa-print"></i>
                     </button>
                     `
                 }
@@ -513,6 +558,7 @@ function mappingTable(response){
                           ${btn_approval}
                           ${btn_edit}
                           ${btn_lock}
+                          ${btn_print}
                         </td>
 
                     </tr>
@@ -540,9 +586,9 @@ function updateResin(x,y,z){
         'inspection_code' : x
     }
     postCallbackNoSwal('updateResinDetail', data, function(response){
-        toastr['success'](response.meta.message)
+        // toastr['success'](response.meta.message)
         getCallbackNoSwal('getResinInspection', data_test, function(response){
-        
+
         // General Information
             $('#resin_inspection_code').html(': ' + response.detail.inspection_code)
             $('#resin_location').html(': ' + response.detail.location_relation.name)
@@ -576,20 +622,20 @@ function updateResin(x,y,z){
                     data.push(response.data[i].value);
                     label.push(response.data[i].step);
                     color.push(masterColor); // Assign the same masterColor to each item
-                
+
                     // Ensure the input displays the full precision value
                     const formattedValue = parseFloat(response.data[i].value);
-                
+
                     detail += `
                         <div class="col-3 mt-2">
                             <p>Step ${i + 1}</p>
                         </div>
                         <div class="col-3">
-                            <input class="form-control resin_detail-number" style="text-align:center" 
-                                onchange="updateResin('${response.data[i].inspection_code}', '${response.data[i].step}', this.value)" 
-                                type="text" 
-                                data-step="${response.data[i].step}" 
-                                data-inspection="${response.data[i].inspection_code}" 
+                            <input class="form-control resin_detail-number" style="text-align:center"
+                                onchange="updateResin('${response.data[i].inspection_code}', '${response.data[i].step}', this.value)"
+                                type="text"
+                                data-step="${response.data[i].step}"
+                                data-inspection="${response.data[i].inspection_code}"
                                 value="${formattedValue}">
                         </div>
                     `;
@@ -600,29 +646,29 @@ function updateResin(x,y,z){
                                 'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter', // Navigation keys
                                 ','
                             ];
-              
+
                             // Allow numbers
                             if (
-                                allowedKeys.includes(event.key) || 
+                                allowedKeys.includes(event.key) ||
                                 (event.key >= '0' && event.key <= '9') // Numbers
                             ) {
                                 return; // Allow these keys
                             }
-              
+
                             // Prevent everything else
                             event.preventDefault();
                         });
-              
+
                         input.addEventListener('input', function () {
                             // As a fallback, sanitize any invalid input
                             this.value = this.value.replace(/[^0-9,]/g, ''); // Remove non-numeric and non-comma characters
-              
+
                             // Prevent consecutive commas or starting with a comma
                             this.value = this.value.replace(/,,+/g, ','); // Replace multiple commas with a single comma
                             this.value = this.value.replace(/^,/, '');   // Remove leading comma
                         });
                     });
-                }   
+                }
                 $('#step_container').html(detail)
                 $('#resin_graphic_container').append('<canvas id="resin_graphic" style="width:100px !important; height:100px !important" ></canvas>')
                 var canvas = document.getElementById("resin_graphic");

@@ -1,11 +1,12 @@
 getCallbackNoSwal('getApprovalUser', null, function(response){
    mappingApproval(response.data)
-  
-})  
+
+})
 function mappingApproval(response){
     $('#apporval_container').empty()
     var data =''
     for(i = 0 ; i < response.length; i++){
+        console.log(response[i].transaction_code + '  ==  ' + response[i].inspection_type + ' == ' + response[i].type)
         data +=`
                 <li class="list-group-item mx-4 p-0" style="max-height:60px !important">
                     <div class="row p-0">
@@ -39,9 +40,9 @@ $('#btn_ig_approve').on('click', function(){
     var transaction_code = $('#ig_id').val()
     getCallbackNoSwal('getApprovalUser', null, function(response){
         mappingApproval(response.data)
-       
-     }) 
-   
+
+     })
+
    })
 })
 onChange('select_approval_insepection_goods_shift','approval_insepection_goods_shift_id')
@@ -64,16 +65,38 @@ $('#btn_imr_approval').on('click', function(){
         $('#detailResinModal').modal('hide')
         getCallbackNoSwal('getApprovalUser', null, function(response){
             mappingApproval(response.data)
-        }) 
+        })
     })
 })
-function detail(transaction_code,inspection_type,type){ 
+onChange('select_approval_pellet', 'approval_pellet')
+$('#btn_approval_pellet').on('click', function(){
+    var rawText = $('#label_pellet_inspection_code').text().trim();
+    var data = {
+        imr_pellet_remark: $('#imr_pellet_remark').val(),
+        approval_pellet: $('#approval_pellet').val(),
+        label_pellet_inspection_code: rawText.replace(':', '').trim(),
+        type: 2,
+        inspection_type : 2
+    };
+    console.log(data)
+       postCallback('updateInspectionGoodsApproval',data, function(response){
+        swal.close()
+        toastr['success'](response.meta.message)
+        $('#detailPelletModal').modal('hide')
+        getCallbackNoSwal('getApprovalUser', null, function(response){
+            mappingApproval(response.data)
+        })
+    })
+
+});
+
+function detail(transaction_code,inspection_type,type){
     if(inspection_type == 3 && type== 1){
         var data ={
             'inspection_detail' : transaction_code,
         }
         $('#detailSubDetailInspection').modal('show')
-        
+
         getCallback('mappingInspectionProgress',data, function(response){
             swal.close()
             $('#ig_id').val(response.detail.inspection_detail)
@@ -85,20 +108,20 @@ function detail(transaction_code,inspection_type,type){
                 var is_active = (i === 0) ? 'active' : ''; // Set active class for the first tab
                 progress_tab += `
                 <li class="nav-item">
-                <a style="font-size: 12px !important" class="nav-link mb-sm-3 mb-md-0 ${is_active} subdetailinspection" 
-                id="${responseData[i].inspection_sub_detail}-tab" 
-                data-toggle="tab" 
-                href="#${responseData[i].inspection_sub_detail}" 
-                data-subdetail="${responseData[i].inspection_sub_detail}" 
-                role="tab" 
-                aria-controls="${responseData[i].inspection_sub_detail}" 
+                <a style="font-size: 12px !important" class="nav-link mb-sm-3 mb-md-0 ${is_active} subdetailinspection"
+                id="${responseData[i].inspection_sub_detail}-tab"
+                data-toggle="tab"
+                href="#${responseData[i].inspection_sub_detail}"
+                data-subdetail="${responseData[i].inspection_sub_detail}"
+                role="tab"
+                aria-controls="${responseData[i].inspection_sub_detail}"
                 aria-selected="${is_active ? 'true' : 'false'}">
                 <i class="ni ni-sound-wave mr-2"></i>progress ${i + 1}
                 </a>
                 </li>
                 `;
             }
-            
+
             // Update the HTML content of the tab progress element
             $('#tab_progress').html(progress_tab);
             $('#label_user_id').html(': ' + response.detail.user_relation.name)
@@ -109,7 +132,7 @@ function detail(transaction_code,inspection_type,type){
             $('#label_length_of_pipe').html(': ' + response.detail.length_of_pipe)
             $('#label_material').html(': ' + response.detail.material_relation.name)
             $('#label_tape_diameter').html(': ' + response.detail.tape_diameter)
-            
+
             $('#label_appearance_of_pipe').html(': ' + response.detail.appearance_of_pipe)
             $('#label_marking').html(': ' + response.detail.marking)
             $('#label_condition_pipe_of_cut').html(': ' + response.detail.condition_pipe_of_cut)
@@ -117,14 +140,13 @@ function detail(transaction_code,inspection_type,type){
             $('#label_color_of_pipes').html(': ' + response.detail.color_of_pipes)
             mappingWT(response.wt,'label_wt')
             $('#label_evaluation_spec').html(': ' + response.detail.evaluation_spec)
-            
+
         })
     }
-    else if(inspection_type == 2 && type == 1){
+    else if(inspection_type == '2' && type == '1'){
         var data ={
             'inspection_code' : transaction_code,
         }
-       
        getCallback('getResinInspection',data,function(response){
             swal.close()
             if(response.detail.type == 1){
@@ -164,24 +186,24 @@ function detail(transaction_code,inspection_type,type){
                         data.push(response.data[i].value);
                         label.push(response.data[i].step);
                         color.push(masterColor); // Assign the same masterColor to each item
-                    
+
                         // Ensure the input displays the full precision value
                         const formattedValue = parseFloat(response.data[i].value);
-                    
+
                         detail += `
                             <div class="col-6">
                                 <p>Step ${i + 1} : ${formattedValue}</p>
                             </div>
                         `;
-                    }                
-                    
+                    }
+
                     $('#label_step_container').html(detail)
                     $('#label_resin_graphic_container').append('<canvas id="label_resin_graphic" style="width:50px !important; height:50px !important" ></canvas>')
                     var canvas = document.getElementById("label_resin_graphic");
                     var chart = canvas.getContext('2d')
                     pieChart('Bulk Density',label,data,color,'line',chart)
                 }
-    
+
                  // Density Properties
                     $('#label_vivsible_properties').html(': '+ response.header.visible_properties)
                     $('#label_resin_package').html(': '+ response.header.packaging)
@@ -194,8 +216,71 @@ function detail(transaction_code,inspection_type,type){
                     $('#label_resin_pof_number').html(': '+ response.detail.no_pof)
                 // Density Properties
             }
+            else if(response.detail.type == 2){
+                  $(document).ready(function() {
+                      $('.approval_pellet_container').prop('hidden', false)
+                      $('#detailPelletModal').modal('show')
+                  })
+                   // General Information
+                    $('#btn_approval_pellet').prop('hidden', false)
+                    $('#label_pellet_inspection_code').html(': ' + response.detail.inspection_code)
+                    $('#label_pellet_location').html(': ' + response.detail.location_relation.name)
+                    $('#label_pellet_inspector').html(': ' + response.detail.inspector_relation.name)
+                    $('#label_pellet_supplier').html(': ' + response.detail.supplier_relation.name)
+                    $('#label_pellet_brand').html(': ' + response.detail.merk)
+                    $('#label_pellet_standard').html(': ' + response.detail.standard)
+                    $('#label_pellet_certificate').html(': ' + response.detail.certificate)
+                    $('#label_pellet_weight').html(': ' + response.detail.weight +  ' kg')
+                    $('#label_pellet_amount').html(': ' + response.detail.amount + ' sak')
+                    $('#label_pellet_no_lot').html(': ' + response.detail.no_lot)
+                // General Information
+                // Detail Inspectoin
+                    $('#label_pellet_amount_per_sak').html(': ' + response.header.amount_per_sak +  ' sak')
+                    $('#label_pellet_visible_properties').html(': ' + response.header.visible_properties)
+                    $('#label_pellet_packaging').html(': ' + response.header.packaging)
+                    $('#label_pellet_weight_per_sak').html(': ' + response.header.weight_per_sak +  ' kg')
+                    $('#label_pelet_mfr').html(': ' + response.header.mfr + ' G/10 mm')
+                    $('#label_pellet_remark').html(': ' + response.detail.remark)
+                    $('#label_pellet_pof_number').html(': ' + response.detail.no_pof)
+                // Detail Inspectoin
+                }
        })
     }
+    else if(inspection_type == 2 && type == 2){
+        var data ={
+            'inspection_code' : transaction_code,
+        }
+
+       getCallback('getPelletInspection',data,function(response){
+        swal.close()
+                // General Information
+                    $('#label_pellet_inspection_code').html(': ' + response.detail.inspection_code)
+                    $('#label_pellet_location').html(': ' + response.detail.location_relation.name)
+                    $('#label_pellet_inspector').html(': ' + response.detail.inspector_relation.name)
+                    $('#label_pellet_supplier').html(': ' + response.detail.supplier_relation.name)
+                    $('#label_pellet_brand').html(': ' + response.detail.merk)
+                    $('#label_pellet_standard').html(': ' + response.detail.standard)
+                    $('#label_pellet_certificate').html(': ' + response.detail.certificate)
+                    $('#label_pellet_weight').html(': ' + response.detail.weight +  ' kg')
+                    $('#label_pellet_amount').html(': ' + response.detail.amount + ' sak')
+                    $('#label_pellet_no_lot').html(': ' + response.detail.no_lot)
+                // General Information
+                // Detail Inspectoin
+                        $('#label_pellet_amount_per_sak').html(': ' + response.header.amount_per_sak +  ' sak')
+                        $('#label_pellet_visible_properties').html(': ' + response.header.visible_properties)
+                        $('#label_pellet_packaging').html(': ' + response.header.packaging)
+                        $('#label_pellet_weight_per_sak').html(': ' + response.header.weight_per_sak +  ' kg')
+                        $('#label_pelet_mfr').html(': ' + response.header.mfr + ' G/10 mm')
+                        $('#label_pellet_remark').html(': ' + response.detail.remark)
+                        $('#label_pellet_pof_number').html(': ' + response.detail.no_pof)
+                // Detail Inspectoin
+        $('#detailPelletModal').modal('show')
+        $('.approval_pellet_container').prop('hidden', false)
+        $('#btn_approval_pellet').prop('hidden', false)
+       })
+    }
+
+
 }
 function mapping_progress(subdetail){
     var data ={
@@ -203,7 +288,7 @@ function mapping_progress(subdetail){
     }
     getCallback('detailInspectionProgress',data, function(response){
         swal.close()
-       
+
         $('#label_user_id').html(': ' + response.detail.user_relation.name)
         $('#label_time').val(response.detail.time)
         $('#label_machine').html(': ' + response.detail.machine_relation.name)
@@ -212,7 +297,7 @@ function mapping_progress(subdetail){
         $('#label_length_of_pipe').html(': ' + response.detail.length_of_pipe)
         $('#label_material').html(': ' + response.detail.material_relation.name)
         $('#label_tape_diameter').html(': ' + response.detail.tape_diameter)
-        
+
         $('#label_appearance_of_pipe').html(': ' + response.detail.appearance_of_pipe)
         $('#label_marking').html(': ' + response.detail.marking)
         $('#label_condition_pipe_of_cut').html(': ' + response.detail.condition_pipe_of_cut)
