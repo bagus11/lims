@@ -4,7 +4,15 @@ let data_start = {
 }
 getCallback('getInspectionGoods',data_start, function(response){
     swal.close()
+
     mappingTable(response.data)
+})
+$('#btnFilter').on('click', function(){
+getCallback('getInspectionGoods',data_start, function(response){
+    swal.close()
+    console.log(response.data)
+    mappingTable(response.data)
+})
 })
 $('#btn_add_header').on('click', function(){
     $('#location_id').val('')
@@ -365,7 +373,7 @@ $('#btn_save_header').on('click', function(){
         })
     });
     $(document).on('click','.add', function(e){
-       
+
         var inspection = $(this).data('inspection')
         $('#detail_inspection_code_id').val(inspection)
         getCallbackNoSwal('getMasterProduct',null, function(response){

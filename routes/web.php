@@ -81,6 +81,8 @@ Route::group(['middleware' => 'auth'], function () {
 			Route::get('/master_product', 'App\Http\Controllers\Master\MasterProductController@index')->name('master_product');
 			Route::get('/getMasterProduct', 'App\Http\Controllers\Master\MasterProductController@getMasterProduct')->name('getMasterProduct');
 			Route::post('/uploadMasterProduct', 'App\Http\Controllers\Master\MasterProductController@uploadMasterProduct')->name('uploadMasterProduct');
+			Route::get('/downloadFormatMasterProduct', 'App\Http\Controllers\Master\MasterProductController@downloadFormatMasterProduct')->name('downloadFormatMasterProduct');
+			Route::get('/downloadFormatCsvMasterProduct', 'App\Http\Controllers\Master\MasterProductController@downloadFormatCsvMasterProduct')->name('downloadFormatCsvMasterProduct');
 			Route::get('/getDetailProductLog', 'App\Http\Controllers\Master\MasterProductController@getDetailProductLog')->name('getDetailProductLog');
 			Route::post('/updateProduct', 'App\Http\Controllers\Master\MasterProductController@updateProduct')->name('updateProduct');
 
@@ -104,6 +106,31 @@ Route::group(['middleware' => 'auth'], function () {
 			Route::post('/addMaterial', 'App\Http\Controllers\Master\MaterialController@addMaterial')->name('addMaterial');
 			Route::post('/updateMaterial', 'App\Http\Controllers\Master\MaterialController@updateMaterial')->name('updateMaterial');
 			Route::post('/udpateStatusMaterial', 'App\Http\Controllers\Master\MaterialController@udpateStatusMaterial')->name('udpateStatusMaterial');
+
+			Route::get('/master_product_resales_goods', 'App\Http\Controllers\Master\MasterProductResalesGoodController@index')->name('master_product_resales_goods');
+			Route::get('/getMasterProductResalesGoods', 'App\Http\Controllers\Master\MasterProductResalesGoodController@getMasterProductResalesGoods')->name('getMasterProductResalesGoods');
+			Route::get('/getDetailResalesGoods', 'App\Http\Controllers\Master\MasterProductResalesGoodController@getDetailResalesGoods')->name('getDetailResalesGoods');
+			Route::post('/addMasterProductResalesGoods', 'App\Http\Controllers\Master\MasterProductResalesGoodController@addMasterProductResalesGoods')->name('addMasterProductResalesGoods');
+			Route::post('/updateMasterProductResalesGoods', 'App\Http\Controllers\Master\MasterProductResalesGoodController@updateMasterProductResalesGoods')->name('updateMasterProductResalesGoods');
+			Route::get('/deleteMasterProductResalesGoods', 'App\Http\Controllers\Master\MasterProductResalesGoodController@deleteMasterProductResalesGoods')->name('deleteMasterProductResalesGoods');
+			Route::post('/uploadMasterProductResalesGoods', 'App\Http\Controllers\Master\MasterProductResalesGoodController@uploadMasterProductResalesGoods')->name('uploadMasterProductResalesGoods');
+			Route::get('/downloadFormatResalesGoods', 'App\Http\Controllers\Master\MasterProductResalesGoodController@downloadFormatResalesGoods')->name('downloadFormatResalesGoods');
+			Route::get('/downloadFormatCsvResalesGoods', 'App\Http\Controllers\Master\MasterProductResalesGoodController@downloadFormatCsvResalesGoods')->name('downloadFormatCsvResalesGoods');
+
+			// Master Laboratory
+			Route::get('/master_laboratory', 'App\Http\Controllers\Master\LaboratoryController@index')->name('master_laboratory');
+			Route::get('/getLaboratoryMasterOptions', 'App\Http\Controllers\Master\LaboratoryController@getLaboratoryMasterOptions')->name('getLaboratoryMasterOptions');
+			Route::get('/getLaboratoryTestMethods', 'App\Http\Controllers\Master\LaboratoryController@getLaboratoryTestMethods')->name('getLaboratoryTestMethods');
+			Route::post('/addLaboratoryTestMethod', 'App\Http\Controllers\Master\LaboratoryController@addLaboratoryTestMethod')->name('addLaboratoryTestMethod');
+			Route::post('/updateLaboratoryTestMethod', 'App\Http\Controllers\Master\LaboratoryController@updateLaboratoryTestMethod')->name('updateLaboratoryTestMethod');
+			Route::get('/getLaboratoryTestParameters', 'App\Http\Controllers\Master\LaboratoryController@getLaboratoryTestParameters')->name('getLaboratoryTestParameters');
+			Route::post('/addLaboratoryTestParameter', 'App\Http\Controllers\Master\LaboratoryController@addLaboratoryTestParameter')->name('addLaboratoryTestParameter');
+			Route::post('/updateLaboratoryTestParameter', 'App\Http\Controllers\Master\LaboratoryController@updateLaboratoryTestParameter')->name('updateLaboratoryTestParameter');
+			Route::get('/getLaboratoryProductMethods', 'App\Http\Controllers\Master\LaboratoryController@getLaboratoryProductMethods')->name('getLaboratoryProductMethods');
+			Route::post('/saveLaboratoryProductMethods', 'App\Http\Controllers\Master\LaboratoryController@saveLaboratoryProductMethods')->name('saveLaboratoryProductMethods');
+			Route::get('/getLaboratoryMethodParameters', 'App\Http\Controllers\Master\LaboratoryController@getLaboratoryMethodParameters')->name('getLaboratoryMethodParameters');
+			Route::post('/saveLaboratoryMethodParameters', 'App\Http\Controllers\Master\LaboratoryController@saveLaboratoryMethodParameters')->name('saveLaboratoryMethodParameters');
+			// Master Laboratory
 	// Master
 
 	// Transaction
@@ -128,6 +155,7 @@ Route::group(['middleware' => 'auth'], function () {
 	// Approval
 	Route::get('/getApprovalUser', 'App\Http\Controllers\Setting\ApprovalController@getApprovalUser')->name('getApprovalUser');
 		Route::post('/updateInspectionGoodsApproval', 'App\Http\Controllers\Setting\ApprovalController@updateInspectionGoodsApproval')->name('updateInspectionGoodsApproval');
+		Route::post('/updateLaboratoryApproval', 'App\Http\Controllers\Setting\ApprovalController@updateLaboratoryApproval')->name('updateLaboratoryApproval');
 	// Approval
 
 		// Material
@@ -142,9 +170,33 @@ Route::group(['middleware' => 'auth'], function () {
 		Route::get('/getPelletInspection', 'App\Http\Controllers\Transaction\Inspection\InspectionMaterialController@getPelletInspection')->name('getPelletInspection');
 		Route::post('/updatePelletProperties', 'App\Http\Controllers\Transaction\Inspection\InspectionMaterialController@updatePelletProperties')->name('updatePelletProperties');
 		Route::post('/lockInspectionMaterial', 'App\Http\Controllers\Transaction\Inspection\InspectionMaterialController@lockInspectionMaterial')->name('lockInspectionMaterial');
-
 		// Material
+
+        // Resales Goods
+            Route::get('/inspection-resales-goods', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@index')->name('inspection-resales-goods');
+            Route::get('/getResalesGood', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@getResalesGood')->name('getResalesGood');
+            Route::get('/getOptionListsResalesGoods', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@getOptionLists')->name('getOptionListsResalesGoods');
+            Route::get('/getResalesGoodDetails', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@getResalesGoodDetails')->name('getResalesGoodDetails');
+            Route::get('/printResalesGoodsPdf', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@printResalesGoodsPdf')->name('printResalesGoodsPdf');
+            Route::get('/printResalesGoodsExcel', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@printResalesGoodsExcel')->name('printResalesGoodsExcel');
+            Route::post('/addResalesGoodsHeader', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@addResalesGoodsHeader')->name('addResalesGoodsHeader');
+            Route::post('/addResalesGoodsDetail', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@addResalesGoodsDetail')->name('addResalesGoodsDetail');
+            Route::post('/editResalesGoodsDetail', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@editResalesGoodsDetail')->name('editResalesGoodsDetail');
+            Route::post('/deleteResalesGoodsDetail', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@deleteResalesGoodsDetail')->name('deleteResalesGoodsDetail');
+            Route::post('/lockResalesGoods', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@lockResalesGoods')->name('lockResalesGoods');
+            Route::post('/deleteResalesGoods', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@deleteResalesGoods')->name('deleteResalesGoods');
+        // Resales Goods
+
+		// Product Laboratory
+			Route::get('/lab', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@index')->name('lab');
+			Route::get('/getLaboratoryOptions', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@getLaboratoryOptions')->name('getLaboratoryOptions');
+			Route::get('/getActiveLaboratoryProductMethods', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@getLaboratoryProductMethods')->name('getActiveLaboratoryProductMethods');
+			Route::get('/getProductLaboratory', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@getProductLaboratory')->name('getProductLaboratory');
+			Route::post('/addProductLaboratory', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@addProductLaboratory')->name('addProductLaboratory');
+			Route::get('/getProductLaboratoryDetail', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@getProductLaboratoryDetail')->name('getProductLaboratoryDetail');
+			Route::post('/saveLaboratoryMeasurement', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@saveLaboratoryMeasurement')->name('saveLaboratoryMeasurement');
+			Route::post('/lockProductLaboratory', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@lockProductLaboratory')->name('lockProductLaboratory');
+		// Product Laboratory
 	// Transaction
 
 });
-

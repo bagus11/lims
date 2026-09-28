@@ -216,7 +216,24 @@
         </td>
 
     </tr>
+    <tr>
+      <td colspan="2" class="header-info" style="vertical-align:top;">
 
+            <table style="border:none;">
+                <tr>
+                    <td style="border:none; width:90px;">No POF</td>
+                    <td style="border:none; width:10px;">:</td>
+                    <td style="border:none;">{{ $detail->no_pof ?? 'N/A' }}</td>
+                </tr>
+                <tr>
+                    <td style="border:none; width:90px;">Keterangan</td>
+                    <td style="border:none; width:10px;">:</td>
+                    <td style="border:none;">{{ $detail->remark ?? 'N/A' }}</td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
 
     {{-- KETERANGAN --}}
 
@@ -225,26 +242,67 @@
      <tr>
         <td colspan="2" style="padding:0; border:none;">
 
-            <table width="100%" style="table-layout: fixed;">
-                <tr>
-                    <td style="text-align:center; padding:20px 10px;">
-                        <b>Factory Manager</b><br><br><br>
-                        <div style="border-bottom:1px solid #000; width:80%; margin:0 auto;"></div><br>
-                        {{ $manager ?? 'N/A' }}
-                    </td>
+           <table class="table" id="approval_remark" style="table-layout: fixed">
+                    <thead>
+                        <tr>
 
-                    <td style="text-align:center; padding:20px 10px;">
-                        <b>Kabag Quality Control</b><br><br><br>
-                        <div style="border-bottom:1px solid #000; width:80%; margin:0 auto;"></div><br>
-                        {{ $qc ?? 'N/A' }}
-                    </td>
+                            @for ($i = 3 - 1; $i >= 0; $i--)
+                                @php
+                                    $title = '';
+                                    switch ($i) {
+                                        case 0:
+                                        $title = "Karu Inspector";
+                                        break;
 
-                    <td style="text-align:center; padding:20px 10px;">
-                        <b>Karu Inspection</b><br><br><br>
-                        <div style="border-bottom:1px solid #000; width:80%; margin:0 auto;"></div><br>
-                        {{ $karu ?? 'N/A' }}
-                    </td>
-                </tr>
+                                        case 1:
+                                        $title = "Kabag QC";
+                                        break;
+
+                                        case 2:
+                                        $title = "Factory Manager";
+                                        break;
+
+                                        default:
+                                            $title = "Approver " . ($i + 1); // Fallback title for additional columns if needed
+                                            break;
+                                    }
+                                @endphp
+                                <th>{{ $title }}</th>
+                                @endfor
+                                <th>Inspector</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+
+                        @for ($i = 3 - 1; $i >= 0; $i--)
+                            @php
+                                $signature = isset($approval[$i]) && $approval[$i]->status == 1 && isset($approval[$i]->userRelation->signature)
+                                    ? $approval[$i]->userRelation->signature
+                                    : '';
+                            @endphp
+                            <td style="text-align: center">
+                                @if ($signature)
+                                    <img style='display:block; width:70px; height:50px;' id='base64image' src='{{$signature}}' />
+                                @endif
+                                <p>
+                                    {{$approval[$i]->userRelation->name ?? ''}}
+                                </p>
+                            </td>
+                        @endfor
+                        <td style="text-align: center">
+                            @if ($detail->inspectorRelation)
+                            <img style='display:block; width:70px; height:50px;' id='base64image' src='{{$detail->inspectorRelation->signature}}' />
+                            <p>
+                                {{$detail->inspectorRelation->name}}
+                            </p>
+                            @else
+                            <img style='display:block; width:70px; height:50px;' id='base64image' src='' />
+                            @endif
+                        </td>
+                        </tr>
+                    </tbody>
             </table>
 
         </td>

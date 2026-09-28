@@ -9,6 +9,7 @@ $('#btn_add_header').on('click', function(){
     getActiveItems('getLocation', null,'select_location','Location');
     getActiveItems('getUser', null,'select_inspector','Inspector');
     getActiveItems('getSupplier', null,'select_supplier','Supplier');
+    getActiveItems('getSupplier', null,'select_produsen','Produsen');
     $('#type').val('')
     $('#location').val('')
     $('#material').val('')
@@ -21,11 +22,21 @@ $('#btn_add_header').on('click', function(){
     $('#standard').val('')
     $('#lot_number').val('')
 })
+$('.produsen_container').prop('hidden', true)
+$('#select_type').on('change', function(){
+    var select_type = $('#select_type').val()
+    if(select_type == 2) {
+        $('.produsen_container').prop('hidden', false)
+    }else{
+        $('.produsen_container').prop('hidden', true)
+    }
+})
 onChange('select_type','type')
 onChange('select_location','location')
 onChange('select_material','material')
 onChange('select_inspector','inspector')
 onChange('select_supplier','supplier')
+onChange('select_produsen','produsen_id')
 
 $("#btn_save_header").on('click', function(){
     var data = {
@@ -34,6 +45,7 @@ $("#btn_save_header").on('click', function(){
         'material'  : $('#material').val(),
         'inspector'  : $('#inspector').val(),
         'supplier'  : $('#supplier').val(),
+        'produsen_id'  : $('#produsen_id').val(),
         'brand'  : $('#brand').val(),
         'amount'  : $('#amount').val(),
         'weight'  : $('#weight').val(),
@@ -380,7 +392,6 @@ $('#btn_save_pellet').on('click', function(){
             })
         }else{
             $('#detailPelletModal').modal('show')
-            alert('test')
             getCallback('getPelletInspection',data, function(response){
                 swal.close()
                 // General Information
@@ -388,6 +399,7 @@ $('#btn_save_pellet').on('click', function(){
                     $('#label_pellet_location').html(': ' + response.detail.location_relation.name)
                     $('#label_pellet_inspector').html(': ' + response.detail.inspector_relation.name)
                     $('#label_pellet_supplier').html(': ' + response.detail.supplier_relation.name)
+                    $('#label_pellet_produsen').html(': ' + response.header.produsen_relation.name)
                     $('#label_pellet_brand').html(': ' + response.detail.merk)
                     $('#label_pellet_standard').html(': ' + response.detail.standard)
                     $('#label_pellet_certificate').html(': ' + response.detail.certificate)
@@ -396,7 +408,7 @@ $('#btn_save_pellet').on('click', function(){
                     $('#label_pellet_no_lot').html(': ' + response.detail.no_lot)
                 // General Information
                     console.log(response)
-                    return false
+
                 // Detail Inspectoin
                         $('#label_pellet_amount_per_sak').html(': ' + response.header.amount_per_sak +  ' sak')
                         $('#label_pellet_visible_properties').html(': ' + response.header.visible_properties)
@@ -573,7 +585,7 @@ function mappingTable(response){
                                         'next': '<span class="next-icon"><i class="fa-solid fa-arrow-right"></i></span>'
                                 }
                             },
-            scrollY  :265
+            scrollY  :480
         }).columns.adjust()
 }
 function updateResin(x,y,z){

@@ -4,15 +4,31 @@
     @include('layouts.headers.cards')
     <style>
         .table-container {
-            display: block;
-            overflow-x: auto; /* Enable horizontal scrolling */
-            overflow-x: hidden;
-            white-space: nowrap; /* Prevent wrapping of table content */
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
         }
-
-        /* Optional: You can also add some padding to improve the appearance */
         .table-container table {
-            width: 1400px !important;
+            min-width: 1600px;
+            width: 100% !important;
+            white-space: nowrap;
+        }
+        .table-container .dataTables_wrapper,
+        .table-container .dataTables_scroll,
+        .table-container .dataTables_scrollHead,
+        .table-container .dataTables_scrollBody {
+            width: 100% !important;
+        }
+        .table-container .dataTables_scrollBody {
+            overflow-x: auto !important;
+            overflow-y: auto !important;
+        }
+        .table-container .dataTables_scrollHeadInner,
+        .table-container .dataTables_scrollHeadInner table,
+        .table-container .dataTables_scrollBody table {
+            min-width: 1600px !important;
+            width: 100% !important;
         }
     </style>
     <div class="row mx-2 mt-4 d-flex justify-content-center">
@@ -35,7 +51,7 @@
             </div>
             <div class="card-body p-0">
                 <div class="table-container">
-                    <table class="datatable-stepper" id="master_product_table" style="width: 200%">
+                    <table class="datatable-stepper" id="master_product_table">
                         <thead class="thead-light">
                             <tr>
                                 <th rowspan="2" scope="col" class="sort" style="text-align: center" data-sort="seri">Seri</th>

@@ -8,6 +8,7 @@ use App\Http\Requests\Master\MasterProduct\UpdateProductRequest;
 use App\Imports\Master\UploadMasterProduct;
 use App\Models\Master\LogMasterProduct;
 use App\Models\Master\MasterProduct;
+use App\Exports\MasterProductFormatExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -25,7 +26,7 @@ class MasterProductController extends Controller
     function uploadMasterProduct(Request $request) {
         // try{
             $request->validate([
-                'upload_file' => 'required|mimes:xlsx',
+                'upload_file' => 'required|mimes:xlsx,xls,csv',
             ]);
         
             $upload = Excel::import(new UploadMasterProduct, $request->file('upload_file'));
@@ -41,6 +42,45 @@ class MasterProductController extends Controller
     //      );
     //  }
      
+    }
+
+    function downloadFormatMasterProduct()
+    {
+        $fileName = 'format_master_product_' . date('YmdHis') . '.xlsx';
+        return Excel::download(new MasterProductFormatExport, $fileName);
+    }
+
+    function downloadFormatCsvMasterProduct()
+    {
+        $headers = [
+            'seri','join','ukuran','marking','berat_pcs','berat','kode_ts','kode_ts_2',
+            'kode_be','kode_be_2','marking_2','formula','min_od','toleransi_od','marking_od',
+            'avg_od','max_od','min_wt','toleransi_wt','marking_wt','avg_wt','max_wt'
+        ];
+
+        $rows = [
+            [
+                'PVC 1"','SOCKET','32 MM','A','0.5','1.2','TS-001','REV A',
+                'BE-100','REV B','MARKING A','A + B','31.8','0.2','31.8 ± 0.2',
+                '31.9','32.0','2.0','0.1','2.0 ± 0.1','2.0','2.1'
+            ],
+            [
+                'PVC 2"','SPIGOT','63 MM','B','1.8','3.5','TS-002','',
+                'BE-200','','MARKING B','C + D','62.5','0.3','62.5 ± 0.3',
+                '62.7','62.9','3.0','0.2','3.0 ± 0.2','3.1','3.2'
+            ],
+        ];
+
+        $fileName = 'format_master_product_' . date('YmdHis') . '.csv';
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        $output = fopen('php://output', 'w');
+        fputcsv($output, $headers);
+        foreach ($rows as $row) {
+            fputcsv($output, $row);
+        }
+        fclose($output);
+        exit;
     }
     function getDetailProductLog(Request $request) {
         $detail = MasterProduct::find($request->id);

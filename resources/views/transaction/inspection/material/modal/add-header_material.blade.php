@@ -57,6 +57,14 @@
                              <input type="hidden" class="form-control" id="supplier">
                              <span class="message_error supplier_error text-red block "></span>
                         </div>
+                        <div class="col-2 mt-2 produsen_container">
+                             <p>Supplier</p>
+                        </div>
+                        <div class="col-4 produsen_container">
+                             <select name="select_produsen" class="select2" id="select_produsen"></select>
+                             <input type="hidden" class="form-control" id="produsen_id">
+                             <span class="message_error produsen_id_error text-red block "></span>
+                        </div>
                         <div class="col-2 mt-2">
                              <p>Brand</p>
                         </div>

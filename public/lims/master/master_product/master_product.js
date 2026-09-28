@@ -106,7 +106,7 @@ function mappingTable(response){
     $('#master_product_table').DataTable().destroy();
     for (i = 0; i < response.length; i++) {
         data += `
-            <tr style="width:400% !important">
+            <tr>
                 <td style="text-align:center;width:5%">${response[i].seri}</td>
                 <td style="text-align:center">${response[i].join}</td>
                 <td style="text-align:center">${response[i].ukuran}</td>
@@ -160,7 +160,7 @@ function mappingTableLog(response){
         const date = d.toISOString().split('T')[0];
         const time = d.toTimeString().split(' ')[0];
         data += `
-            <tr style="width:200% !important">
+            <tr>
 
                 <td style="text-align:center">${date} ${time}</td>
                 <td style="text-align:left">${response[i].user_relation.name}</td>

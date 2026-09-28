@@ -8,13 +8,13 @@ function mappingApproval(response){
     for(i = 0 ; i < response.length; i++){
         console.log(response[i].transaction_code + '  ==  ' + response[i].inspection_type + ' == ' + response[i].type)
         data +=`
-                <li class="list-group-item mx-4 p-0" style="max-height:60px !important">
-                    <div class="row p-0">
-                    <div class="p-0 col-10 mt-2">
+                <li class="list-group-item mx-4 p-0">
+                    <div class="row px-4">
+                    <div class="px-2 col-10">
                         <label style="font-size:10px !important;font-weight:bold">${response[i].transaction_code}</label>
                         <p>${response[i].remark}</p>
                         </div>
-                        <div class="p-0 col-2 mt-1 mt-4">
+                        <div class="px-2 col-2">
                             <button class="btn btn-sm btn-info rounded" onclick="detail('${response[i].transaction_code}','${response[i].inspection_type}','${response[i].type}')" title ="Detail">
                             <i class="fa-solid fa-eye"></i>
                             </button>
@@ -91,7 +91,14 @@ $('#btn_approval_pellet').on('click', function(){
 });
 
 function detail(transaction_code,inspection_type,type){
-    if(inspection_type == 3 && type== 1){
+    if(inspection_type == 1 && type == 1){
+        getCallback('getProductLaboratoryDetail', { laboratory_code: transaction_code }, function(response){
+            swal.close()
+            dashboardMapLaboratoryApproval(response.data)
+            $('#dashboardLaboratoryApprovalModal').modal('show')
+        })
+    }
+    else if(inspection_type == 3 && type== 1){
         var data ={
             'inspection_detail' : transaction_code,
         }
@@ -279,8 +286,117 @@ function detail(transaction_code,inspection_type,type){
         $('#btn_approval_pellet').prop('hidden', false)
        })
     }
+    else if(inspection_type == '4' && type == '1'){
+          var data ={
+            'inspection_code' : transaction_code,
+        }
+        console.log(data)
+       getCallback('getPelletInspection',data,function(response){
+        swal.close()
+                // General Information
+                    $('#label_pellet_inspection_code').html(': ' + response.detail.inspection_code)
+                    $('#label_pellet_location').html(': ' + response.detail.location_relation.name)
+                    $('#label_pellet_inspector').html(': ' + response.detail.inspector_relation.name)
+                    $('#label_pellet_supplier').html(': ' + response.detail.supplier_relation.name)
+                    $('#label_pellet_brand').html(': ' + response.detail.merk)
+                    $('#label_pellet_standard').html(': ' + response.detail.standard)
+                    $('#label_pellet_certificate').html(': ' + response.detail.certificate)
+                    $('#label_pellet_weight').html(': ' + response.detail.weight +  ' kg')
+                    $('#label_pellet_amount').html(': ' + response.detail.amount + ' sak')
+                    $('#label_pellet_no_lot').html(': ' + response.detail.no_lot)
+                // General Information
+                // Detail Inspectoin
+                        $('#label_pellet_amount_per_sak').html(': ' + response.header.amount_per_sak +  ' sak')
+                        $('#label_pellet_visible_properties').html(': ' + response.header.visible_properties)
+                        $('#label_pellet_packaging').html(': ' + response.header.packaging)
+                        $('#label_pellet_weight_per_sak').html(': ' + response.header.weight_per_sak +  ' kg')
+                        $('#label_pelet_mfr').html(': ' + response.header.mfr + ' G/10 mm')
+                        $('#label_pellet_remark').html(': ' + response.detail.remark)
+                        $('#label_pellet_pof_number').html(': ' + response.detail.no_pof)
+                // Detail Inspectoin
+        $('#detailPelletModal').modal('show')
+        $('.approval_pellet_container').prop('hidden', false)
+        $('#btn_approval_pellet').prop('hidden', false)
+       })
+    }
 
 
+}
+
+$('#btn_laboratory_approval').on('click', function(){
+    var data = {
+        laboratory_code: $('#dashboard_laboratory_code').val(),
+        decision: $('#dashboard_laboratory_decision').val(),
+        remark: $('#dashboard_laboratory_remark').val()
+    }
+    postCallback('updateLaboratoryApproval', data, function(response){
+        swal.close()
+        toastr['success'](response.meta.message)
+        $('#dashboardLaboratoryApprovalModal').modal('hide')
+        getCallbackNoSwal('getApprovalUser', null, function(result){
+            mappingApproval(result.data)
+        })
+    })
+})
+
+function dashboardMapLaboratoryApproval(header){
+    $('#dashboard_laboratory_code').val(header.laboratory_code)
+    $('#dashboardLaboratoryApprovalTitle').text('Laboratory Approval · ' + header.laboratory_code)
+    $('#dashboard_laboratory_decision, #dashboard_laboratory_remark').val('')
+    $('#dashboardLaboratoryApprovalModal .text-danger').html('')
+
+    var product = header.product_relation || {}
+    var method = header.method_snapshot || {}
+    var location = header.location_relation || {}
+    var summary = [
+        ['Product', (product.seri || '-') + ' · ' + (product.ukuran || '-')],
+        ['Method', (method.code || '-') + ' · ' + (method.name || '-')],
+        ['Location / Shift', (location.name || '-') + ' · Shift ' + (header.shift || '-')],
+        ['Test Date', header.test_date || '-']
+    ]
+    var summaryHtml = ''
+    summary.forEach(function(item){
+        summaryHtml += '<div class="col-md-3 mb-2"><div class="p-3 bg-light rounded"><small class="text-muted d-block">' + dashboardLaboratoryEscape(item[0]) + '</small><b style="font-size:11px">' + dashboardLaboratoryEscape(item[1]) + '</b></div></div>'
+    })
+    $('#dashboard_laboratory_summary').html(summaryHtml)
+
+    var resultHtml = ''
+    ;(header.details_relation || []).forEach(function(detail){
+        var result = '-'
+        if(detail.result_type_snapshot === 'numeric') {
+            result = detail.result_value === null ? '-' : detail.result_value + (detail.unit_snapshot ? ' ' + detail.unit_snapshot : '')
+        } else if(detail.result_type_snapshot === 'boolean') {
+            result = detail.boolean_result === null ? '-' : (detail.boolean_result ? 'Yes / Pass' : 'No / Fail')
+        } else {
+            result = detail.text_result || '-'
+        }
+        var measurement = (detail.measurements_relation || []).map(function(item){ return item.value }).join(', ')
+        resultHtml += '<div class="border rounded p-3 mb-2"><div class="row align-items-center"><div class="col-md-4"><b>' + detail.sequence + '. ' + dashboardLaboratoryEscape(detail.parameter_name_snapshot) + '</b><small class="text-muted d-block">' + dashboardLaboratoryEscape(dashboardLaboratoryStandard(detail.standard_snapshot || {}, detail.unit_snapshot)) + '</small></div>' +
+            '<div class="col-md-3"><small class="text-muted d-block">Result</small><b>' + dashboardLaboratoryEscape(result) + '</b></div>' +
+            '<div class="col-md-3"><small class="text-muted d-block">Measurements</small><span style="font-size:11px">' + dashboardLaboratoryEscape(measurement || '-') + '</span></div>' +
+            '<div class="col-md-2 text-right">' + dashboardLaboratoryEvaluation(detail.evaluation) + '</div></div></div>'
+    })
+    $('#dashboard_laboratory_results').html(resultHtml || '<div class="text-muted text-center py-3">No laboratory result.</div>')
+}
+
+function dashboardLaboratoryStandard(standard, unit){
+    var suffix = unit ? ' ' + unit : ''
+    if(standard.expected_value !== null && standard.expected_value !== undefined && standard.expected_value !== '') return 'Expected: ' + standard.expected_value
+    if(standard.operator === 'BETWEEN') return 'Standard: ' + standard.min_value + ' – ' + standard.max_value + suffix
+    if(standard.operator === '>=') return 'Standard: ≥ ' + standard.min_value + suffix
+    if(standard.operator === '<=') return 'Standard: ≤ ' + standard.max_value + suffix
+    if(standard.operator === '=') return 'Standard: = ' + standard.target_value + suffix
+    return 'Observation only'
+}
+
+function dashboardLaboratoryEvaluation(evaluation){
+    if(evaluation === 'GOOD') return '<span class="badge badge-success">GOOD</span>'
+    if(evaluation === 'NO_GOOD') return '<span class="badge badge-danger">NO GOOD</span>'
+    return '<span class="badge badge-light">N/A</span>'
+}
+
+function dashboardLaboratoryEscape(value){
+    return $('<div>').text(value === null || value === undefined ? '' : value).html()
 }
 function mapping_progress(subdetail){
     var data ={
