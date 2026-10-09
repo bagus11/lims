@@ -193,8 +193,32 @@ class InspectionMaterialController extends Controller
             'detail'=>$detail,
         ]);
     }
+    /**
+     * Transaksi yang sudah lock (menunggu approval) atau Done = read-only.
+     * UI menyembunyikan tombol, server wajib ikut menolak.
+     */
+    private function rejectIfNotEditable($inspectionCode) {
+        $header = InspectionMaterial::where('inspection_code', $inspectionCode)->first();
+        if (!$header) {
+            return ResponseFormatter::error(null, 'Inspection Material transaction not found', 404);
+        }
+        if ((int) $header->lock === 1 || !in_array((int) $header->status, [0, 1, 4], true)) {
+            return ResponseFormatter::error(null, 'This transaction is locked and cannot be modified', 400);
+        }
+
+        return null;
+    }
+
     function updateResinDetail(Request $request) {
             // try{
+                $request->validate([
+                    'inspection_code' => 'required|string',
+                    'step' => 'required|integer|min:1',
+                    'value' => 'required|numeric|between:0,999999.999999',
+                ]);
+                if ($guard = $this->rejectIfNotEditable($request->inspection_code)) {
+                    return $guard;
+                }
                 $post = [
                     'value' => $request->value
                 ];
@@ -216,6 +240,15 @@ class InspectionMaterialController extends Controller
     }
     function updateResinProperties(Request $request) {
            // try{
+            $request->validate([
+                'inspection_code' => 'required|string',
+                'resin_volatile_matter' => 'nullable|numeric',
+                'resin_amount_per_sak' => 'nullable|numeric',
+                'resin_weight_per_sak' => 'nullable|numeric',
+            ]);
+            if ($guard = $this->rejectIfNotEditable($request->inspection_code)) {
+                return $guard;
+            }
             $post = [
                 'visible_properties' => $request->select_vivsible_properties,
                 'packaging' => $request->select_resin_package,
@@ -253,6 +286,15 @@ class InspectionMaterialController extends Controller
     }
     function updatePelletProperties(Request $request) {
           // try{
+            $request->validate([
+                'inspection_code' => 'required|string',
+                'pellet_amount_per_sak' => 'nullable|numeric',
+                'pellet_weight_per_sak' => 'nullable|numeric',
+                'pelet_mfr' => 'nullable|numeric',
+            ]);
+            if ($guard = $this->rejectIfNotEditable($request->inspection_code)) {
+                return $guard;
+            }
             $post = [
                 'visible_properties' => $request->select_pellet_visible_properties,
                 'packaging' => $request->select_pellet_packaging,

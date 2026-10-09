@@ -408,8 +408,17 @@ class GoodsController extends Controller
             $updateInspectionGoodSubDetailRequest->validated();
 
             $detail = InspectionGoodsSubDetail::where('inspection_sub_detail', $request->inspection_sub_detail_edit)->first();
+            if (!$detail) {
+                return ResponseFormatter::error(null, 'Inspection progress not found', 404);
+            }
+            if ($guard = $this->rejectIfShiftLocked($detail->inspection_detail)) {
+                return $guard;
+            }
             $product = MasterProduct::where('id', $request->product_edit)->first();
             $material = Material::where('id', $request->material_edit)->first();
+            if (!$product || !$material) {
+                return ResponseFormatter::error(null, 'Product or material not found', 404);
+            }
 
             $post = [
                 'product_id' => $product->id,
@@ -596,8 +605,30 @@ class GoodsController extends Controller
             'data' => $data,
         ]);
     }
+    /**
+     * Shift yang sudah di-lock (menunggu/menyelesaikan approval) = read-only.
+     * UI memang menyembunyikan tombolnya, tapi endpoint harus ikut menolak.
+     */
+    private function rejectIfShiftLocked($detailInspectionCode) {
+        $shift = InspectionGoodsDetail::where('detail_inspection_code', $detailInspectionCode)->first();
+        if ($shift && (int) $shift->lock === 1) {
+            return ResponseFormatter::error(null, 'This shift is locked and cannot be modified', 400);
+        }
+        if ($shift && (int) $shift->status === 2) {
+            return ResponseFormatter::error(null, 'This shift is completed and cannot be modified', 400);
+        }
+
+        return null;
+    }
+
     function updateWallThickness(Request $request) {
         $detail = WallThickness::find($request->id);
+        if (!$detail) {
+            return ResponseFormatter::error(null, 'Wall thickness record not found', 404);
+        }
+        if ($guard = $this->rejectIfShiftLocked($detail->detail_inspection_code)) {
+            return $guard;
+        }
 
         $post =[
             'wt_1'    => $request->dynamic_wt_1,
@@ -643,10 +674,16 @@ class GoodsController extends Controller
        // }
     }
     function addWallThickness(Request $request) {
+        if ($guard = $this->rejectIfShiftLocked($request->detail_inspection_code)) {
+            return $guard;
+        }
         $validation =  WallThickness::where('detail_inspection_code',$request->detail_inspection_code)->where('sub_detail_inspection_code',$request->inspection_sub_detail)->latest('id')->count();
         if($validation < 3){
 
             $detail = WallThickness::where('detail_inspection_code',$request->detail_inspection_code)->where('sub_detail_inspection_code',$request->inspection_sub_detail)->latest('id')->first();
+            if (!$detail) {
+                return ResponseFormatter::error(null, 'No existing wall thickness row for this inspection', 400);
+            }
             $post =[
                 'inspection_code'   => $detail->inspection_code,
                 'step'              =>$detail->step + 1,
