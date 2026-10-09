@@ -138,44 +138,49 @@ class ResalesGoodsController extends Controller
         // try {
             $storeHeaderRequest->validated();
 
-            $increment_code = ResalesGood::orderBy('id', 'desc')->first();
-            $date_month = strtotime(date('Y-m-d'));
-            $month = idate('m', $date_month);
-            $year = idate('y', $date_month);
-            $month_convert = NumConvert::roman($month);
+            // Generate + insert dalam satu transaksi dengan lock baris terakhir,
+            // supaya dua request bersamaan tidak menghasilkan kode kembar.
+            $post = DB::transaction(function () use ($request) {
+                $increment_code = ResalesGood::orderBy('id', 'desc')->lockForUpdate()->first();
+                $month = (int) date('m');
+                $year = date('y');
+                $month_convert = NumConvert::roman($month);
 
-            if ($increment_code == null) {
-                $ticket_code = '1/INSRG/' . $month_convert . '/' . $year;
-            } else {
-                $last_code = $increment_code->transaction_code;
-                $month_before = explode('/', $last_code, -1);
-                if ($month_convert != $month_before[2]) {
-                    $ticket_code = '1/INSRG/' . $month_convert . '/' . $year;
-                } else {
-                    $ticket_code = ($month_before[0] + 1) . '/INSRG/' . $month_convert . '/' . $year;
+                $sequence = 1;
+                if ($increment_code) {
+                    // format: {seq}/INSRG/{bulan romawi}/{tahun 2 digit}
+                    $parts = explode('/', $increment_code->transaction_code);
+                    if (count($parts) >= 4
+                        && is_numeric($parts[0])
+                        && $parts[2] === $month_convert
+                        && $parts[3] === (string) $year
+                    ) {
+                        $sequence = ((int) $parts[0]) + 1;
+                    }
                 }
-            }
+                $ticket_code = $sequence . '/INSRG/' . $month_convert . '/' . $year;
 
-            $post = [
-                'transaction_code'  => $ticket_code,
-                'location_id'       => $request->location_id,
-                'product_id'        => $request->product_id,
-                'inspector_id'      => $request->inspector_id,
-                'supplier_id'       => $request->supplier_id,
-                'produsen_id'       => $request->produsen_id,
-                'brand'             => $request->brand,
-                'packaging'         => $request->packaging,
-                'certificate'       => $request->certificate,
-                'quantity'          => $request->quantity,
-                'standard'          => $request->standard,
-                'type'              => $request->type,
-                'current_approval'  => 0,
-                'status'            => 0,
-                'created_by'        => auth()->user()->id,
-            ];
+                $post = [
+                    'transaction_code'  => $ticket_code,
+                    'location_id'       => $request->location_id,
+                    'product_id'        => $request->product_id,
+                    'inspector_id'      => $request->inspector_id,
+                    'supplier_id'       => $request->supplier_id,
+                    'produsen_id'       => $request->produsen_id,
+                    'brand'             => $request->brand,
+                    'packaging'         => $request->packaging,
+                    'certificate'       => $request->certificate,
+                    'quantity'          => $request->quantity,
+                    'standard'          => $request->standard,
+                    'type'              => $request->type,
+                    'current_approval'  => 0,
+                    'status'            => 0,
+                    'created_by'        => auth()->user()->id,
+                ];
 
-            DB::transaction(function () use ($post) {
                 ResalesGood::create($post);
+
+                return $post;
             });
 
             return ResponseFormatter::success(
