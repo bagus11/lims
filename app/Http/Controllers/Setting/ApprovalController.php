@@ -14,6 +14,7 @@ use App\Models\Setting\Approval\ApprovalDetail;
 use App\Models\Setting\Approval\ApprovalHeader;
 use App\Models\Transaction\Inspection\ApprovalHistory;
 use App\Models\Transaction\Inspection\InspectionGoodsDetail;
+use App\Models\Transaction\Inspection\InspectionGoodsSubDetail;
 use App\Models\Transaction\Inspection\Laboratory\LaboratoryHeader;
 use App\Models\Transaction\Inspection\ResalesGood;
 use App\Models\Transaction\Insspection\InspectionGood;
@@ -144,195 +145,223 @@ class ApprovalController extends Controller
         // }
     }
 
+    /**
+     * Approval Inspection Goods (type 3) & Inspection Material (type 2).
+     * Endpoint & field request lama dipertahankan agar frontend tidak berubah:
+     * - type 3        : approval_insepection_goods_shift_id + ig_remark + transaction_code (detail_inspection_code)
+     * - type 2 resin  : approval_resin + imr_remark + transaction_code
+     * - type 2 pellet : approval_pellet + imr_pellet_remark + label_pellet_inspection_code
+     * Decision: 1 = Approve, 2 = Reject (reject membuka kunci untuk diperbaiki).
+     */
     function updateInspectionGoodsApproval(Request $request, UpdateInspectionGoodsApprovalRequest $updateInspectionGoodsApprovalRequest) {
-          // try {
-            $updateInspectionGoodsApprovalRequest->validated();
+        $updateInspectionGoodsApprovalRequest->validated();
 
-                    $header     = ApprovalHistory::where('transaction_code',$request->transaction_code)->orderBy('id','desc')->first();
-                    $approval   =0;
-                    $approvalStep   =0;
-                    $approvalHeader   ='';
-                    $statusHeader = '';
-                    $head               = '';
-                    $detail               = '';
-                    $validation               = '';
-                    $postStatusHeader =[];
-                     $countApproval  ='';
-                    if($request->inspection_type == 3 && $request->type == 1){
-                        $detail             = InspectionGoodsDetail::where('detail_inspection_code', $request->transaction_code)->first();
-                        $approvalHeader     = ApprovalHeader::where([
-                            'inspection_type'   => 3,
-                            'type'              => 1,
-                            'shift'             =>$detail->shift
-                        ])->first();
-                        $head               = InspectionGood::where('inspection_code', $approvalHeader->inspection_code)->first();
-                        $currentApproval    = ApprovalDetail::where('approval_code',$approvalHeader->approval_code)->where('user_id',auth()->user()->id)->first();
-                        $approvalStep       = ApprovalDetail::where('approval_code',$approvalHeader->approval_code)->where('user_id',auth()->user()->id)->first();
-                        $lastApproval       = ApprovalDetail::where('approval_code',$approvalHeader->approval_code)->where('step', $approvalStep->step + 1 )->first();
-                        $approval           = $lastApproval === null ? '' :  $lastApproval->user_id;
-                        $approvalStep       = $approvalStep === null ? 0 : $approvalStep->step + 1;
-                        $statusHeader       = $lastApproval == null ? $approvalHeader->status+ 1 : $approvalHeader->status;
-                        $validation         = InspectionGoodsDetail::where('inspection_code', $detail->inspection_code)->where('status', 2)->count();
-                        if($approvalStep == 0){
-                            throw \Illuminate\Validation\ValidationException::withMessages([
-                                'transaction_code' => ['Approval step configuration is invalid for this transaction.'],
-                            ]);
-                        }
-                        $post = [
-                            'status'        => $request->approval_insepection_goods_shift_id,
-                            'remark'        => $request->ig_remark
-                        ];
-                        $postHeader =[
-                            'approval_id'           => $approval ? (int) $approval : 0,
-                            'status'                => $approval ? $detail->status : $detail->status+1
-                        ];
-                        $postapproval = [
-                            'user_id'          => $approval ? (int) $approval : null,
-                            'transaction_code' => $request->transaction_code,
-                            'inspection_type'  => (int) $request->inspection_type,
-                            'type'             => (int) $request->type,
-                            'status'           => 0,
-                            'step'             => (int) $approvalStep,
-                            'remark'           => 'waiting for approval',
-                        ];
-                        $postStatusHeader =[
-                            'status'    =>$statusHeader,
-                        ];
-                    }
-                    // dd($lastApproval);
-                    if($request->inspection_type == 2 && $request->type == 1){
-                        $detail             = InspectionMaterial::where('inspection_code', $request->transaction_code)->first();
+        if ((int) $request->inspection_type === 2) {
+            $code = $request->transaction_code ?? $request->label_pellet_inspection_code;
+            $decision = (int) ($request->approval_resin ?? $request->approval_pellet);
+            $remark = trim((string) ($request->imr_remark ?? $request->imr_pellet_remark));
+            $result = $this->approveInspectionMaterial($code, $decision, $remark);
+        } else {
+            $result = $this->approveInspectionGoodsShift(
+                $request->transaction_code,
+                (int) $request->approval_insepection_goods_shift_id,
+                trim((string) $request->ig_remark)
+            );
+        }
 
-                        $approvalHeader     = ApprovalHeader::where([
-                            'inspection_type'   => 2,
-                            'type'              => 1,
-                            'location'          =>$detail->location
-                        ])->first();
+        return ResponseFormatter::success($result, 'Approval successfully updated');
+    }
 
-                        $currentApproval    = ApprovalDetail::where('approval_code',$approvalHeader->approval_code)->where('user_id',auth()->user()->id)->first();
-                        $approvalStep       = ApprovalDetail::where('approval_code',$approvalHeader->approval_code)->where('user_id',auth()->user()->id)->first();
-                        $lastApproval       = ApprovalDetail::where('approval_code',$approvalHeader->approval_code)->where('step', $approvalStep->step + 1 )->first();
-                        $approval           = $lastApproval === null ? '' :  $lastApproval->user_id;
-                        $approvalStep       = $approvalStep === null ? 0 : $approvalStep->step + 1;
-                        $statusHeader       = $lastApproval == null ? $detail->status+ 1 : $detail->status;
-                        $validation         = InspectionMaterial::where('inspection_code', $detail->inspection_code)->where('status', 2)->count();
-                        $post = [
-                            'status'        => $request->approval_resin,
-                            'remark'        => $request->imr_remark
-                        ];
-                        $postapproval = [
-                            'user_id'          => $approval ? (int) $approval : null,
-                            'transaction_code' => $request->transaction_code,
-                            'inspection_type'  => (int) $request->inspection_type,
-                            'type'             => (int) $request->type,
-                            'status'           => 0,
-                            'step'             => (int) $approvalStep,
-                            'remark'           => 'waiting for approval',
-                        ];
+    /**
+     * History approval aktif milik user login — satu-satunya tiket sah untuk
+     * memberi keputusan; tanpa ini siapa pun di master approver bisa approve
+     * out-of-order / berulang.
+     */
+    private function activeApprovalHistory(string $transactionCode, int $inspectionType)
+    {
+        return ApprovalHistory::where([
+            'transaction_code' => $transactionCode,
+            'inspection_type' => $inspectionType,
+            'user_id' => auth()->user()->id,
+            'status' => 0,
+        ])->orderBy('id', 'desc')->lockForUpdate()->first();
+    }
 
-                        $postHeader =[
-                            'approval_id'           => $approval ? (int) $approval : 0,
-                            'status'                => $approval ? $detail->status : $detail->status+1
-                        ];
-                        $postStatusHeader =[
-                            'status'    =>$statusHeader,
-                        ];
-                        // dd($statusHeader);
-                    }
-                    if($request->inspection_type == 2 && $request->type == 2){
-                        $detail             = InspectionMaterial::where('inspection_code', $request->label_pellet_inspection_code)->first();
+    private function approveInspectionMaterial($code, int $decision, string $remark): array
+    {
+        return DB::transaction(function () use ($code, $decision, $remark) {
+            $header = InspectionMaterial::where('inspection_code', $code)->lockForUpdate()->first();
+            if (!$header) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'transaction_code' => ['Inspection Material transaction not found.'],
+                ]);
+            }
+            if (!(int) $header->lock || (int) $header->status !== 2) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'transaction_code' => ['Transaction is not waiting for approval.'],
+                ]);
+            }
 
-                        $approvalHeader     = ApprovalHeader::where([
-                            'inspection_type'   => 2,
-                            'type'              => 1,
-                            'location'          =>$detail->location
-                        ])->first();
+            $history = $this->activeApprovalHistory($header->inspection_code, 2);
+            if (!$history) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'transaction_code' => ['You are not the active approver for this transaction.'],
+                ]);
+            }
 
-                        $countApproval    = ApprovalDetail::where('approval_code',$approvalHeader->approval_code)->count();
-                        $currentApproval    = ApprovalDetail::where('approval_code',$approvalHeader->approval_code)->where('user_id',auth()->user()->id)->first();
-                        $approvalStep       = ApprovalDetail::where('approval_code',$approvalHeader->approval_code)->where('user_id',auth()->user()->id)->first();
-                        $lastApproval       = ApprovalDetail::where('approval_code',$approvalHeader->approval_code)->where('step', $approvalStep->step + 1 )->first();
-                        $approval           = $lastApproval === null ? '' :  $lastApproval->user_id;
-                        $approvalStep       = $approvalStep === null ? 0 : $approvalStep->step + 1;
-                        $statusHeader       = $lastApproval == null ? $detail->status+ 1 : $detail->status;
-                        $validation         = InspectionMaterial::where('inspection_code', $detail->inspection_code)->where('status', 2)->count();
-                        $post = [
-                            'status'        => $request->approval_resin ?? $request->approval_pellet ,
-                            'remark'        => $request->imr_remark ?? $request->imr_pellet_remark,
-                        ];
-                        $postapproval = [
-                            'user_id'          => $approval ? (int) $approval : null,
-                            'transaction_code' => $request->transaction_code == null ? $detail->inspection_code : $request->transaction_code,
-                            'inspection_type'  => (int) $request->inspection_type,
-                            'type'             => (int) $request->type,
-                            'status'           => 0,
-                            'step'             => (int) $approvalStep,
-                            'remark'           => 'waiting for approval',
-                        ];
+            $history->update(['status' => $decision, 'remark' => $remark]);
 
-                        $postHeader =[
-                            'approval_id'           => $approval ? (int) $approval : 0,
-                            'status'                => $approval ? $detail->status : $detail->status+1
-                        ];
-                        $postStatusHeader =[
-                            'status'    =>$statusHeader,
-                        ];
-                        // dd($statusHeader);
-                    }
+            if ($decision === 2) {
+                // Reject: status 4 + kunci dibuka supaya hasil uji bisa
+                // diperbaiki dan transaksi di-lock ulang
+                InspectionMaterial::where('inspection_code', $header->inspection_code)->update([
+                    'status' => 4,
+                    'lock' => 0,
+                    'approval_id' => 0,
+                ]);
 
-                    DB::transaction(function() use($request,$post,$postapproval,$approvalStep, $postHeader,$currentApproval,$approval,$detail,$approvalHeader, $statusHeader,$postStatusHeader,$validation, $countApproval) {
-                        if(($request->inspection_type == 2 && $request->type == 1) || ($request->inspection_type == 2 && $request->type == 2) ){
+                return ['transaction_code' => $header->inspection_code, 'status' => 4];
+            }
 
-                            $user = auth()->user()->id;
-                            $update = ApprovalHistory::where([
-                                'transaction_code'  => $request->transaction_code ?? $request->label_pellet_inspection_code,
-                                'step'              => $currentApproval->step,
-                                'user_id'           => $user
-                            ])->update($post);
-                            if($post['status'] == 1 || $post['status'] == '1'){
-                                if($approval !==''){
-                                    ApprovalHistory::create($postapproval);
-                                }
-                                if($approval ==''){
-                                    InspectionMaterial::where('inspection_code', $request->transaction_code ?? $request->label_pellet_inspection_code)->update($postStatusHeader);
-                                }
-                            }
+            $approvalHeader = ApprovalHeader::where([
+                'inspection_type' => 2,
+                'shift' => 1,
+                'location' => $header->location,
+            ])->first();
+            if (!$approvalHeader) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'transaction_code' => ['Approval setting was not found for this location.'],
+                ]);
+            }
 
-                        }
+            $next = ApprovalDetail::where('approval_code', $approvalHeader->approval_code)
+                ->where('step', $history->step + 1)
+                ->first();
 
-                        else{
-                            InspectionGoodsDetail::where('detail_inspection_code', $request->transaction_code)->update($postHeader);
-                            $user = auth()->user()->id;
-                            ApprovalHistory::where([
-                                'transaction_code'  => $request->transaction_code,
-                                'step'              => $currentApproval->step,
-                                'user_id'           => $user
-                            ])->update($post);
-                            if($approval != null){
-                                if($request->approval_insepection_goods_shift_id == "1"){
-                                    ApprovalHistory::create($postapproval);
-                               }
-                            }
-                            if($approvalStep == 0 || $approval ==''){
-                                InspectionGood::where('inspection_code', $approvalHeader->inspection_code)->update($postStatusHeader);
-                            }
-                            if($validation == 3){
-                                InspectionGood::where('inspection_code', $detail->inspection_code)->update(['status' => 2]);
-                            }
-                        }
-                });
-                return ResponseFormatter::success(
-                    $post,
-                    'Approval successfully updated'
-                );
+            if ($next) {
+                ApprovalHistory::create([
+                    'transaction_code' => $header->inspection_code,
+                    'type' => 1,
+                    'inspection_type' => 2,
+                    'step' => $history->step + 1,
+                    'user_id' => $next->user_id,
+                    'status' => 0,
+                    'remark' => 'waiting for approval',
+                ]);
+                InspectionMaterial::where('inspection_code', $header->inspection_code)->update([
+                    'approval_id' => $next->user_id,
+                ]);
 
-        // } catch (\Throwable $th) {
-        //     return ResponseFormatter::error(
-        //         $th,
-        //         'Master Approver failed to update',
-        //         500
-        //     );
-        // }
+                return ['transaction_code' => $header->inspection_code, 'status' => 2];
+            }
+
+            InspectionMaterial::where('inspection_code', $header->inspection_code)->update([
+                'status' => 3,
+                'approval_id' => 0,
+            ]);
+
+            return ['transaction_code' => $header->inspection_code, 'status' => 3];
+        });
+    }
+
+    private function approveInspectionGoodsShift($detailCode, int $decision, string $remark): array
+    {
+        return DB::transaction(function () use ($detailCode, $decision, $remark) {
+            $detail = InspectionGoodsDetail::where('detail_inspection_code', $detailCode)->lockForUpdate()->first();
+            if (!$detail) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'transaction_code' => ['Inspection shift transaction not found.'],
+                ]);
+            }
+            if (!(int) $detail->lock || (int) $detail->status !== 1) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'transaction_code' => ['Transaction is not waiting for approval.'],
+                ]);
+            }
+
+            $header = InspectionGood::where('inspection_code', $detail->inspection_code)->lockForUpdate()->first();
+            if (!$header) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'transaction_code' => ['Inspection header not found.'],
+                ]);
+            }
+
+            $history = $this->activeApprovalHistory($detail->detail_inspection_code, 3);
+            if (!$history) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'transaction_code' => ['You are not the active approver for this transaction.'],
+                ]);
+            }
+
+            $history->update(['status' => $decision, 'remark' => $remark]);
+
+            if ($decision === 2) {
+                // Reject: shift kembali Incomplete + kunci dibuka
+                InspectionGoodsDetail::where('detail_inspection_code', $detail->detail_inspection_code)->update([
+                    'status' => 0,
+                    'lock' => 0,
+                    'approval_id' => 0,
+                ]);
+                InspectionGoodsSubDetail::where('inspection_detail', $detail->detail_inspection_code)
+                    ->update(['status' => 0]);
+
+                $otherLocked = InspectionGoodsDetail::where('inspection_code', $detail->inspection_code)
+                    ->where('detail_inspection_code', '!=', $detail->detail_inspection_code)
+                    ->where('lock', 1)
+                    ->exists();
+                InspectionGood::where('inspection_code', $detail->inspection_code)
+                    ->update(['status' => $otherLocked ? 2 : 1]);
+
+                return ['transaction_code' => $detail->detail_inspection_code, 'status' => 0];
+            }
+
+            $approvalHeader = ApprovalHeader::where([
+                'inspection_type' => 3,
+                'shift' => $detail->shift,
+                'location' => $header->location_id,
+            ])->first();
+            if (!$approvalHeader) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'transaction_code' => ['Approval setting was not found for this location and shift.'],
+                ]);
+            }
+
+            $next = ApprovalDetail::where('approval_code', $approvalHeader->approval_code)
+                ->where('step', $history->step + 1)
+                ->first();
+
+            if ($next) {
+                ApprovalHistory::create([
+                    'transaction_code' => $detail->detail_inspection_code,
+                    'type' => 1,
+                    'inspection_type' => 3,
+                    'step' => $history->step + 1,
+                    'user_id' => $next->user_id,
+                    'status' => 0,
+                    'remark' => 'waiting for approval',
+                ]);
+                InspectionGoodsDetail::where('detail_inspection_code', $detail->detail_inspection_code)->update([
+                    'approval_id' => $next->user_id,
+                ]);
+
+                return ['transaction_code' => $detail->detail_inspection_code, 'status' => 1];
+            }
+
+            // Step terakhir: shift Complete; bila ketiga shift sudah Complete,
+            // header DONE (dulu update ini salah kolom -> silent no-op selamanya)
+            InspectionGoodsDetail::where('detail_inspection_code', $detail->detail_inspection_code)->update([
+                'status' => 2,
+                'approval_id' => 0,
+            ]);
+            $completed = InspectionGoodsDetail::where('inspection_code', $detail->inspection_code)
+                ->where('status', 2)
+                ->count();
+            if ($completed >= 3) {
+                InspectionGood::where('inspection_code', $detail->inspection_code)->update(['status' => 3]);
+            }
+
+            return ['transaction_code' => $detail->detail_inspection_code, 'status' => 2];
+        });
     }
 
     function updateLaboratoryApproval(Request $request, UpdateLaboratoryApprovalRequest $updateLaboratoryApprovalRequest)
