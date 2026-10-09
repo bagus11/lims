@@ -311,24 +311,45 @@ class GoodsController extends Controller
     }
     function lockInspectionGoods(Request $request) {
             // try {
+         $request->validate(['detail_inspection_code' => 'required|string']);
+
          $detail = InspectionGoodsDetail::where('detail_inspection_code',$request->detail_inspection_code)->first();
+         if (!$detail) {
+            return ResponseFormatter::error(null, 'Inspection shift transaction not found', 404);
+         }
+         // guard double-lock: dulu tiap panggilan status+1 tanpa cek
+         if ((int) $detail->lock === 1 || (int) $detail->status !== 0) {
+            return ResponseFormatter::error(null, 'This shift is already locked or completed', 400);
+         }
+         if (InspectionGoodsSubDetail::where('inspection_detail', $detail->detail_inspection_code)->count() === 0) {
+            return ResponseFormatter::error(null, 'Add at least one inspection progress before locking', 400);
+         }
+
          $header = InspectionGood::where('inspection_code',$detail->inspection_code)->first();
+         if (!$header) {
+            return ResponseFormatter::error(null, 'Inspection header not found', 404);
+         }
          $approval = ApprovalHeader::where([
             'inspection_type'   =>  3,
             'shift'             => $detail->shift,
             'location'          =>  $header->location_id
         ])->first();
+        if (!$approval) {
+            return ResponseFormatter::error(null, 'Approval setting not found for this location and shift (inspection_type=3)', 400);
+        }
 
         $approval_id = ApprovalDetail::where([
             'approval_code' => $approval->approval_code,
             'step'          => 1
         ])->first();
+        if (!$approval_id) {
+            return ResponseFormatter::error(null, 'Approval step 1 is not configured', 400);
+        }
           $post = [
             'lock'    => 1,
-            'status'    => $detail->status + 1,
+            'status'    => 1,
             'approval_id'       => $approval_id->user_id
           ];
-        //   dd($approval_id);
           $postUpdate =[
             'status'            => 1 ,
 
@@ -344,9 +365,13 @@ class GoodsController extends Controller
           ];
 
 
-            DB::transaction(function() use($post,$postUpdate,$request,$postApproval) {
+            DB::transaction(function() use($post,$postUpdate,$request,$postApproval,$detail) {
                 InspectionGoodsDetail::where('detail_inspection_code',$request->detail_inspection_code)->update($post);
                 InspectionGoodsSubDetail::where('inspection_detail',$request->detail_inspection_code)->update($postUpdate);
+                // header ikut masuk Approval Progress
+                InspectionGood::where('inspection_code', $detail->inspection_code)
+                    ->where('status', '<', 2)
+                    ->update(['status' => 2]);
                 ApprovalHistory::create($postApproval);
             });
             return ResponseFormatter::success(

@@ -288,20 +288,36 @@ class InspectionMaterialController extends Controller
     }
     function lockInspectionMaterial(Request $request) {
                // try{
+                $request->validate(['inspection_code' => 'required|string']);
 
                 $header = InspectionMaterial::where('inspection_code',$request->inspection_code)->first();
+                if (!$header) {
+                    return ResponseFormatter::error(null, 'Inspection Material transaction not found', 404);
+                }
+                // guard double-lock: dulu tiap panggilan status+1 — dua klik
+                // beruntun = DONE tanpa approval
+                if ((int) $header->lock === 1 || !in_array((int) $header->status, [1, 4], true)) {
+                    return ResponseFormatter::error(null, 'Only an unlocked In Progress or Rejected transaction can be locked', 400);
+                }
+
                 $approval = ApprovalHeader::where([
                     'inspection_type'   =>  2,
                     'shift'             => 1,
                     'location'          =>  $header->location
                 ])->first();
+                if (!$approval) {
+                    return ResponseFormatter::error(null, 'Approval setting not found for this location (inspection_type=2)', 400);
+                }
                 $approval_id = ApprovalDetail::where([
                     'approval_code'     => $approval->approval_code,
                     'step'              => 1
                 ])->first();
+                if (!$approval_id) {
+                    return ResponseFormatter::error(null, 'Approval step 1 is not configured', 400);
+                }
                 $post = [
                     'lock'              => 1,
-                    'status'            => $header->status + 1,
+                    'status'            => 2,
                     'approval_id'       => $approval_id->user_id
                 ];
                 $postApproval=[
