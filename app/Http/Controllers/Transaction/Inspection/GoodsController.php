@@ -27,6 +27,41 @@ class GoodsController extends Controller
     function index(){
         return view('transaction.inspection.goods.goods-index');
     }
+
+    /**
+     * Non-GM hanya boleh menyentuh transaksi lokasinya sendiri.
+     */
+    private function canAccessLocation($locationId): bool {
+        if (auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+            return true;
+        }
+
+        return (string) $locationId === (string) auth()->user()->kode_kantor;
+    }
+
+    /**
+     * Akses baca per-shift: lokasi sendiri, GM, atau approver yang pernah
+     * ditugaskan pada shift tersebut.
+     */
+    private function canViewShift($detailInspectionCode): bool {
+        $detail = InspectionGoodsDetail::where('detail_inspection_code', $detailInspectionCode)->first();
+        if (!$detail) {
+            return true; // biarkan handler menangani not-found sendiri
+        }
+        $header = InspectionGood::where('inspection_code', $detail->inspection_code)->first();
+        if ($header && $this->canAccessLocation($header->location_id)) {
+            return true;
+        }
+
+        return ApprovalHistory::where('transaction_code', $detailInspectionCode)
+            ->where('inspection_type', 3)
+            ->where('user_id', auth()->user()->id)
+            ->exists();
+    }
+
+    private function forbiddenResponse() {
+        return ResponseFormatter::error(null, 'You are not allowed to access this transaction', 403);
+    }
     function getInspectionGoods(Request $request)
     {
         $query = InspectionGood::with([
@@ -38,11 +73,8 @@ class GoodsController extends Controller
             $request->to . ' 23:59:59',
         ]);
 
-        // GM: bisa melihat semua location
-        if (auth()->user()->hasPermissionTo('get-only_gm-inspection-goods')) {
-            $query->without('machineRelation');
-        } else {
-            // User biasa: hanya bisa melihat location sendiri
+        // GM: bisa melihat semua location; user biasa hanya lokasinya sendiri
+        if (!auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
             $query->where(
                 'location_id',
                 auth()->user()->kode_kantor
@@ -56,6 +88,17 @@ class GoodsController extends Controller
         ]);
     }
     function getInspectionGoodShift(Request $request) {
+        $header = InspectionGood::where('inspection_code', $request->inspection_code)->first();
+        if ($header && !$this->canAccessLocation($header->location_id)) {
+            $isApprover = ApprovalHistory::where('inspection_type', 3)
+                ->where('user_id', auth()->user()->id)
+                ->whereIn('transaction_code', InspectionGoodsDetail::where('inspection_code', $header->inspection_code)->pluck('detail_inspection_code'))
+                ->exists();
+            if (!$isApprover) {
+                return $this->forbiddenResponse();
+            }
+        }
+
         $data = InspectionGoodsDetail::with([
                 'subdetailRelation',
                 'headerRelation.LocationRelation'
@@ -84,10 +127,16 @@ class GoodsController extends Controller
                 }
             }
 
+            // Non-GM tidak boleh membuat transaksi atas nama lokasi lain
+            $locationId = $request->location_id;
+            if (!auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+                $locationId = auth()->user()->kode_kantor;
+            }
+
             $post = [
                 'inspection_code'   => $ticket_code,
                 'user_id'           =>auth()->user()->id,
-                'location_id'       =>$request->location_id,
+                'location_id'       =>$locationId,
                 // 'machine_id'       =>$request->machine_id,
                 'current_approval'  => 0,
                 'status'  =>0,
@@ -145,9 +194,15 @@ class GoodsController extends Controller
            // try {
 
             $storeSubDetailInspectionRequest->validated();
+            $detail = InspectionGoodsDetail::where('detail_inspection_code',$request->detail_inspection_code_id)->first();
+            if (!$detail) {
+                return ResponseFormatter::error(null, 'Inspection shift transaction not found', 404);
+            }
+            if ($guard = $this->rejectIfShiftLocked($detail->detail_inspection_code)) {
+                return $guard;
+            }
             $increment_code= InspectionGoodsSubDetail::orderBy('id','desc')->first();
             $date_month =strtotime(date('Y-m-d'));
-            $detail = InspectionGoodsDetail::where('detail_inspection_code',$request->detail_inspection_code_id)->first();
             $month =idate('m', $date_month);
             $year = idate('y', $date_month);
             $month_convert =  NumConvert::roman($month);
@@ -264,6 +319,10 @@ class GoodsController extends Controller
         // }
     }
     function mappingInspectionProgress(Request $request) {
+        if (!$this->canViewShift($request->inspection_detail)) {
+            return $this->forbiddenResponse();
+        }
+
         $data = InspectionGoodsSubDetail::where('inspection_detail', $request->inspection_detail)->get();
        if($request->inspection_sub_detail == null){
            $detail = InspectionGoodsSubDetail::with([
@@ -295,6 +354,11 @@ class GoodsController extends Controller
 
     }
     function detailInspectionProgress(Request $request) {
+        $subDetail = InspectionGoodsSubDetail::where('inspection_sub_detail', $request->inspection_sub_detail)->first();
+        if ($subDetail && !$this->canViewShift($subDetail->inspection_detail)) {
+            return $this->forbiddenResponse();
+        }
+
         $detail = InspectionGoodsSubDetail::with([
             'machineRelation',
             'productRelation',
@@ -328,6 +392,9 @@ class GoodsController extends Controller
          $header = InspectionGood::where('inspection_code',$detail->inspection_code)->first();
          if (!$header) {
             return ResponseFormatter::error(null, 'Inspection header not found', 404);
+         }
+         if (!$this->canAccessLocation($header->location_id)) {
+            return $this->forbiddenResponse();
          }
          $approval = ApprovalHeader::where([
             'inspection_type'   =>  3,
@@ -387,6 +454,10 @@ class GoodsController extends Controller
         // }
     }
     function getInspectionGoodSubDetailItem(Request $request) {
+        if (!$this->canViewShift($request->inspection_detail)) {
+            return $this->forbiddenResponse();
+        }
+
         $data       = InspectionGoodsSubDetail::where('inspection_detail',$request->inspection_detail)->get();
         $history    = InspectionSubDetailLog::with([
             'creatorRelation',
@@ -511,6 +582,12 @@ class GoodsController extends Controller
     function exportInspectionGoodProgress($x) {
         $detail_code = str_replace("_", "/", $x);
         $detail = InspectionGoodsDetail::where('detail_inspection_code', $detail_code)->first();
+        if (!$detail) {
+            abort(404, 'Inspection shift transaction not found');
+        }
+        if (!$this->canViewShift($detail_code)) {
+            abort(403, 'You are not allowed to access this transaction');
+        }
         $headers = InspectionGood::with(['locationRelation'])->where('inspection_code', $detail->inspection_code)->first();
         $data_report = InspectionGoodsSubDetail::with([
             'userRelation',
@@ -597,6 +674,9 @@ class GoodsController extends Controller
             $mpdf->Output('Report Stock'.'('.date('Y-m-d').').pdf', 'I');
     }
     function getWallThickness(Request $request) {
+        if (!$this->canViewShift($request->detail_inspection_code)) {
+            return $this->forbiddenResponse();
+        }
 
         $subdetail = InspectionGoodsSubDetail::where('inspection_detail', $request->detail_inspection_code)->get();
         $data = WallThickness::where('sub_detail_inspection_code', $request->inspection_sub_detail == null ? $subdetail[0]->inspection_sub_detail : $request->inspection_sub_detail)->get();
@@ -611,10 +691,17 @@ class GoodsController extends Controller
      */
     private function rejectIfShiftLocked($detailInspectionCode) {
         $shift = InspectionGoodsDetail::where('detail_inspection_code', $detailInspectionCode)->first();
-        if ($shift && (int) $shift->lock === 1) {
+        if (!$shift) {
+            return null;
+        }
+        $header = InspectionGood::where('inspection_code', $shift->inspection_code)->first();
+        if ($header && !$this->canAccessLocation($header->location_id)) {
+            return $this->forbiddenResponse();
+        }
+        if ((int) $shift->lock === 1) {
             return ResponseFormatter::error(null, 'This shift is locked and cannot be modified', 400);
         }
-        if ($shift && (int) $shift->status === 2) {
+        if ((int) $shift->status === 2) {
             return ResponseFormatter::error(null, 'This shift is completed and cannot be modified', 400);
         }
 

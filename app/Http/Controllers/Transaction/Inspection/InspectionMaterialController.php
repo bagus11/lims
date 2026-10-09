@@ -23,18 +23,58 @@ class InspectionMaterialController extends Controller
     function  index() {
         return view('transaction.inspection.material.inspection_material-index');
     }
+
+    /**
+     * Non-GM hanya boleh menyentuh transaksi lokasinya sendiri.
+     * (kolom lokasi di tabel ini bernama `location`, bukan location_id)
+     */
+    private function canAccessLocation($locationId): bool {
+        if (auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+            return true;
+        }
+
+        return (string) $locationId === (string) auth()->user()->kode_kantor;
+    }
+
+    /**
+     * Akses baca: lokasi sendiri, GM, atau approver yang pernah ditugaskan.
+     */
+    private function canViewMaterial(InspectionMaterial $header): bool {
+        if ($this->canAccessLocation($header->location)) {
+            return true;
+        }
+
+        return ApprovalHistory::where('transaction_code', $header->inspection_code)
+            ->where('inspection_type', 2)
+            ->where('user_id', auth()->user()->id)
+            ->exists();
+    }
+
+    private function forbiddenResponse() {
+        return ResponseFormatter::error(null, 'You are not allowed to access this transaction', 403);
+    }
+
     function getInspectionMaterial(Request $request) {
-        $data = InspectionMaterial::with([
+        $query = InspectionMaterial::with([
             'locationRelation',
             'inspectorRelation',
             'materialRelation',
             // 'supplierRelation',
             'userRelation',
-        ])
-        // ->whereBetween(DB::raw('DATE(created_at)'), [$request->from, $request->to])
-        ->get();
+        ]);
+
+        // sebelumnya listing ini tanpa scoping sama sekali: semua user
+        // melihat seluruh transaksi semua lokasi
+        if (!auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+            $query->where('location', auth()->user()->kode_kantor);
+        }
+
+        if ($request->from && $request->to) {
+            $query->whereBetween(DB::raw('DATE(created_at)'), [$request->from, $request->to]);
+        }
+
         return response()->json([
-            'data'=>$data
+            'data'=>$query->orderBy('id', 'desc')->get()
         ]);
     }
     function getSupplier() {
@@ -63,9 +103,15 @@ class InspectionMaterialController extends Controller
                 $ticket_code = $month_before[0] + 1 .'/INSM/'.$month_convert.'/'.$year;
             }
         }
+        // Non-GM tidak boleh membuat transaksi atas nama lokasi lain
+        $locationId = $request->location;
+        if (!auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+            $locationId = auth()->user()->kode_kantor;
+        }
+
         $post =[
             'inspection_code'   =>$ticket_code,
-            'location'          =>$request->location,
+            'location'          =>$locationId,
             'user_id'           => auth()->user()->id,
             'status'            => 0,
             'inspector'         =>$request->inspector,
@@ -157,6 +203,13 @@ class InspectionMaterialController extends Controller
             'supplierRelation',
         ])->where('inspection_code', $request->inspection_code)->first();
 
+        if (!$detail) {
+            return ResponseFormatter::error(null, 'Inspection Material transaction not found', 404);
+        }
+        if (!$this->canViewMaterial($detail)) {
+            return $this->forbiddenResponse();
+        }
+
         if($detail->type == 2){
             $header =Pellet::where('inspection_code', $request->inspection_code)->first();
         }else{
@@ -184,10 +237,21 @@ class InspectionMaterialController extends Controller
             'supplierRelation',
 
         ])->where('inspection_code', $request->inspection_code)->first();
+
+        if (!$detail) {
+            return ResponseFormatter::error(null, 'Inspection Material transaction not found', 404);
+        }
+        if (!$this->canViewMaterial($detail)) {
+            return $this->forbiddenResponse();
+        }
+
         $header =Pellet::with([
             'produsenRelation'
         ])->
         where('inspection_code', $request->inspection_code)->first();
+        if (!$header) {
+            return ResponseFormatter::error(null, 'Pellet detail record not found', 404);
+        }
         return response()->json([
             'header'=>$header,
             'detail'=>$detail,
@@ -201,6 +265,9 @@ class InspectionMaterialController extends Controller
         $header = InspectionMaterial::where('inspection_code', $inspectionCode)->first();
         if (!$header) {
             return ResponseFormatter::error(null, 'Inspection Material transaction not found', 404);
+        }
+        if (!$this->canAccessLocation($header->location)) {
+            return $this->forbiddenResponse();
         }
         if ((int) $header->lock === 1 || !in_array((int) $header->status, [0, 1, 4], true)) {
             return ResponseFormatter::error(null, 'This transaction is locked and cannot be modified', 400);
@@ -338,6 +405,9 @@ class InspectionMaterialController extends Controller
                 }
                 // guard double-lock: dulu tiap panggilan status+1 — dua klik
                 // beruntun = DONE tanpa approval
+                if (!$this->canAccessLocation($header->location)) {
+                    return $this->forbiddenResponse();
+                }
                 if ((int) $header->lock === 1 || !in_array((int) $header->status, [1, 4], true)) {
                     return ResponseFormatter::error(null, 'Only an unlocked In Progress or Rejected transaction can be locked', 400);
                 }
@@ -406,11 +476,15 @@ class InspectionMaterialController extends Controller
             'supplierRelation',
             'productRelation',
         ])->where('inspection_code', $inspection_code)->first();
-        $approval = ApprovalHistory::with('userRelation')->where('transaction_code', $detail->inspection_code)->get();
 
         if (!$detail) {
             abort(404, 'Inspection not found');
         }
+        if (!$this->canViewMaterial($detail)) {
+            abort(403, 'You are not allowed to access this transaction');
+        }
+
+        $approval = ApprovalHistory::with('userRelation')->where('transaction_code', $detail->inspection_code)->get();
 
         if($detail->type == 2){
             $header =Pellet::with('produsenRelation')->where('inspection_code', $inspection_code)->first();
