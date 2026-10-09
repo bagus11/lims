@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Setting;
 use App\Helper\ResponseFormatter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Setting\Approval\StoreApprovalHeaderRequest;
+use App\Http\Requests\Setting\Approval\UpdateLaboratoryApprovalRequest;
 use App\Http\Requests\Setting\Approval\UpdateApprovalRequest;
 use App\Http\Requests\Setting\Approval\UpdateInspectionGoodsApprovalRequest;
 use App\Models\Master\MasterLocation;
@@ -12,6 +13,7 @@ use App\Models\Setting\Approval\ApprovalDetail;
 use App\Models\Setting\Approval\ApprovalHeader;
 use App\Models\Transaction\Inspection\ApprovalHistory;
 use App\Models\Transaction\Inspection\InspectionGoodsDetail;
+use App\Models\Transaction\Inspection\Laboratory\LaboratoryHeader;
 use App\Models\Transaction\Insspection\InspectionGood;
 use App\Models\Transaction\Material\InspectionMaterial;
 use Illuminate\Http\Request;
@@ -157,7 +159,7 @@ class ApprovalController extends Controller
                     $detail               = '';
                     $validation               = '';
                     $postStatusHeader =[];
-
+                     $countApproval  ='';
                     if($request->inspection_type == 3 && $request->type == 1){
                         $detail             = InspectionGoodsDetail::where('detail_inspection_code', $request->transaction_code)->first();
                         $approvalHeader     = ApprovalHeader::where([
@@ -174,7 +176,9 @@ class ApprovalController extends Controller
                         $statusHeader       = $lastApproval == null ? $approvalHeader->status+ 1 : $approvalHeader->status;
                         $validation         = InspectionGoodsDetail::where('inspection_code', $detail->inspection_code)->where('status', 2)->count();
                         if($approvalStep == 0){
-                            dd('test');
+                            throw \Illuminate\Validation\ValidationException::withMessages([
+                                'transaction_code' => ['Approval step configuration is invalid for this transaction.'],
+                            ]);
                         }
                         $post = [
                             'status'        => $request->approval_insepection_goods_shift_id,
@@ -254,7 +258,6 @@ class ApprovalController extends Controller
                         $approvalStep       = $approvalStep === null ? 0 : $approvalStep->step + 1;
                         $statusHeader       = $lastApproval == null ? $detail->status+ 1 : $detail->status;
                         $validation         = InspectionMaterial::where('inspection_code', $detail->inspection_code)->where('status', 2)->count();
-
                         $post = [
                             'status'        => $request->approval_resin ?? $request->approval_pellet ,
                             'remark'        => $request->imr_remark ?? $request->imr_pellet_remark,
@@ -332,6 +335,105 @@ class ApprovalController extends Controller
         //         500
         //     );
         // }
+    }
+
+    function updateLaboratoryApproval(Request $request, UpdateLaboratoryApprovalRequest $updateLaboratoryApprovalRequest)
+    {
+        $updateLaboratoryApprovalRequest->validated();
+
+        $result = DB::transaction(function () use ($request) {
+            $laboratory = LaboratoryHeader::where('laboratory_code', $request->laboratory_code)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (!$laboratory->lock || (int) $laboratory->status !== 2) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'laboratory_code' => ['Laboratory transaction is not waiting for approval.'],
+                ]);
+            }
+
+            $history = ApprovalHistory::where([
+                'transaction_code' => $laboratory->laboratory_code,
+                'inspection_type' => 1,
+                'user_id' => auth()->user()->id,
+                'status' => 0,
+            ])->orderBy('id', 'desc')->lockForUpdate()->first();
+
+            if (!$history || (int) $laboratory->approval_id !== (int) auth()->user()->id) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'laboratory_code' => ['You are not the active approver for this transaction.'],
+                ]);
+            }
+
+            $history->update([
+                'status' => (int) $request->decision,
+                'remark' => trim($request->remark),
+            ]);
+
+            if ((int) $request->decision === 4) {
+                $laboratory->update([
+                    'status' => 4,
+                    'lock' => 0,
+                    'current_approval' => 0,
+                    'approval_id' => null,
+                    'completed_at' => null,
+                ]);
+
+                return [
+                    'laboratory_code' => $laboratory->laboratory_code,
+                    'status' => 4,
+                ];
+            }
+
+            $approvalHeader = ApprovalHeader::where([
+                'inspection_type' => 1,
+                'type' => 1,
+                'location' => $laboratory->location_id,
+                'shift' => $laboratory->shift ?: 1,
+                'status' => 1,
+            ])->first();
+
+            if (!$approvalHeader) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'laboratory_code' => ['Active Laboratory approval setting was not found.'],
+                ]);
+            }
+
+            $nextApproval = ApprovalDetail::where('approval_code', $approvalHeader->approval_code)
+                ->where('step', $history->step + 1)
+                ->first();
+
+            if ($nextApproval) {
+                ApprovalHistory::create([
+                    'transaction_code' => $laboratory->laboratory_code,
+                    'type' => 1,
+                    'inspection_type' => 1,
+                    'step' => $history->step + 1,
+                    'user_id' => $nextApproval->user_id,
+                    'status' => 0,
+                    'remark' => 'Waiting for Laboratory approval',
+                ]);
+
+                $laboratory->update([
+                    'current_approval' => $history->step + 1,
+                    'approval_id' => $nextApproval->user_id,
+                ]);
+            } else {
+                $laboratory->update([
+                    'status' => 3,
+                    'current_approval' => $history->step,
+                    'approval_id' => null,
+                    'completed_at' => now(),
+                ]);
+            }
+
+            return [
+                'laboratory_code' => $laboratory->laboratory_code,
+                'status' => $nextApproval ? 2 : 3,
+            ];
+        });
+
+        return ResponseFormatter::success($result, 'Laboratory approval successfully updated');
     }
 
 }

@@ -32,7 +32,39 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        // signature (base64 tanda tangan pengesah PDF) & nik hanya untuk pemakaian
+        // server-side; jangan pernah terserialisasi ke response JSON.
+        'signature',
+        'nik',
     ];
+
+    /**
+     * hasPermissionTo() melempar PermissionDoesNotExist (HTTP 500) bila row
+     * permission belum ada di DB. Pakai ini di jalur runtime.
+     */
+    public function hasPermissionSafe(string $permission): bool
+    {
+        try {
+            return $this->hasPermissionTo($permission);
+        } catch (\Spatie\Permission\Exceptions\PermissionDoesNotExist $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Gate mutasi master data & setting approval: permission eksplisit bila
+     * tersedia, fallback role admin (menus/permissions produksi di-manage manual).
+     */
+    public function canManageMasters(): bool
+    {
+        if ($this->hasPermissionSafe('manage-masters') || $this->hasPermissionSafe('setting-approval')) {
+            return true;
+        }
+
+        return $this->roles->pluck('name')->contains(function ($role) {
+            return stripos($role, 'admin') !== false;
+        });
+    }
 
     /**
      * The attributes that should be cast.
