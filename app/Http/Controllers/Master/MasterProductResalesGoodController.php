@@ -105,6 +105,10 @@ class MasterProductResalesGoodController extends Controller
     function deleteMasterProductResalesGoods(Request $request)
     {
         // try {
+            if (!auth()->user()->canManageModule('view-master_product_resales_goods')) {
+                return ResponseFormatter::error(null, 'You are not allowed to manage this master data', 403);
+            }
+
             $product = MasterProductResalesGood::find($request->id);
             if (!$product) {
                 return ResponseFormatter::error(null, 'Master Product Resales Goods not found', 404);
@@ -141,6 +145,10 @@ class MasterProductResalesGoodController extends Controller
     function uploadMasterProductResalesGoods(Request $request)
     {
         // try {
+            if (!auth()->user()->canManageModule('view-master_product_resales_goods')) {
+                return ResponseFormatter::error(null, 'You are not allowed to manage this master data', 403);
+            }
+
             $request->validate([
                 'upload_file' => 'required|mimes:xlsx,xls,csv',
             ]);

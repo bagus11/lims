@@ -13,7 +13,7 @@ class UpdateApprovalRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        return auth()->check() && auth()->user()->canManageModule('view-approval');
     }
 
     /**
@@ -24,7 +24,10 @@ class UpdateApprovalRequest extends FormRequest
     public function rules()
     {
         return [
-            'user_array.*'=>'required'
+            'approval_id' => 'required|exists:approval_headers,approval_code',
+            'user_array' => 'required|array|min:1',
+            'user_array.*.user_id' => 'required|exists:users,id',
+            'user_array.*.step' => 'required|integer|min:1',
         ];
     }
 }

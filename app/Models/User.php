@@ -52,12 +52,13 @@ class User extends Authenticatable
     }
 
     /**
-     * Gate mutasi master data & setting approval: permission eksplisit bila
-     * tersedia, fallback role admin (menus/permissions produksi di-manage manual).
+     * Gate mutasi master data & setting approval. Produksi memakai permission
+     * pola view-* per menu (view-approval, view-master_laboratory, dst) —
+     * mutasi diizinkan untuk pemegang permission modul tsb atau role admin.
      */
-    public function canManageMasters(): bool
+    public function canManageModule(string $viewPermission): bool
     {
-        if ($this->hasPermissionSafe('manage-masters') || $this->hasPermissionSafe('setting-approval')) {
+        if ($this->hasPermissionSafe($viewPermission)) {
             return true;
         }
 

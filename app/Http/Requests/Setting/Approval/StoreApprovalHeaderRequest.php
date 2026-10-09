@@ -13,7 +13,7 @@ class StoreApprovalHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        return auth()->check() && auth()->user()->canManageModule('view-approval');
     }
 
     /**

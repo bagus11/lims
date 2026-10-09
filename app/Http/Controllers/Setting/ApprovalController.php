@@ -113,30 +113,26 @@ class ApprovalController extends Controller
     function updateApproval(Request $request, UpdateApprovalRequest $updateApprovalRequest) {
         // try {
             $updateApprovalRequest->validated();
-            $validating = ApprovalHeader::where('approval_code',$request->approval_id)->count();
             $header = ApprovalHeader::where('approval_code',$request->approval_id)->first();
+            if (!$header) {
+                return ResponseFormatter::error(null, 'Approval header not found', 404);
+            }
             $array_post=[];
             foreach($request->user_array as $row){
-                $location = ApprovalDetail::where('approval_code',$request->approval_id)->first();
-                $post = [
+                $array_post[] = [
                     'user_id'           => $row['user_id'],
                     'step'              => $row['step'],
                     'approval_code'     =>$request->approval_id,
                     'inspection_type'   =>$header->inspection_type,
                     'created_at'        =>date('Y-m-d H:i:s')
                 ];
-                array_push($array_post, $post);
             }
-            DB::transaction(function() use($validating,$array_post,$request) {
-                if($validating > 0){
-                    ApprovalDetail::where('approval_code',$request->approval_id)->delete();
-                    ApprovalDetail::insert($array_post);
-                }else{
-                    ApprovalDetail::insert($array_post);
-                }
+            DB::transaction(function() use($array_post,$request) {
+                ApprovalDetail::where('approval_code',$request->approval_id)->delete();
+                ApprovalDetail::insert($array_post);
             });
             return ResponseFormatter::success(
-                $post,
+                $array_post,
                 'Master Approver successfully updated'
             );
         // } catch (\Throwable $th) {
