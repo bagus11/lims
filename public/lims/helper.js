@@ -1,4 +1,35 @@
-   
+    /**
+     * Escaper HTML bersama. Escape juga tanda kutip (ganda & tunggal) supaya
+     * aman dipakai di dalam nilai atribut — pola lama $('<div>').text(v).html()
+     * TIDAK meng-escape tanda kutip.
+     */
+    function escapeHtml(value) {
+        if (value === null || value === undefined) return ''
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;')
+    }
+    window.escapeHtml = escapeHtml
+
+    /**
+     * Tampilkan error 422 ke span.<field>_error; field tanpa span target
+     * (mis. laboratory_code, measurements, parameters.N.*) ditampilkan via
+     * toastr supaya user tidak dibiarkan tanpa feedback.
+     */
+    function showValidationErrors(errors) {
+        var missing = []
+        $.each(errors || {}, function (key, val) {
+            var $span = $('span.' + key + '_error')
+            if ($span.length) $span.text(val)
+            else missing.push(val)
+        })
+        if (missing.length) toastr['error'](String(missing[0]))
+    }
+    window.showValidationErrors = showValidationErrors
+
     function saveHelper(url,data,route){
         $.ajax({
             headers: {
@@ -28,10 +59,7 @@
                 }
                 if(response.status === 422)
                 {
-                    $.each(response.responseJSON.errors, (key, val) => 
-                        {
-                            $('span.'+key+'_error').text(val)
-                        });
+                    showValidationErrors(response.responseJSON.errors)
                 }else{
                     toastr['error']('Failed to get data, please contact Developer');
                 }
@@ -169,17 +197,14 @@
                 }
                 if(response.status === 422)
                 {
-                    $.each(response.responseJSON.errors, (key, val) => 
-                        {
-                            $('span.'+key+'_error').text(val)
-                        });
-                }if(response.status == 400){
+                    showValidationErrors(response.responseJSON.errors)
+                }else if(response.status == 400){
                     toastr['error'](response.responseJSON.meta.message);
                 }else{
                     toastr['error']('Failed to get data, please contact ICT Developer');
                 }
             }
-        });  
+        });
     }
     function postCallbackNoSwal(route,data,callback){
         $.ajax({
@@ -199,12 +224,9 @@
                 }
                 if(response.status === 422)
                 {
-                    $.each(response.responseJSON.errors, (key, val) => 
-                        {
-                            $('span.'+key+'_error').text(val)
-                        });
-                }if(response.status == 400){
-                    toastr['error'](response.meta.message);
+                    showValidationErrors(response.responseJSON.errors)
+                }else if(response.status == 400){
+                    toastr['error'](response.responseJSON.meta.message);
                 }
                 else{
                     toastr['error']('Failed to get data, please contact ICT Developer');
@@ -284,9 +306,7 @@
                     return false;
                 }
                 if (response.status === 422) {
-                    $.each(response.responseJSON.errors, (key, val) => {
-                        $('span.' + key + '_error').text(val);
-                    });
+                    showValidationErrors(response.responseJSON.errors);
                 } else {
                     toastr['error']('Failed to get data, please contact ICT Developer');
                 }

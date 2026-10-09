@@ -382,7 +382,9 @@ function selectedLaboratoryOptions(html, selected) {
 }
 
 function laboratoryEscape(value) {
-    return $('<div>').text(value === null || value === undefined ? '' : value).html()
+    // escapeHtml (helper.js) juga meng-escape tanda kutip — wajib karena nilai
+    // disuntik ke atribut title="..."/value="..."/data-*
+    return window.escapeHtml ? window.escapeHtml(value) : $('<div>').text(value === null || value === undefined ? '' : value).html()
 }
 
 function laboratoryLocalDate() {
