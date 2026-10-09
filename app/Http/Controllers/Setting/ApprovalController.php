@@ -93,6 +93,9 @@ class ApprovalController extends Controller
             'location'          =>  $request->location,
             'shift'          =>  $request->shift,
         ])->first();
+        if (!$header) {
+            return ResponseFormatter::error(null, 'Approval setting not found for this location and shift', 404);
+        }
         $data = ApprovalDetail::with([
             'userRelation'
         ])->where('approval_code', $header->approval_code)->get();

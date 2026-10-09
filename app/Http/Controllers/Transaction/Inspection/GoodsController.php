@@ -332,6 +332,9 @@ class GoodsController extends Controller
 
         ])->where('inspection_detail', $request->inspection_detail)->where('inspection_sub_detail', $request->inspection_sub_detail)->first();
        }
+       if (!$detail) {
+            return ResponseFormatter::error(null, 'No inspection progress found for this shift', 404);
+       }
        $wt     = WallThickness::where('sub_detail_inspection_code',$detail->inspection_sub_detail)->get();
         return response()->json([
             'detail'=>$detail,
@@ -354,10 +357,13 @@ class GoodsController extends Controller
             'inspectorRelation',
 
         ])->where('inspection_sub_detail', $request->inspection_sub_detail)->first();
+        if (!$detail) {
+            return ResponseFormatter::error(null, 'Inspection progress not found', 404);
+        }
         $wt     = WallThickness::where('sub_detail_inspection_code',$request->inspection_sub_detail)->first();
         return response()->json([
             'detail'=>$detail,
-            'wt'=>$wt,
+            'wt'=>$wt ?: new \stdClass(),
         ]);
     }
     function lockInspectionGoods(Request $request) {
@@ -446,6 +452,9 @@ class GoodsController extends Controller
         }
 
         $data       = InspectionGoodsSubDetail::where('inspection_detail',$request->inspection_detail)->get();
+        if ($data->isEmpty() && $request->inspection_sub_detail === null) {
+            return response()->json(['data' => [], 'history' => [], 'history_wt' => []]);
+        }
         $history    = InspectionSubDetailLog::with([
             'creatorRelation',
             'machineRelation',
@@ -592,16 +601,19 @@ class GoodsController extends Controller
         $set_approval = ApprovalHistory::where('transaction_code', $detail_code)->get();
         $approval = '';
         if($check_approval !== null){
+            // dulu lookup tanpa location -> bisa menampilkan daftar pengesah
+            // lokasi lain yang kebetulan shift-nya sama
             $approvalHeader     = ApprovalHeader::where([
                 'inspection_type'   => 3,
                 'type'              => 1,
-                'shift'             =>$detail->shift
+                'shift'             =>$detail->shift,
+                'location'          =>$headers->location_id,
             ])->first();
-            $approval = ApprovalDetail::with([
-                'userRelation',
-
-            ])->where('approval_code', $approvalHeader->approval_code)->get();
-
+            if ($approvalHeader) {
+                $approval = ApprovalDetail::with([
+                    'userRelation',
+                ])->where('approval_code', $approvalHeader->approval_code)->get();
+            }
         }
 
         $data =[
@@ -658,7 +670,7 @@ class GoodsController extends Controller
             $mpdf->WriteHTML($cetak);
             // Output a PDF file directly to the browser
             ob_clean();
-            $mpdf->Output('Report Stock'.'('.date('Y-m-d').').pdf', 'I');
+            $mpdf->Output('LIMS_Inspection_Goods_' . str_replace('/', '_', $detail_code) . '_' . date('Ymd_Hi') . '.pdf', 'I');
     }
     function getWallThickness(Request $request) {
         if (!$this->canViewShift($request->detail_inspection_code)) {
@@ -666,6 +678,9 @@ class GoodsController extends Controller
         }
 
         $subdetail = InspectionGoodsSubDetail::where('inspection_detail', $request->detail_inspection_code)->get();
+        if ($subdetail->isEmpty() && $request->inspection_sub_detail == null) {
+            return response()->json(['subdetail' => [], 'data' => []]);
+        }
         $data = WallThickness::where('sub_detail_inspection_code', $request->inspection_sub_detail == null ? $subdetail[0]->inspection_sub_detail : $request->inspection_sub_detail)->get();
         return response()->json([
             'subdetail' => $subdetail,
