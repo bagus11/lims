@@ -157,6 +157,7 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::get('/getApprovalUser', 'App\Http\Controllers\Setting\ApprovalController@getApprovalUser')->name('getApprovalUser');
 		Route::post('/updateInspectionGoodsApproval', 'App\Http\Controllers\Setting\ApprovalController@updateInspectionGoodsApproval')->name('updateInspectionGoodsApproval');
 		Route::post('/updateLaboratoryApproval', 'App\Http\Controllers\Setting\ApprovalController@updateLaboratoryApproval')->name('updateLaboratoryApproval');
+		Route::post('/updateResalesGoodsApproval', 'App\Http\Controllers\Setting\ApprovalController@updateResalesGoodsApproval')->name('updateResalesGoodsApproval');
 	// Approval
 
 		// Material
@@ -178,6 +179,7 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('/getResalesGood', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@getResalesGood')->name('getResalesGood');
             Route::get('/getOptionListsResalesGoods', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@getOptionLists')->name('getOptionListsResalesGoods');
             Route::get('/getResalesGoodDetails', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@getResalesGoodDetails')->name('getResalesGoodDetails');
+            Route::get('/getResalesGoodApprovalDetail', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@getResalesGoodApprovalDetail')->name('getResalesGoodApprovalDetail');
             Route::get('/printResalesGoodsPdf', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@printResalesGoodsPdf')->name('printResalesGoodsPdf');
             Route::get('/printResalesGoodsExcel', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@printResalesGoodsExcel')->name('printResalesGoodsExcel');
             Route::post('/addResalesGoodsHeader', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@addResalesGoodsHeader')->name('addResalesGoodsHeader');

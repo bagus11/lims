@@ -67,6 +67,62 @@ class ResalesGoodsController extends Controller
         ]);
     }
 
+    /**
+     * Detail lengkap untuk modal approval dashboard (inspection_type = 4):
+     * header + detail spesifikasi + riwayat approval.
+     */
+    function getResalesGoodApprovalDetail(Request $request) {
+        $header = ResalesGood::with([
+            'locationRelation',
+            'productRelation',
+            'inspectorRelation',
+            'supplierRelation',
+            'produsenRelation',
+            'createdByRelation',
+        ])->where('transaction_code', $request->transaction_code)->first();
+
+        if (!$header) {
+            return ResponseFormatter::error(null, 'Transaction not found', 404);
+        }
+
+        $isAssignedApprover = ApprovalHistory::where('transaction_code', $header->transaction_code)
+            ->where('inspection_type', 4)
+            ->where('user_id', auth()->user()->id)
+            ->exists();
+
+        if (!$isAssignedApprover && !$this->canAccessLocation($header->location_id)) {
+            return ResponseFormatter::error(null, 'You are not allowed to view this transaction', 403);
+        }
+
+        $details = ResalesGoodDetail::with(['productRelation', 'createdByRelation'])
+            ->where('transaction_code', $header->transaction_code)
+            ->orderBy('id')
+            ->get();
+
+        $history = ApprovalHistory::with('userRelation')
+            ->where('transaction_code', $header->transaction_code)
+            ->where('inspection_type', 4)
+            ->orderBy('id')
+            ->get();
+
+        return response()->json([
+            'data' => $header,
+            'details' => $details,
+            'history' => $history,
+        ]);
+    }
+
+    /**
+     * Non-GM hanya boleh menyentuh transaksi lokasinya sendiri.
+     */
+    private function canAccessLocation($locationId): bool {
+        if (auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+            return true;
+        }
+
+        return (string) $locationId === (string) auth()->user()->kode_kantor;
+    }
+
     function getResalesGoodDetails(Request $request) {
         $data = ResalesGoodDetail::with([
             'productRelation',

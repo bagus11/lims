@@ -6,6 +6,7 @@ use App\Helper\ResponseFormatter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Setting\Approval\StoreApprovalHeaderRequest;
 use App\Http\Requests\Setting\Approval\UpdateLaboratoryApprovalRequest;
+use App\Http\Requests\Setting\Approval\UpdateResalesGoodsApprovalRequest;
 use App\Http\Requests\Setting\Approval\UpdateApprovalRequest;
 use App\Http\Requests\Setting\Approval\UpdateInspectionGoodsApprovalRequest;
 use App\Models\Master\MasterLocation;
@@ -14,6 +15,7 @@ use App\Models\Setting\Approval\ApprovalHeader;
 use App\Models\Transaction\Inspection\ApprovalHistory;
 use App\Models\Transaction\Inspection\InspectionGoodsDetail;
 use App\Models\Transaction\Inspection\Laboratory\LaboratoryHeader;
+use App\Models\Transaction\Inspection\ResalesGood;
 use App\Models\Transaction\Insspection\InspectionGood;
 use App\Models\Transaction\Material\InspectionMaterial;
 use Illuminate\Http\Request;
@@ -434,6 +436,102 @@ class ApprovalController extends Controller
         });
 
         return ResponseFormatter::success($result, 'Laboratory approval successfully updated');
+    }
+
+    /**
+     * Handler approval Resales Goods (inspection_type = 4).
+     * Status header: 0 Draft, 1 In Progress, 2 Approval Progress, 3 Done.
+     * decision 1 = approve (lanjut step berikutnya / Done), 4 = revision
+     * (kembali ke In Progress supaya bisa diedit dan di-lock ulang).
+     */
+    function updateResalesGoodsApproval(Request $request, UpdateResalesGoodsApprovalRequest $updateResalesGoodsApprovalRequest)
+    {
+        $updateResalesGoodsApprovalRequest->validated();
+
+        $result = DB::transaction(function () use ($request) {
+            $header = ResalesGood::where('transaction_code', $request->transaction_code)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ((int) $header->status !== 2) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'transaction_code' => ['Resales Goods transaction is not waiting for approval.'],
+                ]);
+            }
+
+            $history = ApprovalHistory::where([
+                'transaction_code' => $header->transaction_code,
+                'inspection_type' => 4,
+                'user_id' => auth()->user()->id,
+                'status' => 0,
+            ])->orderBy('id', 'desc')->lockForUpdate()->first();
+
+            if (!$history) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'transaction_code' => ['You are not the active approver for this transaction.'],
+                ]);
+            }
+
+            $history->update([
+                'status' => (int) $request->decision,
+                'remark' => trim($request->remark),
+            ]);
+
+            if ((int) $request->decision === 4) {
+                ResalesGood::where('transaction_code', $header->transaction_code)->update([
+                    'status' => 1,
+                    'current_approval' => 0,
+                ]);
+
+                return [
+                    'transaction_code' => $header->transaction_code,
+                    'status' => 1,
+                ];
+            }
+
+            $approvalHeader = ApprovalHeader::where([
+                'inspection_type' => 4,
+                'location' => $header->location_id,
+            ])->first();
+
+            if (!$approvalHeader) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'transaction_code' => ['Resales Goods approval setting was not found for this location.'],
+                ]);
+            }
+
+            $nextApproval = ApprovalDetail::where('approval_code', $approvalHeader->approval_code)
+                ->where('step', $history->step + 1)
+                ->first();
+
+            if ($nextApproval) {
+                ApprovalHistory::create([
+                    'transaction_code' => $header->transaction_code,
+                    'type' => 1,
+                    'inspection_type' => 4,
+                    'step' => $history->step + 1,
+                    'user_id' => $nextApproval->user_id,
+                    'status' => 0,
+                    'remark' => 'Approval for Resales Goods Inspection',
+                ]);
+
+                ResalesGood::where('transaction_code', $header->transaction_code)->update([
+                    'current_approval' => $history->step + 1,
+                ]);
+            } else {
+                ResalesGood::where('transaction_code', $header->transaction_code)->update([
+                    'status' => 3,
+                    'current_approval' => $history->step,
+                ]);
+            }
+
+            return [
+                'transaction_code' => $header->transaction_code,
+                'status' => $nextApproval ? 2 : 3,
+            ];
+        });
+
+        return ResponseFormatter::success($result, 'Resales Goods approval successfully updated');
     }
 
 }
