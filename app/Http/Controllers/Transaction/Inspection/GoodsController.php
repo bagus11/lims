@@ -711,6 +711,13 @@ class GoodsController extends Controller
     }
 
     function updateWallThickness(Request $request) {
+        $request->validate([
+            'id' => 'required|integer',
+            'dynamic_wt_1' => 'nullable|numeric', 'dynamic_wt_2' => 'nullable|numeric',
+            'dynamic_wt_3' => 'nullable|numeric', 'dynamic_wt_4' => 'nullable|numeric',
+            'dynamic_wt_5' => 'nullable|numeric', 'dynamic_wt_6' => 'nullable|numeric',
+            'dynamic_wt_7' => 'nullable|numeric', 'dynamic_wt_8' => 'nullable|numeric',
+        ]);
         $detail = WallThickness::find($request->id);
         if (!$detail) {
             return ResponseFormatter::error(null, 'Wall thickness record not found', 404);

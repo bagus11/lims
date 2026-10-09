@@ -24,17 +24,18 @@ class AddInspectionMaterialRequest extends FormRequest
     public function rules()
     {
         return [
-            'type'  =>'required',
-            'location'  =>'required',
-            'material'  =>'required',
-            'inspector'  =>'required',
-            'supplier'  =>'required',
-            'brand'  =>'required',
-            'amount'  =>'required',
-            'weight'  =>'required',
-            'certificate'  =>'required',
-            'standard'  =>'required',
-            'no_lot'  =>'required',
+            'type'  =>['required', \Illuminate\Validation\Rule::in([1, 2])],
+            'location'  =>'required|integer',
+            'material'  =>'required|exists:materials,id',
+            'inspector'  =>'required|exists:users,id',
+            'supplier'  =>'required|exists:suppliers,id',
+            'produsen_id' =>'nullable|required_if:type,2|exists:suppliers,id',
+            'brand'  =>'required|string|max:255',
+            'amount'  =>'required|integer|min:1',
+            'weight'  =>'required|numeric|min:0',
+            'certificate'  =>'required|string|max:255',
+            'standard'  =>'required|string|max:255',
+            'no_lot'  =>'required|string|max:255',
         ];
     }
 }

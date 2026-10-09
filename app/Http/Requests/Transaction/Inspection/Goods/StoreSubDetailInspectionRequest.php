@@ -24,18 +24,25 @@ class StoreSubDetailInspectionRequest extends FormRequest
     public function rules()
     {
         return [
-            'product'=>'required',
-            'length_of_pipe'=>'required',
-            'appearance_of_pipe'=>'required',
-            'marking'=>'required',
-            'condition_pipe_of_cut'=>'required',
-            'angle_pipe_of_spigot'=>'required',
-            'color_of_pipes'=>'required',
-            'evaluation_spec'=>'required',
-            'machine_id'    =>'required',
-            'time'    =>'required',
-            'add_remark'    =>'required',
-            'inspector'    =>'required',
+            'detail_inspection_code_id'=>'required|exists:inspection_goods_details,detail_inspection_code',
+            'product'=>'required|exists:master_product,id',
+            'material'=>'required|exists:materials,id',
+            'length_of_pipe'=>'required|numeric|min:0',
+            'appearance_of_pipe'=>'required|string|max:100',
+            'marking'=>'required|string|max:100',
+            'condition_pipe_of_cut'=>'required|string|max:100',
+            'angle_pipe_of_spigot'=>'required|string|max:100',
+            'color_of_pipes'=>'required|string|max:100',
+            'evaluation_spec'=>'required|string|max:100',
+            'machine_id'    =>'required|exists:machines,id',
+            'time'    =>'required|string|max:20',
+            'add_remark'    =>'required|string|max:1000',
+            'inspector'    =>'required|exists:users,id',
+            'tape_diameter' =>'nullable|numeric',
+            'wt_1' =>'nullable|numeric', 'wt_2' =>'nullable|numeric',
+            'wt_3' =>'nullable|numeric', 'wt_4' =>'nullable|numeric',
+            'wt_5' =>'nullable|numeric', 'wt_6' =>'nullable|numeric',
+            'wt_7' =>'nullable|numeric', 'wt_8' =>'nullable|numeric',
         ];
     }
 }

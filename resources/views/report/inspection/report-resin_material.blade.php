@@ -114,8 +114,36 @@
 
             <b>GRAFIK</b>
             <br><br>
-            @if($chartUrl)
-             <img src="{{ $chartUrl }}" style="width:70%; max-width:70%; height:auto;">
+            @php
+                // Grafik digambar lokal sebagai SVG — dulu memakai quickchart.io
+                // (report butuh internet & data hasil uji terkirim ke pihak ketiga)
+                $chartValues = collect($data)->pluck('value')->map(fn ($v) => (float) $v)->values();
+            @endphp
+            @if($chartValues->count() > 1)
+                @php
+                    $w = 420; $h = 220; $padL = 46; $padR = 12; $padT = 12; $padB = 28;
+                    $minV = $chartValues->min(); $maxV = $chartValues->max();
+                    if ($minV == $maxV) { $minV -= ($minV == 0.0 ? 1 : abs($minV) * 0.1 + 0.001); $maxV += ($maxV == 0.0 ? 1 : abs($maxV) * 0.1 + 0.001); }
+                    $plotW = $w - $padL - $padR; $plotH = $h - $padT - $padB;
+                    $n = $chartValues->count();
+                    $points = $chartValues->map(function ($v, $i) use ($n, $padL, $padT, $plotW, $plotH, $minV, $maxV) {
+                        $x = $padL + ($n > 1 ? ($i / ($n - 1)) * $plotW : $plotW / 2);
+                        $y = $padT + (1 - (($v - $minV) / ($maxV - $minV))) * $plotH;
+                        return round($x, 1) . ',' . round($y, 1);
+                    })->implode(' ');
+                @endphp
+                <svg width="{{ $w }}" height="{{ $h }}" viewBox="0 0 {{ $w }} {{ $h }}" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="0" width="{{ $w }}" height="{{ $h }}" fill="#ffffff" stroke="#dddddd"/>
+                    @for ($g = 0; $g <= 4; $g++)
+                        @php $gy = $padT + ($g / 4) * $plotH; $gv = $maxV - ($g / 4) * ($maxV - $minV); @endphp
+                        <line x1="{{ $padL }}" y1="{{ round($gy,1) }}" x2="{{ $w - $padR }}" y2="{{ round($gy,1) }}" stroke="#eeeeee" stroke-width="1"/>
+                        <text x="{{ $padL - 4 }}" y="{{ round($gy + 3,1) }}" font-size="8" text-anchor="end" fill="#666666">{{ rtrim(rtrim(number_format($gv, 4, '.', ''), '0'), '.') }}</text>
+                    @endfor
+                    <text x="{{ $padL }}" y="{{ $h - 8 }}" font-size="8" fill="#666666">Step 1</text>
+                    <text x="{{ $w - $padR }}" y="{{ $h - 8 }}" font-size="8" text-anchor="end" fill="#666666">Step {{ $n }}</text>
+                    <polyline points="{{ $points }}" fill="none" stroke="#2FA4D7" stroke-width="2"/>
+                    <text x="{{ $padL + 4 }}" y="{{ $padT + 10 }}" font-size="9" fill="#2FA4D7">Bulk Density</text>
+                </svg>
             @else
                 <div style="padding:20px; text-align:center; color:#999; font-style:italic;">Grafik tidak tersedia</div>
             @endif
@@ -216,7 +244,24 @@
         </td>
 
     </tr>
+    <tr>
+      <td colspan="2" class="header-info" style="vertical-align:top;">
 
+            <table style="border:none;">
+                <tr>
+                    <td style="border:none; width:90px;">No POF</td>
+                    <td style="border:none; width:10px;">:</td>
+                    <td style="border:none;">{{ $detail->no_pof ?? 'N/A' }}</td>
+                </tr>
+                <tr>
+                    <td style="border:none; width:90px;">Keterangan</td>
+                    <td style="border:none; width:10px;">:</td>
+                    <td style="border:none;">{{ $detail->remark ?? 'N/A' }}</td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
 
     {{-- KETERANGAN --}}
 
@@ -225,26 +270,67 @@
      <tr>
         <td colspan="2" style="padding:0; border:none;">
 
-            <table width="100%" style="table-layout: fixed;">
-                <tr>
-                    <td style="text-align:center; padding:20px 10px;">
-                        <b>Factory Manager</b><br><br><br>
-                        <div style="border-bottom:1px solid #000; width:80%; margin:0 auto;"></div><br>
-                        {{ $manager ?? 'N/A' }}
-                    </td>
+           <table class="table" id="approval_remark" style="table-layout: fixed">
+                    <thead>
+                        <tr>
 
-                    <td style="text-align:center; padding:20px 10px;">
-                        <b>Kabag Quality Control</b><br><br><br>
-                        <div style="border-bottom:1px solid #000; width:80%; margin:0 auto;"></div><br>
-                        {{ $qc ?? 'N/A' }}
-                    </td>
+                            @for ($i = 3 - 1; $i >= 0; $i--)
+                                @php
+                                    $title = '';
+                                    switch ($i) {
+                                        case 0:
+                                        $title = "Karu Inspector";
+                                        break;
 
-                    <td style="text-align:center; padding:20px 10px;">
-                        <b>Karu Inspection</b><br><br><br>
-                        <div style="border-bottom:1px solid #000; width:80%; margin:0 auto;"></div><br>
-                        {{ $karu ?? 'N/A' }}
-                    </td>
-                </tr>
+                                        case 1:
+                                        $title = "Kabag QC";
+                                        break;
+
+                                        case 2:
+                                        $title = "Factory Manager";
+                                        break;
+
+                                        default:
+                                            $title = "Approver " . ($i + 1); // Fallback title for additional columns if needed
+                                            break;
+                                    }
+                                @endphp
+                                <th>{{ $title }}</th>
+                                @endfor
+                                <th>Inspector</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+
+                        @for ($i = 3 - 1; $i >= 0; $i--)
+                            @php
+                                $signature = isset($approval[$i]) && $approval[$i]->status == 1 && isset($approval[$i]->userRelation->signature)
+                                    ? $approval[$i]->userRelation->signature
+                                    : '';
+                            @endphp
+                            <td style="text-align: center">
+                                @if ($signature)
+                                    <img style='display:block; width:70px; height:50px;' id='base64image' src='{{$signature}}' />
+                                @endif
+                                <p>
+                                    {{$approval[$i]->userRelation->name ?? ''}}
+                                </p>
+                            </td>
+                        @endfor
+                        <td style="text-align: center">
+                            @if ($detail->inspectorRelation)
+                            <img style='display:block; width:70px; height:50px;' id='base64image' src='{{$detail->inspectorRelation->signature}}' />
+                            <p>
+                                {{$detail->inspectorRelation->name}}
+                            </p>
+                            @else
+                            <img style='display:block; width:70px; height:50px;' id='base64image' src='' />
+                            @endif
+                        </td>
+                        </tr>
+                    </tbody>
             </table>
 
         </td>

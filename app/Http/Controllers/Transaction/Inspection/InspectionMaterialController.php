@@ -521,66 +521,9 @@ class InspectionMaterialController extends Controller
                 $steps[] = $d->step;
                 $values[] = $d->value;
             }
-        // dd($values);
-           if (!empty($values)) {
-
-                // 🔹 Hitung min & max
-                $minVal = min($values);
-                $maxVal = max($values);
-
-                // 🔹 Handle kalau semua nilai sama (biar grafik gak flat)
-                if ($minVal == $maxVal) {
-                    if ($minVal == 0) {
-                        $maxVal = 1; // biar ada range
-                    } else {
-                        $minVal = $minVal - 1;
-                        $maxVal = $maxVal + 1;
-                    }
-                }
-
-                // 🔹 Cek apakah semua 0 (optional fallback)
-                $allZero = count(array_filter($values)) === 0;
-
-                // 🔹 Config chart
-                $chartConfig = [
-                    "type" => "line",
-                    "data" => [
-                        "labels" => $steps,
-                        "datasets" => [[
-                            "label" => "Bulk Density",
-                            "data" => $values,
-                            "fill" => false,
-                            "borderColor" => "#2FA4D7",
-                            "borderWidth" => 2,
-                            "pointRadius" => 3,
-                            "pointBackgroundColor" => "#2FA4D7",
-                        ]]
-                    ],
-                    "options" => [
-                        "legend" => ["display" => true],
-
-                        "plugins" => [
-                            "title" => [
-                                "display" => $allZero,
-                                "text" => "Semua nilai = 0"
-                            ]
-                        ],
-
-                        "scales" => [
-                            "y" => [
-                                "min" => $minVal,
-                                "max" => $maxVal
-                            ]
-                        ]
-                    ]
-                ];
-
-                // 🔹 Generate URL QuickChart
-                $chartUrl = "https://quickchart.io/chart?width=500&height=300&c=" . urlencode(json_encode($chartConfig));
-
-            } else {
-                $chartUrl = null;
-            }
+            // grafik kini digambar lokal (SVG) di blade report — tidak lagi
+            // memakai quickchart.io (butuh internet + data QC keluar)
+            $chartUrl = null;
             $data = [
                     'detail'   => $detail,
                     'header'   => $header,

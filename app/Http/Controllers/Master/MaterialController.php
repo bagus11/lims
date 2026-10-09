@@ -28,6 +28,9 @@ class MaterialController extends Controller
     }
     function addMaterial(Request $request , StoreMaterialRequest $storeMaterialRequest) {
            // try {
+            if (!auth()->user()->canManageModule('view-material')) {
+                return ResponseFormatter::error(null, 'You are not allowed to manage this master data', 403);
+            }
             $storeMaterialRequest->validated();
             $post = [
                 'name'  =>$request->name,
@@ -50,13 +53,20 @@ class MaterialController extends Controller
     }
     function updateMaterial(Request $request , UpdateMaterialRequest $storeMaterialRequest) {
            // try {
+            if (!auth()->user()->canManageModule('view-material')) {
+                return ResponseFormatter::error(null, 'You are not allowed to manage this master data', 403);
+            }
             $storeMaterialRequest->validated();
+            $material = Material::find($request->id);
+            if (!$material) {
+                return ResponseFormatter::error(null, 'Material not found', 404);
+            }
             $post = [
                 'name'  =>$request->name_edit,
                 'spec'  =>$request->spec_edit,
                 'description'  =>$request->description_edit,
             ];
-            Material::find($request->id)->update($post);
+            $material->update($post);
             return ResponseFormatter::success(
                $post,
                 'Machine successfully updated'
@@ -71,10 +81,17 @@ class MaterialController extends Controller
     }
     function udpateStatusMaterial(Request $request)  {
           // try {
+            if (!auth()->user()->canManageModule('view-material')) {
+                return ResponseFormatter::error(null, 'You are not allowed to manage this master data', 403);
+            }
+            $material = Material::find($request->id);
+            if (!$material) {
+                return ResponseFormatter::error(null, 'Material not found', 404);
+            }
             $post = [
                 'status'  =>$request->status == 1 ? 0 : 1,
             ];
-            Material::find($request->id)->update($post);
+            $material->update($post);
             return ResponseFormatter::success(
                $post,
                 'Machine successfully updated'
