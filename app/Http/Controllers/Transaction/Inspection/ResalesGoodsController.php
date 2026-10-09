@@ -203,6 +203,13 @@ class ResalesGoodsController extends Controller
                     404
                 );
             }
+            if ((int) $header->status >= 2) {
+                return ResponseFormatter::error(
+                    null,
+                    'Transaction is locked and cannot be modified',
+                    400
+                );
+            }
 
             $specs = $request->spesification;
             $clean_spec = [];
@@ -332,8 +339,19 @@ class ResalesGoodsController extends Controller
                     404
                 );
             }
+            if (!in_array((int) $header->status, [0, 1], true)) {
+                return ResponseFormatter::error(
+                    null,
+                    'Only Draft or In Progress transaction can be deleted',
+                    400
+                );
+            }
 
             DB::transaction(function () use ($header) {
+                // sisa history siklus revisi ikut dibersihkan agar tidak yatim di dashboard
+                ApprovalHistory::where('transaction_code', $header->transaction_code)
+                    ->where('inspection_type', 4)
+                    ->delete();
                 ResalesGoodDetail::where('transaction_code', $header->transaction_code)->delete();
                 ResalesGood::where('transaction_code', $header->transaction_code)->delete();
             });
@@ -370,6 +388,13 @@ class ResalesGoodsController extends Controller
                     null,
                     'Transaction header not found',
                     404
+                );
+            }
+            if ((int) $header->status >= 2) {
+                return ResponseFormatter::error(
+                    null,
+                    'Transaction is locked and cannot be modified',
+                    400
                 );
             }
 
@@ -417,11 +442,23 @@ class ResalesGoodsController extends Controller
 
             $trxCode = $detail->transaction_code;
 
+            $header = ResalesGood::where('transaction_code', $trxCode)->first();
+            if ($header && (int) $header->status >= 2) {
+                return ResponseFormatter::error(
+                    null,
+                    'Transaction is locked and cannot be modified',
+                    400
+                );
+            }
+
             DB::transaction(function () use ($detail, $trxCode) {
                 $detail->delete();
                 $remaining = ResalesGoodDetail::where('transaction_code', $trxCode)->count();
                 if ($remaining == 0) {
-                    ResalesGood::where('transaction_code', $trxCode)->update(['status' => 0]);
+                    // hanya turunkan In Progress -> Draft; status lain tidak disentuh
+                    ResalesGood::where('transaction_code', $trxCode)
+                        ->where('status', 1)
+                        ->update(['status' => 0]);
                 }
             });
 
