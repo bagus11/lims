@@ -344,9 +344,11 @@ class LaboratoryController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if ($header->lock || (int) $header->status !== 1) {
+            // status 4 (Revision) boleh langsung submit ulang — perbaikan bisa
+            // berupa komentar saja tanpa mengubah hasil ukur
+            if ($header->lock || !in_array((int) $header->status, [1, 4], true)) {
                 throw ValidationException::withMessages([
-                    'laboratory_code' => ['Only an unlocked In Progress transaction can be submitted.'],
+                    'laboratory_code' => ['Only an unlocked In Progress or Revision transaction can be submitted.'],
                 ]);
             }
 
@@ -526,8 +528,24 @@ class LaboratoryController extends Controller
         $history = ApprovalHistory::with('userRelation')
             ->where('transaction_code', $header->laboratory_code)
             ->where('inspection_type', 1)
-            ->orderBy('step')
+            ->orderBy('id')
             ->get();
+
+        // Slot tanda tangan hanya boleh diisi siklus approval TERAKHIR.
+        // Tanpa ini, history siklus sebelum revisi membuat nama penandatangan
+        // dobel/bergeser di report.
+        $lastRevisionId = $history->where('status', 4)->max('id');
+        if ($lastRevisionId) {
+            $history = $history->filter(function ($item) use ($lastRevisionId) {
+                return $item->id > $lastRevisionId;
+            });
+        }
+        $history = $history->groupBy('step')
+            ->map(function ($items) {
+                return $items->last();
+            })
+            ->sortKeys()
+            ->values();
 
         return [
             'header' => $header,
