@@ -26,6 +26,10 @@ class ResponseFormatter
      */
     public static function success($data = null, $message = null)
     {
+        // $response static — reset eksplisit supaya code/status sisa error()
+        // sebelumnya tidak bocor ke response sukses berikutnya
+        self::$response['meta']['code'] = 200;
+        self::$response['meta']['status'] = 'success';
         self::$response['meta']['message'] = $message;
         self::$response['data'] = $data;
 
