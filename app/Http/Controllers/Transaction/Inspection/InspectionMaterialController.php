@@ -54,6 +54,24 @@ class InspectionMaterialController extends Controller
         return ResponseFormatter::error(null, 'You are not allowed to access this transaction', 403);
     }
 
+    /**
+     * Kode berjalan {seq}/{PREFIX}/{bulan romawi}/{tahun 2 digit}; reset tiap
+     * bulan/tahun; parsing format lama diguard supaya tidak meledak.
+     */
+    private function nextSequentialCode($lastCode, string $prefix): string {
+        $month = NumConvert::roman((int) date('m'));
+        $year = date('y');
+        $sequence = 1;
+        if ($lastCode) {
+            $parts = explode('/', $lastCode);
+            if (count($parts) >= 4 && is_numeric($parts[0]) && $parts[2] === $month && $parts[3] === (string) $year) {
+                $sequence = ((int) $parts[0]) + 1;
+            }
+        }
+
+        return $sequence . '/' . $prefix . '/' . $month . '/' . $year;
+    }
+
     function getInspectionMaterial(Request $request) {
         $query = InspectionMaterial::with([
             'locationRelation',
@@ -86,28 +104,16 @@ class InspectionMaterialController extends Controller
     }
     function addInspectionMaterial(Request $request, AddInspectionMaterialRequest $addInspectionMaterialRequest) {
         // try{
-        $ticket_code    ='';
         $addInspectionMaterialRequest->validated();
-        $increment_code= InspectionMaterial::orderBy('id','desc')->first();
-        $date_month =strtotime(date('Y-m-d'));
-        $month =idate('m', $date_month);
-        $year = idate('y', $date_month);
-        $month_convert =  NumConvert::roman($month);
-        if($increment_code ==null){
-            $ticket_code = '1/INSM/'.$month_convert.'/'.$year;
-        }else{
-            $month_before = explode('/',$increment_code->inspection_code,-1);
-            if($month_convert != $month_before[2]){
-                $ticket_code = '1/INSM/'.$month_convert.'/'.$year;
-            }else{
-                $ticket_code = $month_before[0] + 1 .'/INSM/'.$month_convert.'/'.$year;
-            }
-        }
         // Non-GM tidak boleh membuat transaksi atas nama lokasi lain
         $locationId = $request->location;
         if (!auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
             $locationId = auth()->user()->kode_kantor;
         }
+
+        // inspection_code diisi di dalam transaksi (lihat bawah) supaya dua
+        // request bersamaan tidak menghasilkan kode kembar
+        $ticket_code = null;
 
         $post =[
             'inspection_code'   =>$ticket_code,
@@ -161,7 +167,15 @@ class InspectionMaterialController extends Controller
             'weight'   =>0,
 
         ];
-        DB::transaction(function() use($post,$request,$post_resin,$ticket_code,$step,$post_pellet) {
+        DB::transaction(function() use(&$post,$request,&$post_resin,&$ticket_code,$step,&$post_pellet) {
+            // lock baris terakhir lalu generate kode di dalam transaksi yang
+            // sama dengan insert — anti kode kembar saat request bersamaan
+            $last = InspectionMaterial::orderBy('id', 'desc')->lockForUpdate()->first();
+            $ticket_code = $this->nextSequentialCode($last ? $last->inspection_code : null, 'INSM');
+            $post['inspection_code'] = $ticket_code;
+            $post_resin['inspection_code'] = $ticket_code;
+            $post_pellet['inspection_code'] = $ticket_code;
+
             InspectionMaterial::create($post);
             if($request->type == 1){
                 ResinModel::create($post_resin);

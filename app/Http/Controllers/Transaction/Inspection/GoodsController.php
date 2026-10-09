@@ -62,6 +62,24 @@ class GoodsController extends Controller
     private function forbiddenResponse() {
         return ResponseFormatter::error(null, 'You are not allowed to access this transaction', 403);
     }
+
+    /**
+     * Kode berjalan {seq}/{PREFIX}/{bulan romawi}/{tahun 2 digit}; reset tiap
+     * bulan/tahun; parsing format lama diguard supaya tidak meledak.
+     */
+    private function nextSequentialCode($lastCode, string $prefix): string {
+        $month = NumConvert::roman((int) date('m'));
+        $year = date('y');
+        $sequence = 1;
+        if ($lastCode) {
+            $parts = explode('/', $lastCode);
+            if (count($parts) >= 4 && is_numeric($parts[0]) && $parts[2] === $month && $parts[3] === (string) $year) {
+                $sequence = ((int) $parts[0]) + 1;
+            }
+        }
+
+        return $sequence . '/' . $prefix . '/' . $month . '/' . $year;
+    }
     function getInspectionGoods(Request $request)
     {
         $query = InspectionGood::with([
@@ -111,21 +129,6 @@ class GoodsController extends Controller
     function addInspectionGoodsHeader(Request $request, StoreHeaderRequest $storeHeaderRequest) {
         // try {
             $storeHeaderRequest->validated();
-            $increment_code= InspectionGood::orderBy('id','desc')->first();
-            $date_month =strtotime(date('Y-m-d'));
-            $month =idate('m', $date_month);
-            $year = idate('y', $date_month);
-            $month_convert =  NumConvert::roman($month);
-            if($increment_code ==null){
-                $ticket_code = '1/INSG/'.$month_convert.'/'.$year;
-            }else{
-                $month_before = explode('/',$increment_code->inspection_code,-1);
-                if($month_convert != $month_before[2]){
-                    $ticket_code = '1/INSG/'.$month_convert.'/'.$year;
-                }else{
-                    $ticket_code = $month_before[0] + 1 .'/INSG/'.$month_convert.'/'.$year;
-                }
-            }
 
             // Non-GM tidak boleh membuat transaksi atas nama lokasi lain
             $locationId = $request->location_id;
@@ -134,44 +137,33 @@ class GoodsController extends Controller
             }
 
             $post = [
-                'inspection_code'   => $ticket_code,
+                'inspection_code'   => null, // diisi di dalam transaksi
                 'user_id'           =>auth()->user()->id,
                 'location_id'       =>$locationId,
-                // 'machine_id'       =>$request->machine_id,
                 'current_approval'  => 0,
                 'status'  =>0,
             ];
-            DB::transaction(function() use($post,$request,$ticket_code) {
-
-                $detail_ticket = '';
-
+            // generate semua kode dengan lock baris terakhir di DALAM satu
+            // transaksi — dulu query-per-iterasi tanpa lock (rawan kode kembar)
+            DB::transaction(function() use(&$post) {
+                $last = InspectionGood::orderBy('id','desc')->lockForUpdate()->first();
+                $post['inspection_code'] = $this->nextSequentialCode($last ? $last->inspection_code : null, 'INSG');
                 InspectionGood::create($post);
+
+                $lastDetail = InspectionGoodsDetail::orderBy('id','desc')->lockForUpdate()->first();
+                $base = $this->nextSequentialCode($lastDetail ? $lastDetail->detail_inspection_code : null, 'DINSG');
+                $baseSeq = (int) explode('/', $base)[0];
+                $suffix = substr($base, strpos($base, '/'));
                 for($i = 0 ; $i < 3 ; $i++){
-                    $increment_code_detail= InspectionGoodsDetail::orderBy('id','desc')->first();
-                    $date_month_detail =strtotime(date('Y-m-d'));
-                    $month_detail =idate('m', $date_month_detail);
-                    $year_detail = idate('y', $date_month_detail);
-                    $month_convert_detail =  NumConvert::roman($month_detail);
-                    if($increment_code_detail ==null){
-                        $detail_ticket = '1/DINSG/'.$month_convert_detail.'/'.$year_detail;
-                    }else{
-                        $month_before = explode('/',$increment_code_detail->detail_inspection_code,-1);
-                        if($month_convert_detail != $month_before[2]){
-                            $detail_ticket = '1/DINSG/'.$month_convert_detail.'/'.$year_detail;
-                        }else{
-                            $detail_ticket = $month_before[0] + 1 .'/DINSG/'.$month_convert_detail.'/'.$year_detail;
-                        }
-                    }
-                    $post_log = [
-                        'inspection_code'   =>$ticket_code,
-                        'detail_inspection_code'   =>$detail_ticket,
+                    InspectionGoodsDetail::create([
+                        'inspection_code'   =>$post['inspection_code'],
+                        'detail_inspection_code'   =>($baseSeq + $i) . $suffix,
                         'shift' =>$i + 1,
                         'user_id'=>auth()->user()->id,
                         'status'    => 0,
                         'approval_id'    => 0,
                         'evaluation'=>''
-                    ];
-                    InspectionGoodsDetail ::create($post_log);
+                    ]);
                 }
             });
 
@@ -201,22 +193,8 @@ class GoodsController extends Controller
             if ($guard = $this->rejectIfShiftLocked($detail->detail_inspection_code)) {
                 return $guard;
             }
-            $increment_code= InspectionGoodsSubDetail::orderBy('id','desc')->first();
-            $date_month =strtotime(date('Y-m-d'));
-            $month =idate('m', $date_month);
-            $year = idate('y', $date_month);
-            $month_convert =  NumConvert::roman($month);
-            // dd($increment_code->inspection_sub_detail);
-            if($increment_code ==null){
-                $ticket_code = '1/SDINSG/'.$month_convert.'/'.$year;
-            }else{
-                $month_before = explode('/',$increment_code->inspection_sub_detail,-1);
-                if($month_convert != $month_before[2]){
-                    $ticket_code = '1/SDINSG/'.$month_convert.'/'.$year;
-                }else{
-                    $ticket_code = $month_before[0] + 1 .'/SDINSG/'.$month_convert.'/'.$year;
-                }
-            }
+            // kode sub detail diisi di dalam transaksi (anti kode kembar)
+            $ticket_code = null;
             $post = [
                 'inspection_header'                 => $detail->inspection_code,
                 'inspection_detail'                 => $request->detail_inspection_code_id,
@@ -297,9 +275,18 @@ class GoodsController extends Controller
                 'remark'                            => 'created by system',
                 'creator' => $detail->user_id,
             ];
-            DB::transaction(function() use($post,$request,$ticket_code,$post_wt,$postDetail,$detail,$post_log,$post_log_wt) {
+            DB::transaction(function() use(&$post,$request,&$ticket_code,&$post_wt,$postDetail,$detail,&$post_log,&$post_log_wt) {
+                $last = InspectionGoodsSubDetail::orderBy('id','desc')->lockForUpdate()->first();
+                $ticket_code = $this->nextSequentialCode($last ? $last->inspection_sub_detail : null, 'SDINSG');
+                $post['inspection_sub_detail'] = $ticket_code;
+                $post_log['inspection_sub_detail'] = $ticket_code;
+                $post_wt['sub_detail_inspection_code'] = $ticket_code;
+                $post_log_wt['sub_detail_inspection_code'] = $ticket_code;
+
                 InspectionGoodsSubDetail::create($post);
-                InspectionGood::where('inspection_code', $detail->inspection_code)->update(['status'    => 1]);
+                InspectionGood::where('inspection_code', $detail->inspection_code)
+                    ->where('status', '<', 1)
+                    ->update(['status'    => 1]);
                 WallThickness::create($post_wt);
                 InspectionGoodsDetail::where('detail_inspection_code',$request->detail_inspection_code_id)->update($postDetail);
                 InspectionSubDetailLog::create($post_log);
