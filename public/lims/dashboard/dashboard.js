@@ -6,15 +6,14 @@ function mappingApproval(response){
     $('#apporval_container').empty()
     var data =''
     for(i = 0 ; i < response.length; i++){
-        console.log(response[i].transaction_code + '  ==  ' + response[i].inspection_type + ' == ' + response[i].type)
         data +=`
-                <li class="list-group-item mx-4 p-0" style="max-height:60px !important">
-                    <div class="row p-0">
-                    <div class="p-0 col-10 mt-2">
+                <li class="list-group-item mx-4 p-0">
+                    <div class="row px-4">
+                    <div class="px-2 col-10">
                         <label style="font-size:10px !important;font-weight:bold">${response[i].transaction_code}</label>
                         <p>${response[i].remark}</p>
                         </div>
-                        <div class="p-0 col-2 mt-1 mt-4">
+                        <div class="px-2 col-2">
                             <button class="btn btn-sm btn-info rounded" onclick="detail('${response[i].transaction_code}','${response[i].inspection_type}','${response[i].type}')" title ="Detail">
                             <i class="fa-solid fa-eye"></i>
                             </button>
@@ -91,7 +90,14 @@ $('#btn_approval_pellet').on('click', function(){
 });
 
 function detail(transaction_code,inspection_type,type){
-    if(inspection_type == 3 && type== 1){
+    if(inspection_type == 1 && type == 1){
+        getCallback('getProductLaboratoryDetail', { laboratory_code: transaction_code }, function(response){
+            swal.close()
+            dashboardMapLaboratoryApproval(response.data)
+            $('#dashboardLaboratoryApprovalModal').modal('show')
+        })
+    }
+    else if(inspection_type == 3 && type== 1){
         var data ={
             'inspection_detail' : transaction_code,
         }
@@ -279,8 +285,174 @@ function detail(transaction_code,inspection_type,type){
         $('#btn_approval_pellet').prop('hidden', false)
        })
     }
+    else if(inspection_type == '4' && type == '1'){
+        getCallback('getResalesGoodApprovalDetail', { transaction_code: transaction_code }, function(response){
+            swal.close()
+            dashboardMapResalesApproval(response.data, response.details || [], response.history || [])
+            $('#dashboardResalesApprovalModal').modal('show')
+        })
+    }
 
 
+}
+
+$('#btn_laboratory_approval').on('click', function(){
+    var data = {
+        laboratory_code: $('#dashboard_laboratory_code').val(),
+        decision: $('#dashboard_laboratory_decision').val(),
+        remark: $('#dashboard_laboratory_remark').val()
+    }
+    postCallback('updateLaboratoryApproval', data, function(response){
+        swal.close()
+        toastr['success'](response.meta.message)
+        $('#dashboardLaboratoryApprovalModal').modal('hide')
+        getCallbackNoSwal('getApprovalUser', null, function(result){
+            mappingApproval(result.data)
+        })
+    })
+})
+
+function dashboardMapLaboratoryApproval(header){
+    $('#dashboard_laboratory_code').val(header.laboratory_code)
+    $('#dashboardLaboratoryApprovalTitle').text('Laboratory Approval · ' + header.laboratory_code)
+    $('#dashboard_laboratory_decision, #dashboard_laboratory_remark').val('')
+    $('#dashboard_laboratory_decision').trigger('change')
+    $('#dashboardLaboratoryApprovalModal .text-danger').html('')
+
+    var product = header.product_relation || {}
+    var method = header.method_snapshot || {}
+    var location = header.location_relation || {}
+    var summary = [
+        ['Product', (product.seri || '-') + ' · ' + (product.ukuran || '-')],
+        ['Method', (method.code || '-') + ' · ' + (method.name || '-')],
+        ['Location / Shift', (location.name || '-') + ' · Shift ' + (header.shift || '-')],
+        ['Test Date', header.test_date || '-']
+    ]
+    var summaryHtml = ''
+    summary.forEach(function(item){
+        summaryHtml += '<div class="col-md-3 mb-2"><div class="p-3 bg-light rounded"><small class="text-muted d-block">' + dashboardLaboratoryEscape(item[0]) + '</small><b style="font-size:11px">' + dashboardLaboratoryEscape(item[1]) + '</b></div></div>'
+    })
+    $('#dashboard_laboratory_summary').html(summaryHtml)
+
+    var resultHtml = ''
+    ;(header.details_relation || []).forEach(function(detail){
+        var result = '-'
+        if(detail.result_type_snapshot === 'numeric') {
+            result = detail.result_value === null ? '-' : detail.result_value + (detail.unit_snapshot ? ' ' + detail.unit_snapshot : '')
+        } else if(detail.result_type_snapshot === 'boolean') {
+            result = detail.boolean_result === null ? '-' : (detail.boolean_result ? 'Yes / Pass' : 'No / Fail')
+        } else {
+            result = detail.text_result || '-'
+        }
+        var measurement = (detail.measurements_relation || []).map(function(item){ return item.value }).join(', ')
+        resultHtml += '<div class="border rounded p-3 mb-2"><div class="row align-items-center"><div class="col-md-4"><b>' + detail.sequence + '. ' + dashboardLaboratoryEscape(detail.parameter_name_snapshot) + '</b><small class="text-muted d-block">' + dashboardLaboratoryEscape(dashboardLaboratoryStandard(detail.standard_snapshot || {}, detail.unit_snapshot)) + '</small></div>' +
+            '<div class="col-md-3"><small class="text-muted d-block">Result</small><b>' + dashboardLaboratoryEscape(result) + '</b></div>' +
+            '<div class="col-md-3"><small class="text-muted d-block">Measurements</small><span style="font-size:11px">' + dashboardLaboratoryEscape(measurement || '-') + '</span></div>' +
+            '<div class="col-md-2 text-right">' + dashboardLaboratoryEvaluation(detail.evaluation) + '</div></div></div>'
+    })
+    $('#dashboard_laboratory_results').html(resultHtml || '<div class="text-muted text-center py-3">No laboratory result.</div>')
+}
+
+function dashboardLaboratoryStandard(standard, unit){
+    var suffix = unit ? ' ' + unit : ''
+    if(standard.expected_value !== null && standard.expected_value !== undefined && standard.expected_value !== '') return 'Expected: ' + standard.expected_value
+    if(standard.operator === 'BETWEEN') return 'Standard: ' + standard.min_value + ' – ' + standard.max_value + suffix
+    if(standard.operator === '>=') return 'Standard: ≥ ' + standard.min_value + suffix
+    if(standard.operator === '<=') return 'Standard: ≤ ' + standard.max_value + suffix
+    if(standard.operator === '=') return 'Standard: = ' + standard.target_value + suffix
+    return 'Observation only'
+}
+
+function dashboardLaboratoryEvaluation(evaluation){
+    if(evaluation === 'GOOD') return '<span class="badge badge-success">GOOD</span>'
+    if(evaluation === 'NO_GOOD') return '<span class="badge badge-danger">NO GOOD</span>'
+    return '<span class="badge badge-light">N/A</span>'
+}
+
+function dashboardLaboratoryEscape(value){
+    return window.escapeHtml ? window.escapeHtml(value) : $('<div>').text(value === null || value === undefined ? '' : value).html()
+}
+
+$('#btn_resales_approval').on('click', function(){
+    var data = {
+        transaction_code: $('#dashboard_resales_code').val(),
+        decision: $('#dashboard_resales_decision').val(),
+        remark: $('#dashboard_resales_remark').val()
+    }
+    postCallback('updateResalesGoodsApproval', data, function(response){
+        swal.close()
+        toastr['success'](response.meta.message)
+        $('#dashboardResalesApprovalModal').modal('hide')
+        getCallbackNoSwal('getApprovalUser', null, function(result){
+            mappingApproval(result.data)
+        })
+    })
+})
+
+function dashboardMapResalesApproval(header, details, history){
+    var esc = dashboardLaboratoryEscape
+    $('#dashboard_resales_code').val(header.transaction_code)
+    $('#dashboardResalesApprovalTitle').text('Resales Goods Approval · ' + header.transaction_code)
+    $('#dashboard_resales_decision, #dashboard_resales_remark').val('')
+    $('#dashboard_resales_decision').trigger('change')
+    $('#dashboardResalesApprovalModal .text-danger').html('')
+
+    var product = header.product_relation || {}
+    var location = header.location_relation || {}
+    var supplier = header.supplier_relation || {}
+    var inspector = header.inspector_relation || {}
+    var summary = [
+        ['Product', (product.name || '-') + (product.size ? ' · ' + product.size : '')],
+        ['Location', location.name || location.initial || '-'],
+        ['Supplier / Produsen', (supplier.name || '-') + ' / ' + ((header.produsen_relation || {}).name || '-')],
+        ['Inspector', inspector.name || '-'],
+        ['Quantity / Type', (header.quantity || '-') + ' · ' + (header.type || '-')],
+        ['No. PF', header.no_pf || '-'],
+        ['Certificate / Standard', (header.certificate || '-') + ' / ' + (header.standard || '-')],
+        ['Keterangan', header.keterangan || '-']
+    ]
+    var summaryHtml = ''
+    summary.forEach(function(item){
+        summaryHtml += '<div class="col-md-3 mb-2"><div class="p-3 bg-light rounded"><small class="text-muted d-block">' + esc(item[0]) + '</small><b style="font-size:11px">' + esc(item[1]) + '</b></div></div>'
+    })
+    $('#dashboard_resales_summary').html(summaryHtml)
+
+    var detailHtml = ''
+    details.forEach(function(detail, index){
+        var specs = detail.spesification || []
+        var specHtml = ''
+        specs.forEach(function(sp){
+            if (sp && typeof sp === 'object') {
+                var sym = (sp.symbol || '').toString().trim()
+                var val = (sp.value || '').toString().trim()
+                if (sym === '' && val === '') return
+                specHtml += '<span class="badge badge-primary mr-1 mb-1" style="font-size:11px"><b>' + esc(sym) + '</b>' + (val !== '' ? ': ' + esc(val) : '') + '</span>'
+            } else if (sp) {
+                specHtml += '<span class="badge badge-light mr-1 mb-1" style="font-size:11px">' + esc(sp) + '</span>'
+            }
+        })
+        detailHtml += '<div class="border rounded p-3 mb-2"><div class="row align-items-center">' +
+            '<div class="col-md-3"><b>' + (index + 1) + '. ' + esc((detail.product_relation || {}).name || 'Detail') + '</b></div>' +
+            '<div class="col-md-9">' + (specHtml || '<small class="text-muted"><i>(no spec filled)</i></small>') + '</div>' +
+            '</div></div>'
+    })
+    $('#dashboard_resales_details').html(detailHtml || '<div class="text-muted text-center py-3">No detail row.</div>')
+
+    var historyHtml = ''
+    history.forEach(function(item){
+        var statusLabel = '<span class="badge badge-info">Waiting</span>'
+        if (parseInt(item.status) === 1) statusLabel = '<span class="badge badge-success">Approved</span>'
+        else if (parseInt(item.status) === 4) statusLabel = '<span class="badge badge-warning">Revision</span>'
+        historyHtml += '<div class="d-flex justify-content-between border-bottom py-2" style="font-size:12px">' +
+            '<span>Step ' + esc(item.step) + ' · ' + esc((item.user_relation || {}).name || '-') + '</span>' +
+            '<span>' + esc(item.remark || '') + ' ' + statusLabel + '</span>' +
+            '</div>'
+    })
+    if (historyHtml) {
+        $('#dashboard_resales_history').html('<small class="text-muted d-block mb-1">Approval History</small>' + historyHtml)
+    } else {
+        $('#dashboard_resales_history').html('')
+    }
 }
 function mapping_progress(subdetail){
     var data ={
@@ -315,3 +487,23 @@ function mapping_progress(subdetail){
 
     })
 }
+
+/**
+ * The layout sweeps $(".select2") twice -- once inline and once on ready --
+ * and that sweep also matches the container span select2 itself creates. Any
+ * init that runs between the two sweeps ends up with a second, empty widget on
+ * top of the real one, so initialise after ready and destroy first.
+ */
+function initDashboardSelect2(selector, options) {
+    $(selector).each(function () {
+        if ($(this).hasClass('select2-hidden-accessible')) {
+            $(this).select2('destroy')
+        }
+    })
+    $(selector).select2(options)
+}
+
+$(function () {
+    initDashboardSelect2('#dashboard_laboratory_decision', { width: '100%', dropdownParent: $('#dashboardLaboratoryApprovalModal') })
+    initDashboardSelect2('#dashboard_resales_decision', { width: '100%', dropdownParent: $('#dashboardResalesApprovalModal') })
+})
