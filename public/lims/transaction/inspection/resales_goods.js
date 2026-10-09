@@ -674,6 +674,9 @@ $(document).ready(function () {
 
     $(document).on('click', '#btn_add_detail_row', function () {
         clearDetailForm()
+        // clearDetailForm mengosongkan hidden transaction_code — isi ulang,
+        // kalau tidak save detail selalu gagal validasi
+        $('#detail_transaction_code').val(CURRENT_TRX_CODE)
         getCallbackNoSwal('getResalesGood', { from: '', to: '' }, function (resp) {
             var header = findHeaderByCode(resp.data, CURRENT_TRX_CODE)
             CURRENT_HEADER = header
@@ -745,7 +748,7 @@ $(document).ready(function () {
         } else {
             routeName = 'addResalesGoodsDetail'
             postData = {
-                transaction_code: $('#detail_transaction_code').val(),
+                transaction_code: $('#detail_transaction_code').val() || CURRENT_TRX_CODE,
                 product_id: $('#detail_product_id').val(),
                 spesification: specs
             }
