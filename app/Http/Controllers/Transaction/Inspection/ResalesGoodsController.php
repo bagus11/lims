@@ -289,6 +289,12 @@ class ResalesGoodsController extends Controller
 
     function lockResalesGoods(Request $request) {
         // try {
+            $request->validate([
+                'transaction_code' => 'required|string',
+                'no_pf'            => 'required|string|max:100',
+                'keterangan'       => 'nullable|string|max:1000',
+            ]);
+
             $header = ResalesGood::where('transaction_code', $request->transaction_code)->first();
             if (!$header) {
                 return ResponseFormatter::error(

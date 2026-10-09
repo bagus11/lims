@@ -480,6 +480,11 @@ class LaboratoryController extends Controller
 
     function saveLaboratoryComment(Request $request)
     {
+        $request->validate([
+            'laboratory_code' => 'required|string',
+            'comment' => 'nullable|string|max:2000',
+        ]);
+
         $header = LaboratoryHeader::where('laboratory_code', $request->laboratory_code)->first();
 
         if (!$header) {

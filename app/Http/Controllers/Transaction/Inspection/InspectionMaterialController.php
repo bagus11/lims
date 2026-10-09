@@ -90,6 +90,7 @@ class InspectionMaterialController extends Controller
             'packaging'    =>'',
             'amount_per_sak'    =>0,
             'weight_per_sak'    =>0,
+            'produsen_id'    =>$request->produsen_id,
             'mfr'    =>0,
         ];
         $step = 0;
@@ -181,8 +182,12 @@ class InspectionMaterialController extends Controller
             'materialRelation',
             'inspectorRelation',
             'supplierRelation',
+
         ])->where('inspection_code', $request->inspection_code)->first();
-        $header =Pellet::where('inspection_code', $request->inspection_code)->first();
+        $header =Pellet::with([
+            'produsenRelation'
+        ])->
+        where('inspection_code', $request->inspection_code)->first();
         return response()->json([
             'header'=>$header,
             'detail'=>$detail,
@@ -334,6 +339,8 @@ class InspectionMaterialController extends Controller
         $min = '';
         $max = '';
         $avg = '';
+        $orientation = '';
+        $name = '';
        $detail = InspectionMaterial::with([
             'locationRelation',
             'materialRelation',
@@ -341,13 +348,20 @@ class InspectionMaterialController extends Controller
             'supplierRelation',
             'productRelation',
         ])->where('inspection_code', $inspection_code)->first();
+        $approval = ApprovalHistory::with('userRelation')->where('transaction_code', $detail->inspection_code)->get();
 
         if (!$detail) {
             abort(404, 'Inspection not found');
         }
 
         if($detail->type == 2){
-            $header =Pellet::where('inspection_code', $inspection_code)->first();
+            $header =Pellet::with('produsenRelation')->where('inspection_code', $inspection_code)->first();
+           $data = [
+                'detail'   => $detail,
+                'header'   => $header,
+                'approval'   => $approval,
+            ];
+
         }else{
             $data = ResinDetail::where('inspection_code', $inspection_code)->get();
             $header = ResinModel::where('inspection_code',$inspection_code)->first();
@@ -421,34 +435,37 @@ class InspectionMaterialController extends Controller
             } else {
                 $chartUrl = null;
             }
+            $data = [
+                    'detail'   => $detail,
+                    'header'   => $header,
+                    'data'     => $data,
+                    'min'      => $min,
+                    'max'      => $max,
+                    'avg'      => $avg,
+                    'chartUrl' => $chartUrl,
+                    'approval'   => $approval,
+                ];
         }
 
-        $data = [
-                'detail'   => $detail,
-                'header'   => $header,
-                'data'     => $data,
-                'min'      => $min,
-                'max'      => $max,
-                'avg'      => $avg,
-                'chartUrl' => $chartUrl,
-            ];
         if($detail->type == 1){
+            $orientation = 'P';
+            $name = 'Inspection Resin Material Report';
             $cetak              = view('report.inspection.report-resin_material', $data);
         }else{
+            $orientation = 'L';
+            $name = 'Inspection Pellet Material Report';
             $cetak              = view('report.inspection.report-pellet_material', $data);
         }
-        $imageLogo          = '<img src="'.public_path('icon.png').'" width="70px" style="float: right;"/>';
-        $header             = '';
-        $header             .= '<table width="100%" >
-                                    <tr>
+            $imageLogo          = '<img src="'.public_path('icon.png').'" width="70px" style="float: right;"/>';
+            $header             = '';
+            $header             .= '<table width="100%" >
+                                        <tr>
                                         <td style="border:none;padding-left:10px;">
-                                            <span style="font-size: 16px; font-weight: bold;"> PT PRALON</span>
+                                            '.$imageLogo.'
                                             <br>
-                                            <span style="font-size:9px;">Synergy Building #08-08 Tangerang 15143 - Indonesia +62 21 304 38808</span>
+                                            <span style="font-size:9px;">'.$detail->locationRelation->address.'</span>
                                         </td>
-                                        <td style="border:none;width:33%"></td>
-                                            <td style="border:none;width: 50px; text-align:right;">'.$imageLogo.'
-                                        </td>
+
                                     </tr>
 
                                 </table>
@@ -457,8 +474,8 @@ class InspectionMaterialController extends Controller
                                 $footer             = '<hr>
                                 <table width="100%" style="font-size: 8px;margin-top:-5px">
                                 <tr>
-                                <td width="90%" align="left"><b>Disclaimer</b><br>this document is strictly private, confidential and personal to recipients and should not be copied, distributed or reproduced in whole or in part, not passed to any third party.</td>
-                                        <td width="10%" style="text-align: right;"> {PAGENO}</td>
+                                        <td style="border:none;" width="90%" align="left"><b>Disclaimer</b><br>this document is strictly private, confidential and personal to recipients and should not be copied, distributed or reproduced in whole or in part, not passed to any third party.</td>
+                                        <td width="10%" style="text-align: right;border:none;"> {PAGENO}</td>
                                     </tr>
                                 </table>';
 
@@ -467,7 +484,7 @@ class InspectionMaterialController extends Controller
             $mpdf->SetHTMLHeader($header);
             $mpdf->SetHTMLFooter($footer);
             $mpdf->AddPage(
-                'P', // L - landscape, P - portrait
+              $orientation, // L - landscape, P - portrait
                 '',
                 '',
                 '',
@@ -482,6 +499,6 @@ class InspectionMaterialController extends Controller
             $mpdf->WriteHTML($cetak);
             // Output a PDF file directly to the browser
             ob_clean();
-            $mpdf->Output('Report Stock'.'('.date('Y-m-d').').pdf', 'I');
+            $mpdf->Output($name.' ('.date('Y-m-d').').pdf', 'I');
     }
 }

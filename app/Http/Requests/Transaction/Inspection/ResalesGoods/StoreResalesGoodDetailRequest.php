@@ -8,15 +8,16 @@ class StoreResalesGoodDetailRequest extends FormRequest
 {
     public function authorize()
     {
-        return true;
+        return auth()->check();
     }
 
     public function rules()
     {
         return [
-            'transaction_code'  => 'required',
-            'product_id'        => 'required',
-            'spesification'     => 'required|array',
+            'transaction_code'  => 'required|exists:resales_goods,transaction_code',
+            'spesification'     => 'required|array|min:1',
+            'spesification.*.symbol' => 'nullable|string|max:100',
+            'spesification.*.value'  => 'nullable|string|max:255',
         ];
     }
 }

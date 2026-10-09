@@ -27,24 +27,32 @@ class GoodsController extends Controller
     function index(){
         return view('transaction.inspection.goods.goods-index');
     }
-    function getInspectionGoods(Request $request) {
-        $data ='';
-        if(auth()->user()->hasPermissionTo('get-only_gm-inspection-goods')){
-            $data = InspectionGood::with([
-                'locationRelation',
-                // 'machineRelation',
-            ])->whereBetween(DB::raw('DATE(created_at)'), [$request->from, $request->to])
-            ->get();
-        }else{
-            $data = InspectionGood::with([
-                'locationRelation',
-                'machineRelation',
-            ])->whereBetween(DB::raw('DATE(created_at)'), [$request->from, $request->to])
-            ->where('location_id', auth()->user()->kode_kantor)
-            ->get();
+    function getInspectionGoods(Request $request)
+    {
+        $query = InspectionGood::with([
+            'locationRelation',
+            'machineRelation',
+        ])
+        ->whereBetween('created_at', [
+            $request->from . ' 00:00:00',
+            $request->to . ' 23:59:59',
+        ]);
+
+        // GM: bisa melihat semua location
+        if (auth()->user()->hasPermissionTo('get-only_gm-inspection-goods')) {
+            $query->without('machineRelation');
+        } else {
+            // User biasa: hanya bisa melihat location sendiri
+            $query->where(
+                'location_id',
+                auth()->user()->kode_kantor
+            );
         }
+
+        $data = $query->get();
+
         return response()->json([
-            'data'=>$data
+            'data' => $data,
         ]);
     }
     function getInspectionGoodShift(Request $request) {
@@ -310,7 +318,7 @@ class GoodsController extends Controller
             'shift'             => $detail->shift,
             'location'          =>  $header->location_id
         ])->first();
-        
+
         $approval_id = ApprovalDetail::where([
             'approval_code' => $approval->approval_code,
             'step'          => 1
