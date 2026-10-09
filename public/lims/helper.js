@@ -460,14 +460,14 @@ function mappingWT(response,id){
             data +=`
                 <tr style ="text-align :left">
                     <td style="text-align:center">${i + 1}</td>
-                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_1" value="${response[i].wt_1}" /></td>
-                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_2" value="${response[i].wt_2}" /></td>
-                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_3" value="${response[i].wt_3}" /></td>
-                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_4" value="${response[i].wt_4}" /></td>
-                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_5" value="${response[i].wt_5}" /></td>
-                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_6" value="${response[i].wt_6}" /></td>
-                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_7" value="${response[i].wt_7}" /></td>
-                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_8" value="${response[i].wt_8}" /></td>
+                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_1" value="${escapeHtml(response[i].wt_1)}" /></td>
+                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_2" value="${escapeHtml(response[i].wt_2)}" /></td>
+                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_3" value="${escapeHtml(response[i].wt_3)}" /></td>
+                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_4" value="${escapeHtml(response[i].wt_4)}" /></td>
+                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_5" value="${escapeHtml(response[i].wt_5)}" /></td>
+                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_6" value="${escapeHtml(response[i].wt_6)}" /></td>
+                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_7" value="${escapeHtml(response[i].wt_7)}" /></td>
+                    <td><input class="form-control update_wt" data-id="${response[i].id}" type="number" id="dynamic_wt_8" value="${escapeHtml(response[i].wt_8)}" /></td>
                 </tr>
             `
         }

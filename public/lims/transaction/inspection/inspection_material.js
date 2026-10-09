@@ -72,27 +72,27 @@ $('#inspection_material_table').on('click','.resin',function(){
         swal.close()
 
         // General Information
-            $('#resin_inspection_code').html(': ' + response.detail.inspection_code)
-            $('#resin_location').html(': ' + response.detail.location_relation.name)
-            $('#resin_inspector').html(': ' + response.detail.inspector_relation.name)
-            $('#resin_supplier').html(': ' + response.detail.supplier_relation.name)
-            $('#resin_brand').html(': ' + response.detail.merk)
-            $('#resin_standard').html(': ' + response.detail.standard)
-            $('#resin_certificate').html(': ' + response.detail.certificate)
-            $('#resin_weight').html(': ' + response.detail.weight +  ' kg')
-            $('#resin_amount').html(': ' + response.detail.amount + ' sak')
-            $('#resin_no_lot').html(': ' + response.detail.no_lot)
+            $('#resin_inspection_code').html(': ' + escapeHtml(response.detail.inspection_code))
+            $('#resin_location').html(': ' + escapeHtml(response.detail.location_relation.name))
+            $('#resin_inspector').html(': ' + escapeHtml(response.detail.inspector_relation.name))
+            $('#resin_supplier').html(': ' + escapeHtml(response.detail.supplier_relation.name))
+            $('#resin_brand').html(': ' + escapeHtml(response.detail.merk))
+            $('#resin_standard').html(': ' + escapeHtml(response.detail.standard))
+            $('#resin_certificate').html(': ' + escapeHtml(response.detail.certificate))
+            $('#resin_weight').html(': ' + escapeHtml(response.detail.weight) + ' kg')
+            $('#resin_amount').html(': ' + escapeHtml(response.detail.amount) + ' sak')
+            $('#resin_no_lot').html(': ' + escapeHtml(response.detail.no_lot))
         // General Information
         // Bulk Density
             $('canvas#resin_graphic').remove()
             $('canvas#resin_graphic_container').remove();
-            $('#resin_product_id').html(': ' + response.detail.material_relation.name)
-            $("#resin_step").html(': ' + response.header.step)
-            $('#resin_spec').html(': ' + response.detail.material_relation.spec)
-            $('#resin_min').html(': ' + response.min.value)
-            $('#resin_max').html(': ' + response.max.value)
-            let limitedNumber = response.avg.toFixed(5);
-            $('#resin_avg').html(': ' + limitedNumber)
+            $('#resin_product_id').html(': ' + escapeHtml(response.detail.material_relation.name))
+            $("#resin_step").html(': ' + escapeHtml(response.header.step))
+            $('#resin_spec').html(': ' + escapeHtml(response.detail.material_relation.spec))
+            $('#resin_min').html(': ' + escapeHtml(response.min.value))
+            $('#resin_max').html(': ' + escapeHtml(response.max.value))
+            let limitedNumber = response.avg !== null ? Number(response.avg).toFixed(5) : '-';
+            $('#resin_avg').html(': ' + escapeHtml(limitedNumber))
             if(response.data.length > 0){
                 var data = []
                 var label =[]
@@ -114,10 +114,10 @@ $('#inspection_material_table').on('click','.resin',function(){
                         </div>
                         <div class="col-3">
                             <input class="form-control resin_detail-number" style="text-align:center"
-                                onchange="updateResin('${response.data[i].inspection_code}', '${response.data[i].step}', this.value)"
+                                onchange="updateResin('${escapeHtml(response.data[i].inspection_code)}', '${response.data[i].step}', this.value)"
                                 type="text"
                                 data-step="${response.data[i].step}"
-                                data-inspection="${response.data[i].inspection_code}"
+                                data-inspection="${escapeHtml(response.data[i].inspection_code)}"
                                 value="${formattedValue}">
                         </div>
                     `;
@@ -207,16 +207,16 @@ $('#inspection_material_table').on('click','.pellet',function(){
     getCallback('getPelletInspection',data, function(response){
         swal.close()
         // General Information
-            $('#pellet_inspection_code').html(': ' + response.detail.inspection_code)
-            $('#pellet_location').html(': ' + response.detail.location_relation.name)
-            $('#pellet_inspector').html(': ' + response.detail.inspector_relation.name)
-            $('#pellet_supplier').html(': ' + response.detail.supplier_relation.name)
-            $('#pellet_brand').html(': ' + response.detail.merk)
-            $('#pellet_standard').html(': ' + response.detail.standard)
-            $('#pellet_certificate').html(': ' + response.detail.certificate)
-            $('#pellet_weight').html(': ' + response.detail.weight +  ' kg')
-            $('#pellet_amount').html(': ' + response.detail.amount + ' sak')
-            $('#pellet_no_lot').html(': ' + response.detail.no_lot)
+            $('#pellet_inspection_code').html(': ' + escapeHtml(response.detail.inspection_code))
+            $('#pellet_location').html(': ' + escapeHtml(response.detail.location_relation.name))
+            $('#pellet_inspector').html(': ' + escapeHtml(response.detail.inspector_relation.name))
+            $('#pellet_supplier').html(': ' + escapeHtml(response.detail.supplier_relation.name))
+            $('#pellet_brand').html(': ' + escapeHtml(response.detail.merk))
+            $('#pellet_standard').html(': ' + escapeHtml(response.detail.standard))
+            $('#pellet_certificate').html(': ' + escapeHtml(response.detail.certificate))
+            $('#pellet_weight').html(': ' + escapeHtml(response.detail.weight) + ' kg')
+            $('#pellet_amount').html(': ' + escapeHtml(response.detail.amount) + ' sak')
+            $('#pellet_no_lot').html(': ' + escapeHtml(response.detail.no_lot))
         // General Information
         // Detail Inspectoin
                 $('#select_pellet_visible_properties').val(response.header.visible_properties)
@@ -298,27 +298,27 @@ $('#btn_save_pellet').on('click', function(){
                 swal.close()
 
                 // General Information
-                    $('#label_resin_inspection_code').html(': ' + response.detail.inspection_code)
-                    $('#label_resin_location').html(': ' + response.detail.location_relation.name)
-                    $('#label_resin_inspector').html(': ' + response.detail.inspector_relation.name)
-                    $('#label_resin_supplier').html(': ' + response.detail.supplier_relation.name)
-                    $('#label_resin_brand').html(': ' + response.detail.merk)
-                    $('#label_resin_standard').html(': ' + response.detail.standard)
-                    $('#label_resin_certificate').html(': ' + response.detail.certificate)
-                    $('#label_resin_weight').html(': ' + response.detail.weight +  ' kg')
-                    $('#label_resin_amount').html(': ' + response.detail.amount + ' sak')
-                    $('#label_resin_no_lot').html(': ' + response.detail.no_lot)
+                    $('#label_resin_inspection_code').html(': ' + escapeHtml(response.detail.inspection_code))
+                    $('#label_resin_location').html(': ' + escapeHtml(response.detail.location_relation.name))
+                    $('#label_resin_inspector').html(': ' + escapeHtml(response.detail.inspector_relation.name))
+                    $('#label_resin_supplier').html(': ' + escapeHtml(response.detail.supplier_relation.name))
+                    $('#label_resin_brand').html(': ' + escapeHtml(response.detail.merk))
+                    $('#label_resin_standard').html(': ' + escapeHtml(response.detail.standard))
+                    $('#label_resin_certificate').html(': ' + escapeHtml(response.detail.certificate))
+                    $('#label_resin_weight').html(': ' + escapeHtml(response.detail.weight) + ' kg')
+                    $('#label_resin_amount').html(': ' + escapeHtml(response.detail.amount) + ' sak')
+                    $('#label_resin_no_lot').html(': ' + escapeHtml(response.detail.no_lot))
                 // General Information
                 // Bulk Density
                     $('label_canvas#resin_graphic').remove()
                     $('label_canvas#resin_graphic_container').remove();
-                    $('#label_resin_product_id').html(': ' + response.detail.material_relation.name)
-                    $("#label_resin_step").html(': ' + response.header.step)
-                    $('#label_resin_spec').html(': ' + response.detail.material_relation.spec)
-                    $('#label_resin_min').html(': ' + response.min.value)
-                    $('#label_resin_max').html(': ' + response.max.value)
-                    let limitedNumber = response.avg.toFixed(5);
-                    $('#label_resin_avg').html(': ' + limitedNumber)
+                    $('#label_resin_product_id').html(': ' + escapeHtml(response.detail.material_relation.name))
+                    $("#label_resin_step").html(': ' + escapeHtml(response.header.step))
+                    $('#label_resin_spec').html(': ' + escapeHtml(response.detail.material_relation.spec))
+                    $('#label_resin_min').html(': ' + escapeHtml(response.min.value))
+                    $('#label_resin_max').html(': ' + escapeHtml(response.max.value))
+                    let limitedNumber = response.avg !== null ? Number(response.avg).toFixed(5) : '-';
+                    $('#label_resin_avg').html(': ' + escapeHtml(limitedNumber))
                     if(response.data.length > 0){
                         var data = []
                         var label =[]
@@ -378,15 +378,15 @@ $('#btn_save_pellet').on('click', function(){
                     }
 
                      // Density Properties
-                        $('#label_vivsible_properties').html(': '+ response.header.visible_properties)
-                        $('#label_resin_package').html(': '+ response.header.packaging)
-                        $('#label_resin_color').html(': '+ response.header.color)
-                        $('#label_resin_particle_size').html(': '+ response.header.particle_size)
-                        $('#label_resin_volatile_matter').html(': '+ response.header.volatile_matter)
-                        $('#label_resin_amount_per_sak').html(': '+ response.header.amount)
-                        $('#label_resin_weight_per_sak').html(': '+ response.header.weight)
-                        $('#label_resin_remark').html(': '+ response.detail.remark)
-                        $('#label_resin_pof_number').html(': '+ response.detail.no_pof)
+                        $('#label_vivsible_properties').html(': ' + escapeHtml(response.header.visible_properties))
+                        $('#label_resin_package').html(': ' + escapeHtml(response.header.packaging))
+                        $('#label_resin_color').html(': ' + escapeHtml(response.header.color))
+                        $('#label_resin_particle_size').html(': ' + escapeHtml(response.header.particle_size))
+                        $('#label_resin_volatile_matter').html(': ' + escapeHtml(response.header.volatile_matter))
+                        $('#label_resin_amount_per_sak').html(': ' + escapeHtml(response.header.amount))
+                        $('#label_resin_weight_per_sak').html(': ' + escapeHtml(response.header.weight))
+                        $('#label_resin_remark').html(': ' + escapeHtml(response.detail.remark))
+                        $('#label_resin_pof_number').html(': ' + escapeHtml(response.detail.no_pof))
 
                     // Density Properties
             })
@@ -395,28 +395,28 @@ $('#btn_save_pellet').on('click', function(){
             getCallback('getPelletInspection',data, function(response){
                 swal.close()
                 // General Information
-                    $('#label_pellet_inspection_code').html(': ' + response.detail.inspection_code)
-                    $('#label_pellet_location').html(': ' + response.detail.location_relation.name)
-                    $('#label_pellet_inspector').html(': ' + response.detail.inspector_relation.name)
-                    $('#label_pellet_supplier').html(': ' + response.detail.supplier_relation.name)
-                    $('#label_pellet_produsen').html(': ' + response.header.produsen_relation.name)
-                    $('#label_pellet_brand').html(': ' + response.detail.merk)
-                    $('#label_pellet_standard').html(': ' + response.detail.standard)
-                    $('#label_pellet_certificate').html(': ' + response.detail.certificate)
-                    $('#label_pellet_weight').html(': ' + response.detail.weight +  ' kg')
-                    $('#label_pellet_amount').html(': ' + response.detail.amount + ' sak')
-                    $('#label_pellet_no_lot').html(': ' + response.detail.no_lot)
+                    $('#label_pellet_inspection_code').html(': ' + escapeHtml(response.detail.inspection_code))
+                    $('#label_pellet_location').html(': ' + escapeHtml(response.detail.location_relation.name))
+                    $('#label_pellet_inspector').html(': ' + escapeHtml(response.detail.inspector_relation.name))
+                    $('#label_pellet_supplier').html(': ' + escapeHtml(response.detail.supplier_relation.name))
+                    $('#label_pellet_produsen').html(': ' + escapeHtml(response.header.produsen_relation ? response.header.produsen_relation.name : '-'))
+                    $('#label_pellet_brand').html(': ' + escapeHtml(response.detail.merk))
+                    $('#label_pellet_standard').html(': ' + escapeHtml(response.detail.standard))
+                    $('#label_pellet_certificate').html(': ' + escapeHtml(response.detail.certificate))
+                    $('#label_pellet_weight').html(': ' + escapeHtml(response.detail.weight) + ' kg')
+                    $('#label_pellet_amount').html(': ' + escapeHtml(response.detail.amount) + ' sak')
+                    $('#label_pellet_no_lot').html(': ' + escapeHtml(response.detail.no_lot))
                 // General Information
                     console.log(response)
 
                 // Detail Inspectoin
-                        $('#label_pellet_amount_per_sak').html(': ' + response.header.amount_per_sak +  ' sak')
-                        $('#label_pellet_visible_properties').html(': ' + response.header.visible_properties)
-                        $('#label_pellet_packaging').html(': ' + response.header.packaging)
-                        $('#label_pellet_weight_per_sak').html(': ' + response.header.weight_per_sak +  ' kg')
+                        $('#label_pellet_amount_per_sak').html(': ' + escapeHtml(response.header.amount_per_sak) + ' sak')
+                        $('#label_pellet_visible_properties').html(': ' + escapeHtml(response.header.visible_properties))
+                        $('#label_pellet_packaging').html(': ' + escapeHtml(response.header.packaging))
+                        $('#label_pellet_weight_per_sak').html(': ' + escapeHtml(response.header.weight_per_sak) + ' kg')
                         $('#label_pelet_mfr').html(': ' + response.header.mfr + ' G/10 mm')
-                        $('#label_pellet_remark').html(': ' + response.detail.remark)
-                        $('#label_pellet_pof_number').html(': ' + response.detail.no_pof)
+                        $('#label_pellet_remark').html(': ' + escapeHtml(response.detail.remark))
+                        $('#label_pellet_pof_number').html(': ' + escapeHtml(response.detail.no_pof))
                 // Detail Inspectoin
 
             })
@@ -437,7 +437,7 @@ $('#btn_save_pellet').on('click', function(){
         'detail': detail,
         'shift' : 1
        }
-       $('#approval_location').html(': ' + locations)
+       $('#approval_location').html(': ' + escapeHtml(locations))
        $('#approval_shift').html(': 1')
         getCallback('getApprovalList',data, function(response){
             swal.close()
@@ -507,8 +507,8 @@ function mappingTable(response){
                 var btn_report = ''
                 var btn_detail = `
                   <button class="detail btn btn-sm btn-info"
-                        data-inspection="${response[i].inspection_code}"
-                        data-location="${response[i].location_relation.name}"
+                        data-inspection="${escapeHtml(response[i].inspection_code)}"
+                        data-location="${escapeHtml(response[i].location_relation.name)}"
                         data-type="${response[i].type}"
                         data-shift="${response[i].shift}
                   ">
@@ -522,18 +522,18 @@ function mappingTable(response){
                 const dateTime = date + ' ' + time
                 if(response[i].lock == 0){
                     btn_lock = (response[i].status == 1 || response[i].status == 4) ? `
-                    <button class="lock btn btn-sm btn-danger" data-inspection="${response[i].inspection_code}">
+                    <button class="lock btn btn-sm btn-danger" data-inspection="${escapeHtml(response[i].inspection_code)}">
                               <i class="fa-solid fa-lock"></i>
                              </button>
                   `:''
 
                     if(response[i].status == 0 || response[i].status == 1 || response[i].status == 4){
                         btn_edit = response[i].type ==1 ? `
-                         <button class="resin btn btn-sm btn-dark" data-inspection="${response[i].inspection_code}" data-toggle="modal" data-target="#resinInspectionModal">
+                         <button class="resin btn btn-sm btn-dark" data-inspection="${escapeHtml(response[i].inspection_code)}" data-toggle="modal" data-target="#resinInspectionModal">
                                     <i class="fa-solid fa-flask-vial"></i>
                                    </button>
                        ` : `
-                          <button class="pellet btn btn-sm btn-warning" data-inspection="${response[i].inspection_code}" data-toggle="modal" data-target="#pelletInspectionModal">
+                          <button class="pellet btn btn-sm btn-warning" data-inspection="${escapeHtml(response[i].inspection_code)}" data-toggle="modal" data-target="#pelletInspectionModal">
                                        <i class="fa-solid fa-vial-virus"></i>
                                    </button>
                        `
@@ -541,18 +541,18 @@ function mappingTable(response){
                 }else{
                     btn_approval =`
                          <button class="approval btn btn-sm btn-primary"
-                           data-location="${response[i].location}"
-                           data-locations="${response[i].location_relation.name}"
-                         data-detail="${response[i].inspection_code}"
+                           data-location="${escapeHtml(response[i].location)}"
+                           data-locations="${escapeHtml(response[i].location_relation.name)}"
+                         data-detail="${escapeHtml(response[i].inspection_code)}"
                          data-shift="${response[i].shift}"
                          title="Approval Log"
-                         data-inspection="${response[i].inspection_code}"
+                         data-inspection="${escapeHtml(response[i].inspection_code)}"
                          data-toggle="modal" data-target="#logApprovalModal">
                     <i class="fas fa-person-circle-check"></i>
                     </button>
                     `
                     btn_print =`
-                     <button class="export_progress btn btn-sm btn-success" data-detail="${response[i].inspection_code}" data-toggle="modal" title="Export Progress" data-target="#reportProgressModal">
+                     <button class="export_progress btn btn-sm btn-success" data-detail="${escapeHtml(response[i].inspection_code)}" data-toggle="modal" title="Export Progress" data-target="#reportProgressModal">
                             <i class="fa-solid fa-print"></i>
                     </button>
                     `
@@ -560,9 +560,9 @@ function mappingTable(response){
                 data +=`
                     <tr style ="text-align :left">
                         <td style="text-align: center">${dateTime}</td>
-                        <td>${response[i].location_relation.name}</td>
-                        <td style="text-align: center">${response[i].inspection_code}</td>
-                        <td>${response[i].material_relation.name}</td>
+                        <td>${escapeHtml(response[i].location_relation.name)}</td>
+                        <td style="text-align: center">${escapeHtml(response[i].inspection_code)}</td>
+                        <td>${escapeHtml(response[i].material_relation.name)}</td>
                         <td>${type}</td>
                         <td>${status_table}</td>
                         <td style="width:20%">
@@ -602,27 +602,27 @@ function updateResin(x,y,z){
         getCallbackNoSwal('getResinInspection', data_test, function(response){
 
         // General Information
-            $('#resin_inspection_code').html(': ' + response.detail.inspection_code)
-            $('#resin_location').html(': ' + response.detail.location_relation.name)
-            $('#resin_inspector').html(': ' + response.detail.inspector_relation.name)
-            $('#resin_supplier').html(': ' + response.detail.supplier_relation.name)
-            $('#resin_brand').html(': ' + response.detail.merk)
-            $('#resin_standard').html(': ' + response.detail.standard)
-            $('#resin_certificate').html(': ' + response.detail.certificate)
-            $('#resin_weight').html(': ' + response.detail.weight +  ' kg')
-            $('#resin_amount').html(': ' + response.detail.amount + ' sak')
-            $('#resin_no_lot').html(': ' + response.detail.no_lot)
+            $('#resin_inspection_code').html(': ' + escapeHtml(response.detail.inspection_code))
+            $('#resin_location').html(': ' + escapeHtml(response.detail.location_relation.name))
+            $('#resin_inspector').html(': ' + escapeHtml(response.detail.inspector_relation.name))
+            $('#resin_supplier').html(': ' + escapeHtml(response.detail.supplier_relation.name))
+            $('#resin_brand').html(': ' + escapeHtml(response.detail.merk))
+            $('#resin_standard').html(': ' + escapeHtml(response.detail.standard))
+            $('#resin_certificate').html(': ' + escapeHtml(response.detail.certificate))
+            $('#resin_weight').html(': ' + escapeHtml(response.detail.weight) + ' kg')
+            $('#resin_amount').html(': ' + escapeHtml(response.detail.amount) + ' sak')
+            $('#resin_no_lot').html(': ' + escapeHtml(response.detail.no_lot))
         // General Information
         // Bulk Density
             $('canvas#resin_graphic').remove()
             $('canvas#resin_graphic_container').remove();
-            $('#resin_product_id').html(': ' + response.detail.material_relation.name)
-            $("#resin_step").html(': ' + response.header.step)
-            $('#resin_spec').html(': ' + response.detail.material_relation.spec)
-            $('#resin_min').html(': ' + response.min.value)
-            $('#resin_max').html(': ' + response.max.value)
-            let limitedNumber = response.avg.toFixed(5);
-            $('#resin_avg').html(': ' + limitedNumber)
+            $('#resin_product_id').html(': ' + escapeHtml(response.detail.material_relation.name))
+            $("#resin_step").html(': ' + escapeHtml(response.header.step))
+            $('#resin_spec').html(': ' + escapeHtml(response.detail.material_relation.spec))
+            $('#resin_min').html(': ' + escapeHtml(response.min.value))
+            $('#resin_max').html(': ' + escapeHtml(response.max.value))
+            let limitedNumber = response.avg !== null ? Number(response.avg).toFixed(5) : '-';
+            $('#resin_avg').html(': ' + escapeHtml(limitedNumber))
             if(response.data.length > 0){
                 var data = []
                 var label =[]
@@ -644,10 +644,10 @@ function updateResin(x,y,z){
                         </div>
                         <div class="col-3">
                             <input class="form-control resin_detail-number" style="text-align:center"
-                                onchange="updateResin('${response.data[i].inspection_code}', '${response.data[i].step}', this.value)"
+                                onchange="updateResin('${escapeHtml(response.data[i].inspection_code)}', '${response.data[i].step}', this.value)"
                                 type="text"
                                 data-step="${response.data[i].step}"
-                                data-inspection="${response.data[i].inspection_code}"
+                                data-inspection="${escapeHtml(response.data[i].inspection_code)}"
                                 value="${formattedValue}">
                         </div>
                     `;
@@ -747,14 +747,14 @@ function mappingApproval(response, history) {
                         <div class="col ml--2">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
-                                    <h5 class="mb-0" style="font-size:12px !important">${response[i].user_relation.name}</h5>
+                                    <h5 class="mb-0" style="font-size:12px !important">${escapeHtml(response[i].user_relation.name)}</h5>
                                     ${info}
                                 </div>
                                 <div class="text-right text-muted">
                                     <small style="font-size:9px !important">${date} ${time}</small>
                                 </div>
                             </div>
-                            <p style="font-size:10px !important" class="text-sm mb-0">${remark}</p>
+                            <p style="font-size:10px !important" class="text-sm mb-0">${escapeHtml(remark)}</p>
                         </div>
                     </div>
                 </div>

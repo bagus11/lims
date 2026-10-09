@@ -1,10 +1,25 @@
-let data_start = {
-    'from' : $('#from').val(),
-    'to' : $('#to').val(),
+/**
+ * Read the filter inputs at call time. This used to be a plain object built
+ * once at script load, which froze the range to whatever the page opened with
+ * -- changing the dates then pressing Filter had no effect at all.
+ */
+function goodsFilterData() {
+    return {
+        'from': $('#from').val(),
+        'to': $('#to').val(),
+    }
 }
-getCallback('getInspectionGoods',data_start, function(response){
+getCallback('getInspectionGoods',goodsFilterData(), function(response){
     swal.close()
+
     mappingTable(response.data)
+})
+$('#btnFilter').on('click', function(){
+getCallback('getInspectionGoods',goodsFilterData(), function(response){
+    swal.close()
+    console.log(response.data)
+    mappingTable(response.data)
+})
 })
 $('#btn_add_header').on('click', function(){
     $('#location_id').val('')
@@ -23,7 +38,7 @@ $('#btn_save_header').on('click', function(){
         swal.close()
         toastr['success'](response.meta.message)
         $('#addInspectionHeader').modal('hide')
-        getCallbackNoSwal('getInspectionGoods',data_start, function(response){
+        getCallbackNoSwal('getInspectionGoods',goodsFilterData(), function(response){
             mappingTable(response.data)
         })
     })
@@ -90,7 +105,7 @@ $('#btn_save_header').on('click', function(){
                     swal.close()
                     toastr['success'](response.meta.message)
                     $('#addSubDetailInspection').modal('hide')
-                    getCallbackNoSwal('getInspectionGoods',data_start, function(response){
+                    getCallbackNoSwal('getInspectionGoods',goodsFilterData(), function(response){
                         swal.close()
                         mappingTable(response.data)
                     })
@@ -207,7 +222,7 @@ $('#btn_save_header').on('click', function(){
             $('#editSubDetailInspection').modal('hide')
             toastr['success'](response.meta.message)
             $('#reason').val('')
-            getCallback('getInspectionGoods',data_start, function(response){
+            getCallback('getInspectionGoods',goodsFilterData(), function(response){
                 swal.close()
                 mappingTable(response.data)
             })
@@ -219,8 +234,8 @@ $('#btn_save_header').on('click', function(){
     $('#inspection_header_table').on('click', '.approval_header', function(){
         var inspection = $(this).data('inspection')
         var location = $(this).data('location')
-        $('#approval_location').html(': ' + location)
-        $('#approval_inspection').html(': ' + inspection)
+        $('#approval_location').html(': ' + escapeHtml(location))
+        $('#approval_inspection').html(': ' + escapeHtml(inspection))
     })
 // Log Approval Hedaer
 
@@ -248,10 +263,10 @@ $('#btn_save_header').on('click', function(){
                         button_approval  =`
                              <button class="approval_header btn btn-sm btn-primary"
                              data-locationid="${response[i].location_id}"
-                             data-location="${response[i].location_relation.name}"
+                             data-location="${escapeHtml(response[i].location_relation.name)}"
                              data-shift="${response[i].shift}"
                              title="Approval Log"
-                             data-inspection="${response[i].inspection_code}"
+                             data-inspection="${escapeHtml(response[i].inspection_code)}"
                              data-toggle="modal"
                              data-target="#logApprovalHeaderModal">
                     <i class="fas fa-person-circle-check"></i>
@@ -273,8 +288,8 @@ $('#btn_save_header').on('click', function(){
 
                             <td class='details-control'></td>
                             <td>${dateTime}</td>
-                            <td class="inspection_code">${response[i].inspection_code}</td>
-                            <td>${response[i].location_relation.name}</td>
+                            <td class="inspection_code">${escapeHtml(response[i].inspection_code)}</td>
+                            <td>${escapeHtml(response[i].location_relation.name)}</td>
                             <td>${status}</td>
 
 
@@ -341,31 +356,31 @@ $('#btn_save_header').on('click', function(){
             $('#tab_progress').html(progress_tab);
             $('#tab_progress').prop('hidden', false)
 
-            $('#label_inspector').html(response.detail.inspector ? ': ' + response.detail.inspector_relation.name : ': ')
+            $('#label_inspector').html(response.detail.inspector ? ': ' + escapeHtml(response.detail.inspector_relation.name) : ': ')
 
-            $('#label_user_id').html(': ' + response.detail.user_relation.name)
+            $('#label_user_id').html(': ' + escapeHtml(response.detail.user_relation.name))
             $('#label_time').val(response.detail.time)
-            $('#label_machine').html(': ' + response.detail.machine_relation.name)
-            $('#label_product').html(': ' + response.detail.product_relation.marking)
-            $('#label_manufacturing_code').html(': ' + response.detail.product_relation.marking)
-            $('#label_length_of_pipe').html(': ' + response.detail.length_of_pipe)
-            $('#label_material').html(': ' + response.detail.material_relation.name)
-            $('#label_tape_diameter').html(': ' + response.detail.tape_diameter)
-            $('#label_tape_diameter').html(': ' + response.detail.tape_diameter)
-            $('#label_tape_diameter').html(': ' + response.detail.tape_diameter)
+            $('#label_machine').html(': ' + escapeHtml(response.detail.machine_relation.name))
+            $('#label_product').html(': ' + escapeHtml(response.detail.product_relation.marking))
+            $('#label_manufacturing_code').html(': ' + escapeHtml(response.detail.product_relation.marking))
+            $('#label_length_of_pipe').html(': ' + escapeHtml(response.detail.length_of_pipe))
+            $('#label_material').html(': ' + escapeHtml(response.detail.material_relation.name))
+            $('#label_tape_diameter').html(': ' + escapeHtml(response.detail.tape_diameter))
+            $('#label_tape_diameter').html(': ' + escapeHtml(response.detail.tape_diameter))
+            $('#label_tape_diameter').html(': ' + escapeHtml(response.detail.tape_diameter))
 
-            $('#label_appearance_of_pipe').html(': ' + response.detail.appearance_of_pipe)
-            $('#label_marking').html(': ' + response.detail.marking)
-            $('#label_condition_pipe_of_cut').html(': ' + response.detail.condition_pipe_of_cut)
-            $('#label_angle_pipe_of_spigot').html(': ' + response.detail.angle_pipe_of_spigot)
-            $('#label_color_of_pipes').html(': ' + response.detail.color_of_pipes)
+            $('#label_appearance_of_pipe').html(': ' + escapeHtml(response.detail.appearance_of_pipe))
+            $('#label_marking').html(': ' + escapeHtml(response.detail.marking))
+            $('#label_condition_pipe_of_cut').html(': ' + escapeHtml(response.detail.condition_pipe_of_cut))
+            $('#label_angle_pipe_of_spigot').html(': ' + escapeHtml(response.detail.angle_pipe_of_spigot))
+            $('#label_color_of_pipes').html(': ' + escapeHtml(response.detail.color_of_pipes))
             mappingWT(response.wt,'label_wt')
-            $('#label_evaluation_spec').html(': ' + response.detail.evaluation_spec)
+            $('#label_evaluation_spec').html(': ' + escapeHtml(response.detail.evaluation_spec))
 
         })
     });
     $(document).on('click','.add', function(e){
-       
+
         var inspection = $(this).data('inspection')
         $('#detail_inspection_code_id').val(inspection)
         getCallbackNoSwal('getMasterProduct',null, function(response){
@@ -389,8 +404,8 @@ $('#btn_save_header').on('click', function(){
         var shift = $(this).data('shift');
         var location_id = $(this).data('locationid');
 
-        $('#approval_shift').html(': ' + shift)
-        $('#approval_location').html(': ' + location)
+        $('#approval_shift').html(': ' + escapeHtml(shift))
+        $('#approval_location').html(': ' + escapeHtml(location))
         var data  = {
             'location'  : location_id,
             'detail'    : detail,
@@ -444,7 +459,7 @@ $('#btn_save_header').on('click', function(){
                   icon: "success"
                 });
             })
-            getCallbackNoSwal('getInspectionGoods',data_start, function(response){
+            getCallbackNoSwal('getInspectionGoods',goodsFilterData(), function(response){
                 swal.close()
                 mappingTable(response.data)
             })
@@ -602,38 +617,38 @@ $('#btn_save_header').on('click', function(){
                 const date = d.toISOString().split('T')[0];
                 const time = d.toTimeString().split(' ')[0];
                 var lock_button =''
-                var add_button = response[i].lock == 1 ?'' : ` <button title="Add Progress" class="add btn btn-sm btn-success mr-2" data-inspection ="${response[i].detail_inspection_code}" data-toggle="modal" data-target="#addSubDetailInspection">
+                var add_button = response[i].lock == 1 ?'' : ` <button title="Add Progress" class="add btn btn-sm btn-success mr-2" data-inspection ="${escapeHtml(response[i].detail_inspection_code)}" data-toggle="modal" data-target="#addSubDetailInspection">
                                         <i class="fa-solid fa-plus"></i>
                                     </button>`
-                var edit_button = response[i].length == 1 && response[i].lock == 0 ? ` <button title="Edit Progress" class="edit btn btn-sm btn-warning mr-2" data-inspection ="${response[i].detail_inspection_code}" data-toggle="modal" data-target="#editSubDetailInspection">
+                var edit_button = response[i].length == 1 && response[i].lock == 0 ? ` <button title="Edit Progress" class="edit btn btn-sm btn-warning mr-2" data-inspection ="${escapeHtml(response[i].detail_inspection_code)}" data-toggle="modal" data-target="#editSubDetailInspection">
                                         <i class="fa-solid fa-edit"></i>
                                     </button>`:''
-                var detail_button = response[i].length == 1? `  <button class="mapping btn btn-sm btn-info mr-2" title="Detail" data-inspection ="${response[i].detail_inspection_code}" data-toggle="modal" data-target="#detailSubDetailInspection">
+                var detail_button = response[i].length == 1? `  <button class="mapping btn btn-sm btn-info mr-2" title="Detail" data-inspection ="${escapeHtml(response[i].detail_inspection_code)}" data-toggle="modal" data-target="#detailSubDetailInspection">
                                         <i class="fa-solid fa-eye"></i>
                                     </button>`:''
-                var  button_log   = response[i].length == 1 ?`<button class="history btn btn-sm btn-secondary" title="History Progress" data-inspection ="${response[i].detail_inspection_code}" data-toggle="modal" data-target="#historyProgressModal">
+                var  button_log   = response[i].length == 1 ?`<button class="history btn btn-sm btn-secondary" title="History Progress" data-inspection ="${escapeHtml(response[i].detail_inspection_code)}" data-toggle="modal" data-target="#historyProgressModal">
                    <i class="fa-solid fa-clock-rotate-left"></i>
                 </button>
                 ` : ''
 
 
                 if(response[i].subdetail_relation.length > 0 && response[i].lock == 0 ){
-                    lock_button = `<button title="Lock Progress" class="lock btn btn-sm btn-danger" data-detail="${response[i].detail_inspection_code}">
+                    lock_button = `<button title="Lock Progress" class="lock btn btn-sm btn-danger" data-detail="${escapeHtml(response[i].detail_inspection_code)}">
                     <i class="fas fa-lock"></i>
                     </button>
                     `
                 }
                 var btn_approval = response[i].lock == 0 ? '': `
-                <button class="approval btn btn-sm btn-primary" data-locationid="${response[i].header_relation.location_id}" data-shift="${response[i].shift}" data-location="${response[i].header_relation.location_relation.name}" title="Approval Log" data-detail="${response[i].detail_inspection_code}" data-toggle="modal" data-target="#logApprovalModal">
+                <button class="approval btn btn-sm btn-primary" data-locationid="${escapeHtml(response[i].header_relation.location_id)}" data-shift="${response[i].shift}" data-location="${escapeHtml(response[i].header_relation.location_relation.name)}" title="Approval Log" data-detail="${escapeHtml(response[i].detail_inspection_code)}" data-toggle="modal" data-target="#logApprovalModal">
                     <i class="fas fa-person-circle-check"></i>
                     </button>
                 `
                 var btn_report = response[i].lock == 0 ? '': `
-                <button class="export_progress btn btn-sm btn-success" data-detail="${response[i].detail_inspection_code}" data-toggle="modal" title="Export Progress" data-target="#reportProgressModal">
+                <button class="export_progress btn btn-sm btn-success" data-detail="${escapeHtml(response[i].detail_inspection_code)}" data-toggle="modal" title="Export Progress" data-target="#reportProgressModal">
                   <i class="fa-solid fa-print"></i>
                     </button>
                 `
-                var btn_udpate_wt = response[i].length == 1 && response[i].lock== 0 ? `<button class="updateWT btn btn-sm btn-dark" title="Update Wall Thickness" data-inspection ="${response[i].detail_inspection_code}" data-toggle="modal" data-target="#updateWallThicknessModal">
+                var btn_udpate_wt = response[i].length == 1 && response[i].lock== 0 ? `<button class="updateWT btn btn-sm btn-dark" title="Update Wall Thickness" data-inspection ="${escapeHtml(response[i].detail_inspection_code)}" data-toggle="modal" data-target="#updateWallThicknessModal">
                        <i class="fa-solid fa-file-word"></i>
                     </button>
                     ` : ''
@@ -654,7 +669,7 @@ $('#btn_save_header').on('click', function(){
                 }
 
                     row += `<tr class="table-light" style="width:100% !important">
-                                <td style="text-align:center">${response[i].detail_inspection_code}</td>
+                                <td style="text-align:center">${escapeHtml(response[i].detail_inspection_code)}</td>
                                 <td style="text-align:center">${response[i].shift}</td>
                                 <td style="text-align:center">${status}</td>
                                 <td style="text-align:left">
@@ -697,21 +712,21 @@ $('#btn_save_header').on('click', function(){
         getCallback('detailInspectionProgress',data, function(response){
             swal.close()
 
-            $('#label_inspector').html(response.detail.inspector_relation !== null ? ': ' + response.detail.inspector_relation.name : ': ')
-            $('#label_user_id').html(': ' + response.detail.user_relation.name)
+            $('#label_inspector').html(response.detail.inspector_relation !== null ? ': ' + escapeHtml(response.detail.inspector_relation.name) : ': ')
+            $('#label_user_id').html(': ' + escapeHtml(response.detail.user_relation.name))
             $('#label_time').val(response.detail.time)
-            $('#label_machine').html(': ' + response.detail.machine_relation.name)
-            $('#label_product').html(': ' + response.detail.product_relation.marking)
-            $('#label_manufacturing_code').html(': ' + response.detail.product_relation.marking)
-            $('#label_length_of_pipe').html(': ' + response.detail.length_of_pipe)
-            $('#label_material').html(': ' + response.detail.material_relation.name)
-            $('#label_tape_diameter').html(': ' + response.detail.tape_diameter)
+            $('#label_machine').html(': ' + escapeHtml(response.detail.machine_relation.name))
+            $('#label_product').html(': ' + escapeHtml(response.detail.product_relation.marking))
+            $('#label_manufacturing_code').html(': ' + escapeHtml(response.detail.product_relation.marking))
+            $('#label_length_of_pipe').html(': ' + escapeHtml(response.detail.length_of_pipe))
+            $('#label_material').html(': ' + escapeHtml(response.detail.material_relation.name))
+            $('#label_tape_diameter').html(': ' + escapeHtml(response.detail.tape_diameter))
 
-            $('#label_appearance_of_pipe').html(': ' + response.detail.appearance_of_pipe)
-            $('#label_marking').html(': ' + response.detail.marking)
-            $('#label_condition_pipe_of_cut').html(': ' + response.detail.condition_pipe_of_cut)
-            $('#label_angle_pipe_of_spigot').html(': ' + response.detail.angle_pipe_of_spigot)
-            $('#label_color_of_pipes').html(': ' + response.detail.color_of_pipes)
+            $('#label_appearance_of_pipe').html(': ' + escapeHtml(response.detail.appearance_of_pipe))
+            $('#label_marking').html(': ' + escapeHtml(response.detail.marking))
+            $('#label_condition_pipe_of_cut').html(': ' + escapeHtml(response.detail.condition_pipe_of_cut))
+            $('#label_angle_pipe_of_spigot').html(': ' + escapeHtml(response.detail.angle_pipe_of_spigot))
+            $('#label_color_of_pipes').html(': ' + escapeHtml(response.detail.color_of_pipes))
             $('#label_wt_1').val(response.wt.wt_1)
             $('#label_wt_2').val(response.wt.wt_2)
             $('#label_wt_3').val(response.wt.wt_3)
@@ -720,7 +735,7 @@ $('#btn_save_header').on('click', function(){
             $('#label_wt_6').val(response.wt.wt_6)
             $('#label_wt_7').val(response.wt.wt_7)
             $('#label_wt_8').val(response.wt.wt_8)
-            $('#label_evaluation_spec').html(': ' + response.detail.evaluation_spec)
+            $('#label_evaluation_spec').html(': ' + escapeHtml(response.detail.evaluation_spec))
 
         })
     }
@@ -765,14 +780,14 @@ $('#btn_save_header').on('click', function(){
                             <div class="col ml--2">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="d-flex align-items-center">
-                                        <h5 class="mb-0" style="font-size:12px !important">${response[i].user_relation.name}</h5>
+                                        <h5 class="mb-0" style="font-size:12px !important">${escapeHtml(response[i].user_relation.name)}</h5>
                                         ${info}
                                     </div>
                                     <div class="text-right text-muted">
                                         <small style="font-size:9px !important">${date} ${time}</small>
                                     </div>
                                 </div>
-                                <p style="font-size:10px !important" class="text-sm mb-0">${remark}</p>
+                                <p style="font-size:10px !important" class="text-sm mb-0">${escapeHtml(remark)}</p>
                             </div>
                         </div>
                     </div>
@@ -829,22 +844,22 @@ $('#btn_save_header').on('click', function(){
             data += `
                 <tr>
                     <td style="width:10%;text-align:center">${dateTime}</td>
-                    <td style="width:10%;${creatorStyle}">${history[i].creator_relation.name}</td>
-                    <td style="width:10%;${inspectorStyle}">${history[i].inspector_relation.name}</td>
-                    <td style="width:10%;${machineStyle}">${history[i].machine_relation.name}</td>
-                    <td style="width:10%;${productStyle}">${history[i].product_relation.marking}</td>
-                    <td style="width:10%;${manufacturingCodeStyle}">${history[i].manufacturing_code}</td>
-                    <td style="text-align:center;${lengthOfPipeStyle}">${history[i].length_of_pipe}</td>
-                    <td style="text-align:center;${appearanceOfPipeStyle}">${history[i].appearance_of_pipe}</td>
-                    <td style="text-align:center;${markingStyle}">${history[i].marking}</td>
-                    <td style="text-align:center;${conditionPipeOfCutStyle}">${history[i].condition_pipe_of_cut}</td>
-                    <td style="text-align:center;${anglePipeOfSpigotStyle}">${history[i].angle_pipe_of_spigot}</td>
-                    <td style="text-align:center;${colorOfPipesStyle}">${history[i].color_of_pipes}</td>
-                    <td style="text-align:left;width:10%;${materialStyle}">${history[i].material_relation.name}</td>
-                    <td style="text-align:center;${tapeDiameterStyle}">${history[i].tape_diameter}</td>
+                    <td style="width:10%;${creatorStyle}">${escapeHtml(history[i].creator_relation.name)}</td>
+                    <td style="width:10%;${inspectorStyle}">${escapeHtml(history[i].inspector_relation.name)}</td>
+                    <td style="width:10%;${machineStyle}">${escapeHtml(history[i].machine_relation.name)}</td>
+                    <td style="width:10%;${productStyle}">${escapeHtml(history[i].product_relation.marking)}</td>
+                    <td style="width:10%;${manufacturingCodeStyle}">${escapeHtml(history[i].manufacturing_code)}</td>
+                    <td style="text-align:center;${lengthOfPipeStyle}">${escapeHtml(history[i].length_of_pipe)}</td>
+                    <td style="text-align:center;${appearanceOfPipeStyle}">${escapeHtml(history[i].appearance_of_pipe)}</td>
+                    <td style="text-align:center;${markingStyle}">${escapeHtml(history[i].marking)}</td>
+                    <td style="text-align:center;${conditionPipeOfCutStyle}">${escapeHtml(history[i].condition_pipe_of_cut)}</td>
+                    <td style="text-align:center;${anglePipeOfSpigotStyle}">${escapeHtml(history[i].angle_pipe_of_spigot)}</td>
+                    <td style="text-align:center;${colorOfPipesStyle}">${escapeHtml(history[i].color_of_pipes)}</td>
+                    <td style="text-align:left;width:10%;${materialStyle}">${escapeHtml(history[i].material_relation.name)}</td>
+                    <td style="text-align:center;${tapeDiameterStyle}">${escapeHtml(history[i].tape_diameter)}</td>
 
-                    <td style="text-align:center;${evaluationSpecStyle}">${history[i].evaluation_spec}</td>
-                    <td style="width:20%;">${history[i].remark}</td>
+                    <td style="text-align:center;${evaluationSpecStyle}">${escapeHtml(history[i].evaluation_spec)}</td>
+                    <td style="width:20%;">${escapeHtml(history[i].remark)}</td>
                 </tr>
             `;
         }
@@ -872,14 +887,14 @@ $('#btn_save_header').on('click', function(){
                 data +=`
                     <tr style ="text-align :left">
                         <td style="text-align:center">${i + 1}</td>
-                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_1${i}" value="${response[i].wt_1}" /></td>
-                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_2${i}" value="${response[i].wt_2}" /></td>
-                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_3${i}" value="${response[i].wt_3}" /></td>
-                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_4${i}" value="${response[i].wt_4}" /></td>
-                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_5${i}" value="${response[i].wt_5}" /></td>
-                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_6${i}" value="${response[i].wt_6}" /></td>
-                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_7${i}" value="${response[i].wt_7}" /></td>
-                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_8${i}" value="${response[i].wt_8}" /></td>
+                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_1${i}" value="${escapeHtml(response[i].wt_1)}" /></td>
+                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_2${i}" value="${escapeHtml(response[i].wt_2)}" /></td>
+                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_3${i}" value="${escapeHtml(response[i].wt_3)}" /></td>
+                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_4${i}" value="${escapeHtml(response[i].wt_4)}" /></td>
+                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_5${i}" value="${escapeHtml(response[i].wt_5)}" /></td>
+                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_6${i}" value="${escapeHtml(response[i].wt_6)}" /></td>
+                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_7${i}" value="${escapeHtml(response[i].wt_7)}" /></td>
+                        <td><input class="form-control update_wt" data-id="${response[i].id}" data-i ="${i}" type="number" id="dynamic_wt_8${i}" value="${escapeHtml(response[i].wt_8)}" /></td>
                     </tr>
                 `
             }
