@@ -56,7 +56,7 @@ class ResalesGoodsController extends Controller
             $query->whereBetween(DB::raw('DATE(created_at)'), [$request->from, $request->to]);
         }
 
-        if (!auth()->user()->hasPermissionTo('get-only_gm-inspection-goods')) {
+        if (!auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
             $query->where('location_id', auth()->user()->kode_kantor);
         }
 
@@ -123,7 +123,31 @@ class ResalesGoodsController extends Controller
         return (string) $locationId === (string) auth()->user()->kode_kantor;
     }
 
+    /**
+     * Akses baca (detail/print/export): lokasi sendiri, GM, atau approver
+     * yang pernah ditugaskan di transaksi ini.
+     */
+    private function canViewTransaction(ResalesGood $header): bool {
+        if ($this->canAccessLocation($header->location_id)) {
+            return true;
+        }
+
+        return ApprovalHistory::where('transaction_code', $header->transaction_code)
+            ->where('inspection_type', 4)
+            ->where('user_id', auth()->user()->id)
+            ->exists();
+    }
+
+    private function forbiddenResponse() {
+        return ResponseFormatter::error(null, 'You are not allowed to access this transaction', 403);
+    }
+
     function getResalesGoodDetails(Request $request) {
+        $header = ResalesGood::where('transaction_code', $request->transaction_code)->first();
+        if ($header && !$this->canViewTransaction($header)) {
+            return $this->forbiddenResponse();
+        }
+
         $data = ResalesGoodDetail::with([
             'productRelation',
             'createdByRelation',
@@ -140,7 +164,13 @@ class ResalesGoodsController extends Controller
 
             // Generate + insert dalam satu transaksi dengan lock baris terakhir,
             // supaya dua request bersamaan tidak menghasilkan kode kembar.
-            $post = DB::transaction(function () use ($request) {
+            // Non-GM tidak boleh membuat transaksi atas nama lokasi lain
+            $locationId = $request->location_id;
+            if (!auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+                $locationId = auth()->user()->kode_kantor;
+            }
+
+            $post = DB::transaction(function () use ($request, $locationId) {
                 $increment_code = ResalesGood::orderBy('id', 'desc')->lockForUpdate()->first();
                 $month = (int) date('m');
                 $year = date('y');
@@ -162,7 +192,7 @@ class ResalesGoodsController extends Controller
 
                 $post = [
                     'transaction_code'  => $ticket_code,
-                    'location_id'       => $request->location_id,
+                    'location_id'       => $locationId,
                     'product_id'        => $request->product_id,
                     'inspector_id'      => $request->inspector_id,
                     'supplier_id'       => $request->supplier_id,
@@ -207,6 +237,9 @@ class ResalesGoodsController extends Controller
                     'Transaction header not found',
                     404
                 );
+            }
+            if (!$this->canAccessLocation($header->location_id)) {
+                return $this->forbiddenResponse();
             }
             if ((int) $header->status >= 2) {
                 return ResponseFormatter::error(
@@ -263,6 +296,9 @@ class ResalesGoodsController extends Controller
                     'Transaction not found',
                     404
                 );
+            }
+            if (!$this->canAccessLocation($header->location_id)) {
+                return $this->forbiddenResponse();
             }
             if ($header->status != 1) {
                 return ResponseFormatter::error(
@@ -344,6 +380,9 @@ class ResalesGoodsController extends Controller
                     404
                 );
             }
+            if (!$this->canAccessLocation($header->location_id)) {
+                return $this->forbiddenResponse();
+            }
             if (!in_array((int) $header->status, [0, 1], true)) {
                 return ResponseFormatter::error(
                     null,
@@ -394,6 +433,9 @@ class ResalesGoodsController extends Controller
                     'Transaction header not found',
                     404
                 );
+            }
+            if (!$this->canAccessLocation($header->location_id)) {
+                return $this->forbiddenResponse();
             }
             if ((int) $header->status >= 2) {
                 return ResponseFormatter::error(
@@ -448,6 +490,9 @@ class ResalesGoodsController extends Controller
             $trxCode = $detail->transaction_code;
 
             $header = ResalesGood::where('transaction_code', $trxCode)->first();
+            if ($header && !$this->canAccessLocation($header->location_id)) {
+                return $this->forbiddenResponse();
+            }
             if ($header && (int) $header->status >= 2) {
                 return ResponseFormatter::error(
                     null,
@@ -492,6 +537,7 @@ class ResalesGoodsController extends Controller
         ])->where('transaction_code', $trxCode)->first();
 
         if (!$header) abort(404, 'Transaction not found');
+        if (!$this->canViewTransaction($header)) abort(403, 'You are not allowed to access this transaction');
 
         $details = ResalesGoodDetail::with(['productRelation', 'createdByRelation'])
             ->where('transaction_code', $trxCode)
@@ -555,6 +601,10 @@ class ResalesGoodsController extends Controller
         if (!$trxCode) {
             abort(404, 'Transaction code required');
         }
+        $header = ResalesGood::where('transaction_code', $trxCode)->first();
+        if (!$header) abort(404, 'Transaction not found');
+        if (!$this->canViewTransaction($header)) abort(403, 'You are not allowed to access this transaction');
+
         $filename = 'LIMS_Resales_Goods_' . str_replace('/', '_', $trxCode) . '_' . date('Ymd_Hi') . '.xlsx';
         return Excel::download(new \App\Exports\Transaction\Inspection\ResalesGoodsExport($trxCode), $filename);
     }

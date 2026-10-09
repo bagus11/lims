@@ -32,6 +32,41 @@ class LaboratoryController extends Controller
         return view('transaction.inspection.laboratory.laboratory-index');
     }
 
+    /**
+     * Non-GM hanya boleh menyentuh transaksi lokasinya sendiri.
+     */
+    private function canAccessLocation($locationId): bool
+    {
+        if (auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+            return true;
+        }
+
+        return (string) $locationId === (string) auth()->user()->kode_kantor;
+    }
+
+    /**
+     * Akses baca (detail/print/export): lokasi sendiri, GM, atau approver
+     * yang pernah ditugaskan di transaksi ini.
+     */
+    private function canViewLaboratory(LaboratoryHeader $header): bool
+    {
+        if ($this->canAccessLocation($header->location_id)) {
+            return true;
+        }
+
+        return ApprovalHistory::where('transaction_code', $header->laboratory_code)
+            ->where('inspection_type', 1)
+            ->where('user_id', auth()->user()->id)
+            ->exists();
+    }
+
+    private function denyAccess(): void
+    {
+        throw ValidationException::withMessages([
+            'laboratory_code' => ['You are not allowed to access this laboratory transaction.'],
+        ]);
+    }
+
     function getLaboratoryOptions(Request $request)
     {
         $machineQuery = Machine::where('status', 1);
@@ -86,9 +121,13 @@ class LaboratoryController extends Controller
             $query->where('status', $request->status);
         }
 
-        if ($request->location_id) {
-            $query->where('location_id', $request->location_id);
-        } elseif (!auth()->user()->hasPermissionTo('get-only_gm-inspection-goods')) {
+        // filter location_id dari client hanya dihormati untuk GM; non-GM
+        // selalu dikunci ke lokasinya sendiri (tidak bisa dibypass via query)
+        if (auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+            if ($request->location_id) {
+                $query->where('location_id', $request->location_id);
+            }
+        } else {
             $query->where('location_id', auth()->user()->kode_kantor);
         }
 
@@ -101,7 +140,13 @@ class LaboratoryController extends Controller
     {
         $storeRequest->validated();
 
-        $location = MasterLocation::find($request->location_id);
+        // Non-GM tidak boleh membuat transaksi atas nama lokasi lain
+        $locationId = $request->location_id;
+        if (!auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+            $locationId = auth()->user()->kode_kantor;
+        }
+
+        $location = MasterLocation::find($locationId);
         if (!$location) {
             throw ValidationException::withMessages([
                 'location_id' => ['Location not found.'],
@@ -110,7 +155,7 @@ class LaboratoryController extends Controller
 
         if ($request->machine_id) {
             $machine = Machine::find($request->machine_id);
-            if (!$machine || (int) $machine->location_id !== (int) $request->location_id) {
+            if (!$machine || (int) $machine->location_id !== (int) $locationId) {
                 throw ValidationException::withMessages([
                     'machine_id' => ['Machine does not belong to the selected location.'],
                 ]);
@@ -139,7 +184,7 @@ class LaboratoryController extends Controller
             ]);
         }
 
-        $header = DB::transaction(function () use ($request, $product, $productMethod, $configurations) {
+        $header = DB::transaction(function () use ($request, $product, $productMethod, $configurations, $locationId) {
             $laboratoryCode = $this->generateLaboratoryCode();
 
             $header = LaboratoryHeader::create([
@@ -164,7 +209,7 @@ class LaboratoryController extends Controller
                     'code' => $productMethod->methodRelation->code,
                     'name' => $productMethod->methodRelation->name,
                 ],
-                'location_id' => $request->location_id,
+                'location_id' => $locationId,
                 'shift' => $request->shift ?: 1,
                 'temperature' => $request->temperature ? trim($request->temperature) : null,
                 'humidity' => $request->humidity ? trim($request->humidity) : null,
@@ -231,6 +276,10 @@ class LaboratoryController extends Controller
             return ResponseFormatter::error(null, 'Laboratory transaction not found', 404);
         }
 
+        if (!$this->canViewLaboratory($header)) {
+            return ResponseFormatter::error(null, 'You are not allowed to access this laboratory transaction', 403);
+        }
+
         $history = ApprovalHistory::with('userRelation')
             ->where('transaction_code', $header->laboratory_code)
             ->where('inspection_type', 1)
@@ -252,6 +301,10 @@ class LaboratoryController extends Controller
                 ->lockForUpdate()
                 ->findOrFail($request->detail_id);
             $header = $detail->headerRelation;
+
+            if (!$this->canAccessLocation($header->location_id)) {
+                $this->denyAccess();
+            }
 
             if ($header->lock || !in_array((int) $header->status, [0, 1, 4], true)) {
                 throw ValidationException::withMessages([
@@ -344,6 +397,10 @@ class LaboratoryController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            if (!$this->canAccessLocation($header->location_id)) {
+                $this->denyAccess();
+            }
+
             // status 4 (Revision) boleh langsung submit ulang — perbaikan bisa
             // berupa komentar saja tanpa mengubah hasil ukur
             if ($header->lock || !in_array((int) $header->status, [1, 4], true)) {
@@ -431,6 +488,10 @@ class LaboratoryController extends Controller
             ]);
         }
 
+        if (!$this->canAccessLocation($header->location_id)) {
+            $this->denyAccess();
+        }
+
         if ($header->lock || !in_array((int) $header->status, [0, 1, 4], true)) {
             throw ValidationException::withMessages([
                 'laboratory_code' => ['This transaction is locked.'],
@@ -451,6 +512,10 @@ class LaboratoryController extends Controller
     {
         $report = $this->buildLaboratoryReport($request->get('laboratory_code'));
 
+        if (!$this->canViewLaboratory($report['header'])) {
+            abort(403, 'You are not allowed to access this laboratory transaction');
+        }
+
         $mpdf = new \Mpdf\Mpdf([
             'format' => 'A4',
             'margin_top' => 8,
@@ -469,7 +534,11 @@ class LaboratoryController extends Controller
     function exportLaboratoryExcel(Request $request)
     {
         $laboratoryCode = $request->get('laboratory_code');
-        $this->buildLaboratoryReport($laboratoryCode);
+        $report = $this->buildLaboratoryReport($laboratoryCode);
+
+        if (!$this->canViewLaboratory($report['header'])) {
+            abort(403, 'You are not allowed to access this laboratory transaction');
+        }
 
         $filename = 'LIMS_Laboratory_' . str_replace('/', '_', $laboratoryCode) . '_' . date('Ymd_Hi') . '.xlsx';
 
