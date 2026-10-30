@@ -490,6 +490,7 @@ class InspectionMaterialController extends Controller
             'supplierRelation',
             'productRelation',
         ])->where('inspection_code', $inspection_code)->first();
+        $approval = ApprovalHistory::with('userRelation')->where('transaction_code', $detail->inspection_code)->get();
 
         if (!$detail) {
             abort(404, 'Inspection not found');
