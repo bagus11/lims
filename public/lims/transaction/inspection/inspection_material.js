@@ -592,7 +592,8 @@ function updateResin(x,y,z){
     var data = {
         'inspection_code' : x,
         'step' : y,
-        'value' : z,
+        // input hanya mengizinkan koma sebagai desimal, server hanya menerima titik
+        'value' : String(z).replace(',', '.'),
     }
     var data_test = {
         'inspection_code' : x

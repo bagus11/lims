@@ -132,6 +132,14 @@
                 @endif
               
                 @endforeach
+
+                {{-- Buku panduan sengaja statis dan tanpa permission: manual harus
+                     bisa dibuka siapa pun yang sudah login. --}}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('manual-book') }}" style="font-size: 12px !important">
+                        <i class="fa-solid fa-book"></i> Buku Panduan
+                    </a>
+                </li>
             </ul>
             <!-- Divider -->
          

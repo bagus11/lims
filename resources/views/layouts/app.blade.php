@@ -60,11 +60,11 @@
             color: white;
             /* color: black; */
             overflow-x:auto !important;
-            background-color: #179BAE !important;
+            background-color: #C96868 !important;
             padding: 5px !important;
             font-weight: bold;
-            } 
-        
+            }
+
             .datatable-stepper td {
                 /* border: 1px solid #ddd; */
                 padding: 10px;
@@ -83,6 +83,12 @@
           .select2{
               width: 100% !important;
               font-size:11px;
+          }
+          /* the rule above also matches the original <select class="select2">,
+             which select2 hides but keeps absolutely positioned -- at 100% it
+             stretched past the viewport and gave the page a horizontal scrollbar */
+          select.select2-hidden-accessible {
+              width: 1px !important;
           }
           .select2-selection__rendered {
               line-height: 30px !important;
@@ -112,6 +118,13 @@
             height: 35px !important;
             font-size: 9px !important;
           }
+          .select2-container .select2-search--inline {
+            display: inline-flex !important;
+            align-items: center;
+          }
+          .select2-container--default .select2-search--inline .select2-search__field {
+            min-width: 120px;
+          }
           .modal {
             overflow-y:auto !important;
           }
@@ -138,7 +151,7 @@
             }
 
             ::-webkit-scrollbar-track {
-            box-shadow: inset 0 0 5px grey; 
+            box-shadow: inset 0 0 5px grey;
             border-radius: 10px;
             }
             .message_error{
@@ -147,7 +160,7 @@
             }
 
             ::-webkit-scrollbar-thumb {
-            background:#179BAE; 
+            background:#179BAE;
             border-radius: 10px;
             }
 
@@ -247,7 +260,7 @@ tr.shown td.subdetails-click {
             </form>
             @include('layouts.navbars.sidebar')
         @endauth
-        
+
         <div class="main-content">
             @include('layouts.navbars.navbar')
             @yield('content')
@@ -263,10 +276,10 @@ tr.shown td.subdetails-click {
         <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap4.min.js"></script>
         <script src="{{ asset('assets/sweetalert2/sweetalert.min.js') }}"></script>
         <script src="{{ asset('assets/select2/select2.full.min.js') }}"></script>
- 
+
         <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap5-toggle@5.1.1/js/bootstrap5-toggle.jquery.min.js"></script>
-  
+
         @csrf
 
         <script src="{{ asset('lims') }}/helper.js"></script>
@@ -343,11 +356,11 @@ tr.shown td.subdetails-click {
           $(".select2").select2({ width: '300px', dropdownCssClass: "bigdrop" });
         </script>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
-              <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0-rc.1/chartjs-plugin-datalabels.min.js" 
-              integrity="sha512-+UYTD5L/bU1sgAfWA0ELK5RlQ811q8wZIocqI7+K0Lhh8yVdIoAMEs96wJAIbgFvzynPm36ZCXtkydxu1cs27w==" crossorigin="anonymous" 
+              <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0-rc.1/chartjs-plugin-datalabels.min.js"
+              integrity="sha512-+UYTD5L/bU1sgAfWA0ELK5RlQ811q8wZIocqI7+K0Lhh8yVdIoAMEs96wJAIbgFvzynPm36ZCXtkydxu1cs27w==" crossorigin="anonymous"
               referrerpolicy="no-referrer"></script>
         @stack('js')
-        
+
         <!-- Argon JS -->
         {{-- <script src="{{ asset('argon') }}/js/argon.js?v=1.0.0"></script> --}}
     </body>

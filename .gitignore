@@ -14,3 +14,16 @@ yarn-error.log
 /.idea
 /.vscode
 /demo-videos
+.DS_Store
+
+# AI assistant / tooling artifacts
+/.claude
+/.kilo
+/.trae
+/.playwright-mcp
+CLAUDE.md
+CODEBASE_GUIDE.md
+PRODUCT.md
+/lab-*.png
+/lab-detail*.png
+/master-lab.png

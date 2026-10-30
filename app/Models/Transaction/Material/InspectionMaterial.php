@@ -29,6 +29,7 @@ class InspectionMaterial extends Model
     function supplierRelation() {
         return $this->hasOne(Supplier::class,'id','supplier');
     }
+   
     function productRelation(){
         return $this->hasOne(MasterProduct::class,'id','product_id');
     }
