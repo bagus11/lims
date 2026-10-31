@@ -56,8 +56,13 @@ class ResalesGoodsController extends Controller
             $query->whereBetween(DB::raw('DATE(created_at)'), [$request->from, $request->to]);
         }
 
-        if (!auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
-            $query->where('location_id', auth()->user()->kode_kantor);
+        // Scope per role: all=semua, location (Admin)=lokasinya, own (User)=buatannya.
+        $user = auth()->user();
+        $scope = $user->transactionScope();
+        if ($scope === 'location') {
+            $query->where('location_id', $user->kode_kantor);
+        } elseif ($scope === 'own') {
+            $query->where('created_by', $user->id);
         }
 
         $data = $query->orderBy('id', 'desc')->get();
@@ -90,7 +95,8 @@ class ResalesGoodsController extends Controller
             ->where('user_id', auth()->user()->id)
             ->exists();
 
-        if (!$isAssignedApprover && !$this->canAccessLocation($header->location_id)) {
+        $isOwner = (int) $header->created_by === (int) auth()->user()->id;
+        if (!$isAssignedApprover && !$isOwner && !$this->canAccessLocation($header->location_id)) {
             return ResponseFormatter::error(null, 'You are not allowed to view this transaction', 403);
         }
 
@@ -113,22 +119,27 @@ class ResalesGoodsController extends Controller
     }
 
     /**
-     * Non-GM hanya boleh menyentuh transaksi lokasinya sendiri.
+     * Akses lokasi menurut scope role: all=semua, location=lokasinya sendiri,
+     * own=tidak berbasis lokasi (akses lewat kepemilikan record).
      */
     private function canAccessLocation($locationId): bool {
-        if (auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+        $scope = auth()->user()->transactionScope();
+        if ($scope === 'all') {
             return true;
         }
+        if ($scope === 'location') {
+            return (string) $locationId === (string) auth()->user()->kode_kantor;
+        }
 
-        return (string) $locationId === (string) auth()->user()->kode_kantor;
+        return false;
     }
 
     /**
-     * Akses baca (detail/print/export): lokasi sendiri, GM, atau approver
-     * yang pernah ditugaskan di transaksi ini.
+     * Akses baca (detail/print/export): lokasi sendiri/GM, pembuat record (own),
+     * atau approver yang pernah ditugaskan di transaksi ini.
      */
     private function canViewTransaction(ResalesGood $header): bool {
-        if ($this->canAccessLocation($header->location_id)) {
+        if ($this->canAccessLocation($header->location_id) || (int) $header->created_by === (int) auth()->user()->id) {
             return true;
         }
 

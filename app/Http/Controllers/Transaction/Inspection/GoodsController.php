@@ -29,19 +29,24 @@ class GoodsController extends Controller
     }
 
     /**
-     * Non-GM hanya boleh menyentuh transaksi lokasinya sendiri.
+     * Akses lokasi menurut scope role: all=semua, location=lokasinya sendiri,
+     * own=tidak berbasis lokasi (akses lewat kepemilikan record, lihat canView*).
      */
     private function canAccessLocation($locationId): bool {
-        if (auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+        $scope = auth()->user()->transactionScope();
+        if ($scope === 'all') {
             return true;
         }
+        if ($scope === 'location') {
+            return (string) $locationId === (string) auth()->user()->kode_kantor;
+        }
 
-        return (string) $locationId === (string) auth()->user()->kode_kantor;
+        return false;
     }
 
     /**
-     * Akses baca per-shift: lokasi sendiri, GM, atau approver yang pernah
-     * ditugaskan pada shift tersebut.
+     * Akses baca per-shift: lokasi sendiri/GM, pembuat record (own), atau
+     * approver yang pernah ditugaskan pada shift tersebut.
      */
     private function canViewShift($detailInspectionCode): bool {
         $detail = InspectionGoodsDetail::where('detail_inspection_code', $detailInspectionCode)->first();
@@ -49,7 +54,7 @@ class GoodsController extends Controller
             return true; // biarkan handler menangani not-found sendiri
         }
         $header = InspectionGood::where('inspection_code', $detail->inspection_code)->first();
-        if ($header && $this->canAccessLocation($header->location_id)) {
+        if ($header && ($this->canAccessLocation($header->location_id) || (int) $header->user_id === (int) auth()->user()->id)) {
             return true;
         }
 
@@ -91,12 +96,14 @@ class GoodsController extends Controller
             $request->to . ' 23:59:59',
         ]);
 
-        // GM: bisa melihat semua location; user biasa hanya lokasinya sendiri
-        if (!auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
-            $query->where(
-                'location_id',
-                auth()->user()->kode_kantor
-            );
+        // Scope per role: all (GM/Super Admin) = semua, location (Admin) =
+        // lokasinya sendiri, own (User) = hanya transaksi buatannya.
+        $user = auth()->user();
+        $scope = $user->transactionScope();
+        if ($scope === 'location') {
+            $query->where('location_id', $user->kode_kantor);
+        } elseif ($scope === 'own') {
+            $query->where('user_id', $user->id);
         }
 
         $data = $query->get();
@@ -107,7 +114,7 @@ class GoodsController extends Controller
     }
     function getInspectionGoodShift(Request $request) {
         $header = InspectionGood::where('inspection_code', $request->inspection_code)->first();
-        if ($header && !$this->canAccessLocation($header->location_id)) {
+        if ($header && !$this->canAccessLocation($header->location_id) && (int) $header->user_id !== (int) auth()->user()->id) {
             $isApprover = ApprovalHistory::where('inspection_type', 3)
                 ->where('user_id', auth()->user()->id)
                 ->whereIn('transaction_code', InspectionGoodsDetail::where('inspection_code', $header->inspection_code)->pluck('detail_inspection_code'))

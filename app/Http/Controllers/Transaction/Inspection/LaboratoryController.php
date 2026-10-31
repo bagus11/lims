@@ -37,20 +37,24 @@ class LaboratoryController extends Controller
      */
     private function canAccessLocation($locationId): bool
     {
-        if (auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+        $scope = auth()->user()->transactionScope();
+        if ($scope === 'all') {
             return true;
         }
+        if ($scope === 'location') {
+            return (string) $locationId === (string) auth()->user()->kode_kantor;
+        }
 
-        return (string) $locationId === (string) auth()->user()->kode_kantor;
+        return false;
     }
 
     /**
-     * Akses baca (detail/print/export): lokasi sendiri, GM, atau approver
-     * yang pernah ditugaskan di transaksi ini.
+     * Akses baca (detail/print/export): lokasi sendiri/GM, pembuat record (own),
+     * atau approver yang pernah ditugaskan di transaksi ini.
      */
     private function canViewLaboratory(LaboratoryHeader $header): bool
     {
-        if ($this->canAccessLocation($header->location_id)) {
+        if ($this->canAccessLocation($header->location_id) || (int) $header->user_id === (int) auth()->user()->id) {
             return true;
         }
 
@@ -121,14 +125,18 @@ class LaboratoryController extends Controller
             $query->where('status', $request->status);
         }
 
-        // filter location_id dari client hanya dihormati untuk GM; non-GM
-        // selalu dikunci ke lokasinya sendiri (tidak bisa dibypass via query)
-        if (auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+        // Scope per role: all (GM) boleh pilih lokasi via request; location
+        // (Admin) dikunci ke lokasinya; own (User) hanya transaksi buatannya.
+        $user = auth()->user();
+        $scope = $user->transactionScope();
+        if ($scope === 'all') {
             if ($request->location_id) {
                 $query->where('location_id', $request->location_id);
             }
+        } elseif ($scope === 'location') {
+            $query->where('location_id', $user->kode_kantor);
         } else {
-            $query->where('location_id', auth()->user()->kode_kantor);
+            $query->where('user_id', $user->id);
         }
 
         return response()->json([

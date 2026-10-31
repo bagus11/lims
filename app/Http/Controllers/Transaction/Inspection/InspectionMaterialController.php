@@ -25,22 +25,27 @@ class InspectionMaterialController extends Controller
     }
 
     /**
-     * Non-GM hanya boleh menyentuh transaksi lokasinya sendiri.
+     * Akses lokasi menurut scope role: all=semua, location=lokasinya sendiri,
+     * own=tidak berbasis lokasi (akses lewat kepemilikan record).
      * (kolom lokasi di tabel ini bernama `location`, bukan location_id)
      */
     private function canAccessLocation($locationId): bool {
-        if (auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
+        $scope = auth()->user()->transactionScope();
+        if ($scope === 'all') {
             return true;
         }
+        if ($scope === 'location') {
+            return (string) $locationId === (string) auth()->user()->kode_kantor;
+        }
 
-        return (string) $locationId === (string) auth()->user()->kode_kantor;
+        return false;
     }
 
     /**
-     * Akses baca: lokasi sendiri, GM, atau approver yang pernah ditugaskan.
+     * Akses baca: lokasi sendiri/GM, pembuat record (own), atau approver.
      */
     private function canViewMaterial(InspectionMaterial $header): bool {
-        if ($this->canAccessLocation($header->location)) {
+        if ($this->canAccessLocation($header->location) || (int) $header->user_id === (int) auth()->user()->id) {
             return true;
         }
 
@@ -81,10 +86,13 @@ class InspectionMaterialController extends Controller
             'userRelation',
         ]);
 
-        // sebelumnya listing ini tanpa scoping sama sekali: semua user
-        // melihat seluruh transaksi semua lokasi
-        if (!auth()->user()->hasPermissionSafe('get-only_gm-inspection-goods')) {
-            $query->where('location', auth()->user()->kode_kantor);
+        // Scope per role: all=semua, location (Admin)=lokasinya, own (User)=buatannya.
+        $user = auth()->user();
+        $scope = $user->transactionScope();
+        if ($scope === 'location') {
+            $query->where('location', $user->kode_kantor);
+        } elseif ($scope === 'own') {
+            $query->where('user_id', $user->id);
         }
 
         if ($request->from && $request->to) {

@@ -52,6 +52,25 @@ class User extends Authenticatable
     }
 
     /**
+     * Scope visibilitas list transaksi berdasarkan permission (presedensi
+     * all > location > own):
+     *  - 'all'      : get-only_gm-inspection-goods (Super Admin/GM) -> semua lokasi
+     *  - 'location' : get-location-transaction (Admin) -> dikunci ke kode_kantor
+     *  - 'own'      : default (User) -> hanya record yang dibuat sendiri
+     */
+    public function transactionScope(): string
+    {
+        if ($this->hasPermissionSafe('get-only_gm-inspection-goods')) {
+            return 'all';
+        }
+        if ($this->hasPermissionSafe('get-location-transaction')) {
+            return 'location';
+        }
+
+        return 'own';
+    }
+
+    /**
      * Gate mutasi master data & setting approval. Produksi memakai permission
      * pola view-* per menu (view-approval, view-master_laboratory, dst) —
      * mutasi diizinkan untuk pemegang permission modul tsb atau role admin.
