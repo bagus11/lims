@@ -298,27 +298,27 @@ $('#btn_save_pellet').on('click', function(){
                 swal.close()
 
                 // General Information
-                    $('#label_resin_inspection_code').html(': ' + escapeHtml(response.detail.inspection_code))
-                    $('#label_resin_location').html(': ' + escapeHtml(response.detail.location_relation.name))
-                    $('#label_resin_inspector').html(': ' + escapeHtml(response.detail.inspector_relation.name))
-                    $('#label_resin_supplier').html(': ' + escapeHtml(response.detail.supplier_relation.name))
-                    $('#label_resin_brand').html(': ' + escapeHtml(response.detail.merk))
-                    $('#label_resin_standard').html(': ' + escapeHtml(response.detail.standard))
-                    $('#label_resin_certificate').html(': ' + escapeHtml(response.detail.certificate))
-                    $('#label_resin_weight').html(': ' + escapeHtml(response.detail.weight) + ' kg')
-                    $('#label_resin_amount').html(': ' + escapeHtml(response.detail.amount) + ' sak')
-                    $('#label_resin_no_lot').html(': ' + escapeHtml(response.detail.no_lot))
+                    $('#label_resin_inspection_code').html(escapeHtml(response.detail.inspection_code))
+                    $('#label_resin_location').html(escapeHtml(response.detail.location_relation.name))
+                    $('#label_resin_inspector').html(escapeHtml(response.detail.inspector_relation.name))
+                    $('#label_resin_supplier').html(escapeHtml(response.detail.supplier_relation.name))
+                    $('#label_resin_brand').html(escapeHtml(response.detail.merk))
+                    $('#label_resin_standard').html(escapeHtml(response.detail.standard))
+                    $('#label_resin_certificate').html(escapeHtml(response.detail.certificate))
+                    $('#label_resin_weight').html(escapeHtml(response.detail.weight) + ' kg')
+                    $('#label_resin_amount').html(escapeHtml(response.detail.amount) + ' sak')
+                    $('#label_resin_no_lot').html(escapeHtml(response.detail.no_lot))
                 // General Information
                 // Bulk Density
                     $('label_canvas#resin_graphic').remove()
                     $('label_canvas#resin_graphic_container').remove();
-                    $('#label_resin_product_id').html(': ' + escapeHtml(response.detail.material_relation.name))
-                    $("#label_resin_step").html(': ' + escapeHtml(response.header.step))
-                    $('#label_resin_spec').html(': ' + escapeHtml(response.detail.material_relation.spec))
-                    $('#label_resin_min').html(': ' + escapeHtml(response.min.value))
-                    $('#label_resin_max').html(': ' + escapeHtml(response.max.value))
+                    $('#label_resin_product_id').html(escapeHtml(response.detail.material_relation.name))
+                    $("#label_resin_step").html(escapeHtml(response.header.step))
+                    $('#label_resin_spec').html(escapeHtml(response.detail.material_relation.spec))
+                    $('#label_resin_min').html(escapeHtml(response.min.value))
+                    $('#label_resin_max').html(escapeHtml(response.max.value))
                     let limitedNumber = response.avg !== null ? Number(response.avg).toFixed(5) : '-';
-                    $('#label_resin_avg').html(': ' + escapeHtml(limitedNumber))
+                    $('#label_resin_avg').html(escapeHtml(limitedNumber))
                     if(response.data.length > 0){
                         var data = []
                         var label =[]
@@ -379,14 +379,14 @@ $('#btn_save_pellet').on('click', function(){
 
                      // Density Properties
                         $('#label_vivsible_properties').html(': ' + escapeHtml(response.header.visible_properties))
-                        $('#label_resin_package').html(': ' + escapeHtml(response.header.packaging))
-                        $('#label_resin_color').html(': ' + escapeHtml(response.header.color))
-                        $('#label_resin_particle_size').html(': ' + escapeHtml(response.header.particle_size))
-                        $('#label_resin_volatile_matter').html(': ' + escapeHtml(response.header.volatile_matter))
-                        $('#label_resin_amount_per_sak').html(': ' + escapeHtml(response.header.amount))
-                        $('#label_resin_weight_per_sak').html(': ' + escapeHtml(response.header.weight))
-                        $('#label_resin_remark').html(': ' + escapeHtml(response.detail.remark))
-                        $('#label_resin_pof_number').html(': ' + escapeHtml(response.detail.no_pof))
+                        $('#label_resin_package').html(escapeHtml(response.header.packaging))
+                        $('#label_resin_color').html(escapeHtml(response.header.color))
+                        $('#label_resin_particle_size').html(escapeHtml(response.header.particle_size))
+                        $('#label_resin_volatile_matter').html(escapeHtml(response.header.volatile_matter))
+                        $('#label_resin_amount_per_sak').html(escapeHtml(response.header.amount))
+                        $('#label_resin_weight_per_sak').html(escapeHtml(response.header.weight))
+                        $('#label_resin_remark').html(escapeHtml(response.detail.remark))
+                        $('#label_resin_pof_number').html(escapeHtml(response.detail.no_pof))
 
                     // Density Properties
             })
@@ -395,28 +395,28 @@ $('#btn_save_pellet').on('click', function(){
             getCallback('getPelletInspection',data, function(response){
                 swal.close()
                 // General Information
-                    $('#label_pellet_inspection_code').html(': ' + escapeHtml(response.detail.inspection_code))
-                    $('#label_pellet_location').html(': ' + escapeHtml(response.detail.location_relation.name))
-                    $('#label_pellet_inspector').html(': ' + escapeHtml(response.detail.inspector_relation.name))
-                    $('#label_pellet_supplier').html(': ' + escapeHtml(response.detail.supplier_relation.name))
-                    $('#label_pellet_produsen').html(': ' + escapeHtml(response.header.produsen_relation ? response.header.produsen_relation.name : '-'))
-                    $('#label_pellet_brand').html(': ' + escapeHtml(response.detail.merk))
-                    $('#label_pellet_standard').html(': ' + escapeHtml(response.detail.standard))
-                    $('#label_pellet_certificate').html(': ' + escapeHtml(response.detail.certificate))
-                    $('#label_pellet_weight').html(': ' + escapeHtml(response.detail.weight) + ' kg')
-                    $('#label_pellet_amount').html(': ' + escapeHtml(response.detail.amount) + ' sak')
-                    $('#label_pellet_no_lot').html(': ' + escapeHtml(response.detail.no_lot))
+                    $('#label_pellet_inspection_code').html(escapeHtml(response.detail.inspection_code))
+                    $('#label_pellet_location').html(escapeHtml(response.detail.location_relation.name))
+                    $('#label_pellet_inspector').html(escapeHtml(response.detail.inspector_relation.name))
+                    $('#label_pellet_supplier').html(escapeHtml(response.detail.supplier_relation.name))
+                    $('#label_pellet_produsen').html(escapeHtml(response.header.produsen_relation ? response.header.produsen_relation.name : '-'))
+                    $('#label_pellet_brand').html(escapeHtml(response.detail.merk))
+                    $('#label_pellet_standard').html(escapeHtml(response.detail.standard))
+                    $('#label_pellet_certificate').html(escapeHtml(response.detail.certificate))
+                    $('#label_pellet_weight').html(escapeHtml(response.detail.weight) + ' kg')
+                    $('#label_pellet_amount').html(escapeHtml(response.detail.amount) + ' sak')
+                    $('#label_pellet_no_lot').html(escapeHtml(response.detail.no_lot))
                 // General Information
                     console.log(response)
 
                 // Detail Inspectoin
-                        $('#label_pellet_amount_per_sak').html(': ' + escapeHtml(response.header.amount_per_sak) + ' sak')
-                        $('#label_pellet_visible_properties').html(': ' + escapeHtml(response.header.visible_properties))
-                        $('#label_pellet_packaging').html(': ' + escapeHtml(response.header.packaging))
-                        $('#label_pellet_weight_per_sak').html(': ' + escapeHtml(response.header.weight_per_sak) + ' kg')
+                        $('#label_pellet_amount_per_sak').html(escapeHtml(response.header.amount_per_sak) + ' sak')
+                        $('#label_pellet_visible_properties').html(escapeHtml(response.header.visible_properties))
+                        $('#label_pellet_packaging').html(escapeHtml(response.header.packaging))
+                        $('#label_pellet_weight_per_sak').html(escapeHtml(response.header.weight_per_sak) + ' kg')
                         $('#label_pelet_mfr').html(': ' + response.header.mfr + ' G/10 mm')
-                        $('#label_pellet_remark').html(': ' + escapeHtml(response.detail.remark))
-                        $('#label_pellet_pof_number').html(': ' + escapeHtml(response.detail.no_pof))
+                        $('#label_pellet_remark').html(escapeHtml(response.detail.remark))
+                        $('#label_pellet_pof_number').html(escapeHtml(response.detail.no_pof))
                 // Detail Inspectoin
 
             })

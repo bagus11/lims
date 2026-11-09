@@ -401,21 +401,20 @@ function dashboardMapResalesApproval(header, details, history){
     var location = header.location_relation || {}
     var supplier = header.supplier_relation || {}
     var inspector = header.inspector_relation || {}
-    var summary = [
-        ['Product', (product.name || '-') + (product.size ? ' · ' + product.size : '')],
-        ['Location', location.name || location.initial || '-'],
-        ['Supplier / Produsen', (supplier.name || '-') + ' / ' + ((header.produsen_relation || {}).name || '-')],
-        ['Inspector', inspector.name || '-'],
-        ['Quantity / Type', (header.quantity || '-') + ' · ' + (header.type || '-')],
-        ['No. PF', header.no_pf || '-'],
-        ['Certificate / Standard', (header.certificate || '-') + ' / ' + (header.standard || '-')],
-        ['Keterangan', header.keterangan || '-']
-    ]
-    var summaryHtml = ''
-    summary.forEach(function(item){
-        summaryHtml += '<div class="col-md-3 mb-2"><div class="p-3 bg-light rounded"><small class="text-muted d-block">' + esc(item[0]) + '</small><b style="font-size:11px">' + esc(item[1]) + '</b></div></div>'
+    // isi kotak nilai di section Transaction Information (tanpa prefiks ':')
+    var fields = {
+        product: (product.name || '-') + (product.size ? ' · ' + product.size : ''),
+        location: location.name || location.initial || '-',
+        supplier: (supplier.name || '-') + ' / ' + ((header.produsen_relation || {}).name || '-'),
+        inspector: inspector.name || '-',
+        qty: (header.quantity || '-') + ' · ' + (header.type || '-'),
+        no_pf: header.no_pf || '-',
+        cert: (header.certificate || '-') + ' / ' + (header.standard || '-'),
+        keterangan: header.keterangan || '-'
+    }
+    Object.keys(fields).forEach(function(key){
+        $('#dashboard_resales_' + key).html(esc(fields[key]))
     })
-    $('#dashboard_resales_summary').html(summaryHtml)
 
     var detailHtml = ''
     details.forEach(function(detail, index){
@@ -431,8 +430,8 @@ function dashboardMapResalesApproval(header, details, history){
                 specHtml += '<span class="badge badge-light mr-1 mb-1" style="font-size:11px">' + esc(sp) + '</span>'
             }
         })
-        detailHtml += '<div class="border rounded p-3 mb-2"><div class="row align-items-center">' +
-            '<div class="col-md-3"><b>' + (index + 1) + '. ' + esc((detail.product_relation || {}).name || 'Detail') + '</b></div>' +
+        detailHtml += '<div class="qc-inspection-modal__steps mb-2"><div class="row align-items-center">' +
+            '<div class="col-md-3"><b style="font-size:12px">' + (index + 1) + '. ' + esc((detail.product_relation || {}).name || 'Detail') + '</b></div>' +
             '<div class="col-md-9">' + (specHtml || '<small class="text-muted"><i>(no spec filled)</i></small>') + '</div>' +
             '</div></div>'
     })
@@ -443,16 +442,12 @@ function dashboardMapResalesApproval(header, details, history){
         var statusLabel = '<span class="badge badge-info">Waiting</span>'
         if (parseInt(item.status) === 1) statusLabel = '<span class="badge badge-success">Approved</span>'
         else if (parseInt(item.status) === 4) statusLabel = '<span class="badge badge-warning">Revision</span>'
-        historyHtml += '<div class="d-flex justify-content-between border-bottom py-2" style="font-size:12px">' +
-            '<span>Step ' + esc(item.step) + ' · ' + esc((item.user_relation || {}).name || '-') + '</span>' +
+        historyHtml += '<div class="d-flex justify-content-between align-items-center border-bottom py-2" style="font-size:12px">' +
+            '<span>Step ' + esc(item.step) + ' · <b>' + esc((item.user_relation || {}).name || '-') + '</b></span>' +
             '<span>' + esc(item.remark || '') + ' ' + statusLabel + '</span>' +
             '</div>'
     })
-    if (historyHtml) {
-        $('#dashboard_resales_history').html('<small class="text-muted d-block mb-1">Approval History</small>' + historyHtml)
-    } else {
-        $('#dashboard_resales_history').html('')
-    }
+    $('#dashboard_resales_history').html(historyHtml || '<div class="text-muted text-center py-2" style="font-size:12px">Belum ada riwayat approval.</div>')
 }
 function mapping_progress(subdetail){
     var data ={

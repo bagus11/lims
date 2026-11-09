@@ -385,5 +385,5 @@
     @include('dashboard.modal.approval.resales.detail-resales')
 @endsection
 @push('js')
-    <script src="{{ asset('lims') }}/dashboard/dashboard.js"></script>
+    <script src="{{ asset('lims') }}/dashboard/dashboard.js?v={{ filemtime(public_path('lims/dashboard/dashboard.js')) }}"></script>
 @endpush
