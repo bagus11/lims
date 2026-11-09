@@ -437,17 +437,9 @@ function dashboardMapResalesApproval(header, details, history){
     })
     $('#dashboard_resales_details').html(detailHtml || '<div class="text-muted text-center py-3">No detail row.</div>')
 
-    var historyHtml = ''
-    history.forEach(function(item){
-        var statusLabel = '<span class="badge badge-info">Waiting</span>'
-        if (parseInt(item.status) === 1) statusLabel = '<span class="badge badge-success">Approved</span>'
-        else if (parseInt(item.status) === 4) statusLabel = '<span class="badge badge-warning">Revision</span>'
-        historyHtml += '<div class="d-flex justify-content-between align-items-center border-bottom py-2" style="font-size:12px">' +
-            '<span>Step ' + esc(item.step) + ' · <b>' + esc((item.user_relation || {}).name || '-') + '</b></span>' +
-            '<span>' + esc(item.remark || '') + ' ' + statusLabel + '</span>' +
-            '</div>'
-    })
-    $('#dashboard_resales_history').html(historyHtml || '<div class="text-muted text-center py-2" style="font-size:12px">Belum ada riwayat approval.</div>')
+    // approval history sengaja tidak ditampilkan di modal ini (permintaan QC);
+    // buka tab pertama tiap kali modal dirender ulang
+    $('#dashboard_resales_information-tab').tab('show')
 }
 function mapping_progress(subdetail){
     var data ={
