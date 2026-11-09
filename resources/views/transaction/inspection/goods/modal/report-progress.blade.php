@@ -19,7 +19,7 @@
                         <select name="select_report" class="select2" id="select_report">
                             <option value="">Choose File type</option>
                             <option value="1">PDF</option>
-                            <option value="2">Excell</option>
+                            <option value="2">Excel</option>
                         </select>
                        
                    </div>

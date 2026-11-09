@@ -151,7 +151,9 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::post('/addWallThickness', 'App\Http\Controllers\Transaction\Inspection\GoodsController@addWallThickness')->name('addWallThickness');
 
 	Route::get('exportInspectionGoodProgress/{id}','App\Http\Controllers\Transaction\Inspection\GoodsController@exportInspectionGoodProgress');
+	Route::get('exportInspectionGoodProgressExcel/{id}','App\Http\Controllers\Transaction\Inspection\GoodsController@exportInspectionGoodProgressExcel');
 	Route::get('exportInspectionMaterials/{id}','App\Http\Controllers\Transaction\Inspection\InspectionMaterialController@exportInspectionMaterials');
+	Route::get('exportInspectionMaterialsExcel/{id}','App\Http\Controllers\Transaction\Inspection\InspectionMaterialController@exportInspectionMaterialsExcel');
 
 	// Approval
 	Route::get('/getApprovalUser', 'App\Http\Controllers\Setting\ApprovalController@getApprovalUser')->name('getApprovalUser');

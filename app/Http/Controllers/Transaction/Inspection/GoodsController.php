@@ -680,6 +680,21 @@ class GoodsController extends Controller
             while (ob_get_level()) { ob_end_clean(); } // buffer bisa kosong di php-fpm (output_buffering off), ob_clean() polos malah error
             $mpdf->Output('LIMS_Inspection_Goods_' . str_replace('/', '_', $detail_code) . '_' . date('Ymd_Hi') . '.pdf', 'I');
     }
+
+    function exportInspectionGoodProgressExcel($x) {
+        $detail_code = str_replace("_", "/", $x);
+        $detail = InspectionGoodsDetail::where('detail_inspection_code', $detail_code)->first();
+        if (!$detail) {
+            abort(404, 'Inspection shift transaction not found');
+        }
+        if (!$this->canViewShift($detail_code)) {
+            abort(403, 'You are not allowed to access this transaction');
+        }
+
+        $filename = 'LIMS_Inspection_Goods_' . str_replace('/', '_', $detail_code) . '_' . date('Ymd_Hi') . '.xlsx';
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\Transaction\Inspection\InspectionGoodsExport($detail_code), $filename);
+    }
+
     function getWallThickness(Request $request) {
         if (!$this->canViewShift($request->detail_inspection_code)) {
             return $this->forbiddenResponse();

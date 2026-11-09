@@ -462,6 +462,10 @@ $('#btn_save_pellet').on('click', function(){
         }
         if(type == 1 ){
             window.open(`exportInspectionMaterials/${detail_code}`, '_blank');
+        } else if (type == 2) {
+            window.open(`exportInspectionMaterialsExcel/${detail_code}`, '_blank');
+        } else {
+            toastr['warning']('Pilih tipe file dulu')
         }
     })
 // Export

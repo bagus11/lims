@@ -600,4 +600,18 @@ class InspectionMaterialController extends Controller
             while (ob_get_level()) { ob_end_clean(); } // buffer bisa kosong di php-fpm (output_buffering off), ob_clean() polos malah error
             $mpdf->Output($name.' ('.date('Y-m-d').').pdf', 'I');
     }
+
+    function exportInspectionMaterialsExcel($id) {
+        $inspection_code = str_replace("_", "/", $id);
+        $detail = InspectionMaterial::where('inspection_code', $inspection_code)->first();
+        if (!$detail) {
+            abort(404, 'Inspection not found');
+        }
+        if (!$this->canViewMaterial($detail)) {
+            abort(403, 'You are not allowed to access this transaction');
+        }
+
+        $filename = 'LIMS_Inspection_Material_' . str_replace('/', '_', $inspection_code) . '_' . date('Ymd_Hi') . '.xlsx';
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\Transaction\Inspection\InspectionMaterialExport($inspection_code), $filename);
+    }
 }

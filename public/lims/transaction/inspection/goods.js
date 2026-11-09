@@ -561,6 +561,10 @@ $('#btn_save_header').on('click', function(){
         }
         if(type == 1 ){
             window.open(`exportInspectionGoodProgress/${detail_code}`, '_blank');
+        } else if (type == 2) {
+            window.open(`exportInspectionGoodProgressExcel/${detail_code}`, '_blank');
+        } else {
+            toastr['warning']('Pilih tipe file dulu')
         }
     })
     $(document).on('click','.history', function(e){
