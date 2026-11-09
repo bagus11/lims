@@ -25,6 +25,9 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::get('/manual-book', 'App\Http\Controllers\ManualBookController@index')->name('manual-book');
 	Route::put('profile', ['as' => 'profile.update', 'uses' => 'App\Http\Controllers\ProfileController@update']);
 	Route::put('profile/password', ['as' => 'profile.password', 'uses' => 'App\Http\Controllers\ProfileController@password']);
+	Route::get('profile-setting', ['as' => 'profile.setting', 'uses' => 'App\Http\Controllers\ProfileController@setting']);
+	Route::post('updateProfilePassword', 'App\Http\Controllers\ProfileController@updatePassword')->name('updateProfilePassword');
+	Route::post('updateProfileSignature', 'App\Http\Controllers\ProfileController@updateSignature')->name('updateProfileSignature');
 
 	// Setting
 		// Menus
