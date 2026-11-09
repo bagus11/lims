@@ -134,6 +134,13 @@ table td .btn-sm {
     .qc-inspection-modal__grid > div {
         margin-bottom: .2rem;
     }
+    /* label (p tanpa id) disejajarkan vertikal dengan kotak nilai di sebelahnya */
+    .qc-inspection-modal__grid p:not([id]) {
+        display: flex;
+        align-items: center;
+        min-height: 36px;
+        margin-bottom: 0;
+    }
     .qc-inspection-modal__grid p[id] {
         display: block;
         width: 100%;

@@ -407,7 +407,8 @@ function dashboardMapResalesApproval(header, details, history){
         location: location.name || location.initial || '-',
         supplier: (supplier.name || '-') + ' / ' + ((header.produsen_relation || {}).name || '-'),
         inspector: inspector.name || '-',
-        qty: (header.quantity || '-') + ' · ' + (header.type || '-'),
+        qty: (header.quantity !== null && header.quantity !== undefined ? header.quantity : '-') + (product.uom ? ' ' + product.uom : ''),
+        type: header.type || '-',
         no_pf: header.no_pf || '-',
         cert: (header.certificate || '-') + ' / ' + (header.standard || '-'),
         keterangan: header.keterangan || '-'
@@ -437,9 +438,7 @@ function dashboardMapResalesApproval(header, details, history){
     })
     $('#dashboard_resales_details').html(detailHtml || '<div class="text-muted text-center py-3">No detail row.</div>')
 
-    // approval history sengaja tidak ditampilkan di modal ini (permintaan QC);
-    // buka tab pertama tiap kali modal dirender ulang
-    $('#dashboard_resales_information-tab').tab('show')
+    // approval history sengaja tidak ditampilkan di modal ini (permintaan QC)
 }
 function mapping_progress(subdetail){
     var data ={
