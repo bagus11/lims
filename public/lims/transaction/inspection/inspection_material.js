@@ -504,10 +504,7 @@ function mappingTable(response){
                   </button>
                 `
                 var btn_print = ''
-                const d = new Date(response[i].created_at)
-                const date = d.toISOString().split('T')[0];
-                const time = d.toTimeString().split(' ')[0];
-                const dateTime = date + ' ' + time
+                const dateTime = limsFormatDateTime(response[i].created_at)
                 if(response[i].lock == 0){
                     btn_lock = (response[i].status == 1 || response[i].status == 4) ? `
                     <button class="lock btn btn-sm btn-danger" data-inspection="${escapeHtml(response[i].inspection_code)}">
@@ -705,15 +702,8 @@ function mappingApproval(response, history) {
         var time = '';
         var info = `<button class="btn btn-sm ml-2 btn-dark btn-small"><i class="fa-solid fa-question fa-2xs"></i></button>`;
         if (history[i]) {
-            const d = new Date(history[i].updated_at);
             if (history[i].status != 0) {
-                // Format date as 'd F Y'
-                date = d.toLocaleDateString('id-ID', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                });
-                time = d.toTimeString().split(' ')[0];
+                date = limsFormatDateTime(history[i].updated_at)
             }
             switch (history[i].status) {
                 case 0:
@@ -740,7 +730,7 @@ function mappingApproval(response, history) {
                                     ${info}
                                 </div>
                                 <div class="text-right text-muted">
-                                    <small style="font-size:9px !important">${date} ${time}</small>
+                                    <small style="font-size:9px !important">${date}</small>
                                 </div>
                             </div>
                             <p style="font-size:10px !important" class="text-sm mb-0">${escapeHtml(remark)}</p>

@@ -94,5 +94,5 @@
 @include('master.master_product.modal.upload-master_product')
 @include('master.master_product.modal.edit-master_product')
 @push('js')
-    <script src="{{ asset('lims') }}/master/master_product/master_product.js"></script>
+    <script src="{{ asset('lims') }}/master/master_product/master_product.js?v={{ filemtime(public_path('lims/master/master_product/master_product.js')) }}"></script>
 @endpush

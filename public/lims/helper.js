@@ -551,3 +551,13 @@ function limsStatusBadge(status, labels) {
     var label = labels[status] || item.label
     return '<span class="lims-status ' + item.cls + '"><i class="fa-solid ' + item.icon + '"></i> ' + label + '</span>'
 }
+
+// ===== Format tanggal seragam: YYYY-mm-dd HH:ii:ss =====
+// Berbasis string supaya waktu yang tampil = waktu yang dikirim server,
+// tidak digeser timezone browser (new Date() menggeser nilai ber-suffix Z).
+function limsFormatDateTime(value) {
+    if (!value) return '-'
+    var m = String(value).match(/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}:\d{2})/)
+    if (m) return m[1] + ' ' + m[2]
+    return String(value)
+}

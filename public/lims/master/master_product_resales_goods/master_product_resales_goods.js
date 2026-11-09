@@ -92,7 +92,7 @@ function mappingTable(data) {
                 className: 'text-center',
                 render: function (data, type, row) {
                     if (!data) return '<span class="text-muted">-</span>';
-                    return data;
+                    return limsFormatDateTime(data);
                 }
             },
             {

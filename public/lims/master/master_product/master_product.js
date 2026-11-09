@@ -156,13 +156,11 @@ function mappingTableLog(response){
     $('#log_master_product_table').DataTable().clear();
     $('#log_master_product_table').DataTable().destroy();
     for (i = 0; i < response.length; i++) {
-        const d = new Date(response[i].created_at)
-        const date = d.toISOString().split('T')[0];
-        const time = d.toTimeString().split(' ')[0];
+        const dateTime = limsFormatDateTime(response[i].created_at)
         data += `
             <tr>
 
-                <td style="text-align:center">${date} ${time}</td>
+                <td style="text-align:center">${dateTime}</td>
                 <td style="text-align:left">${response[i].user_relation.name}</td>
                 <td style="text-align:left">${response[i].berat_pcs}</td>
                 <td style="text-align:left">${response[i].berat}</td>

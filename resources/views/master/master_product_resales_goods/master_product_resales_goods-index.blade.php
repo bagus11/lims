@@ -69,5 +69,5 @@
 @include('master.master_product_resales_goods.modal.upload-master_product_resales_goods')
 
 @push('js')
-    <script src="{{ asset('lims') }}/master/master_product_resales_goods/master_product_resales_goods.js"></script>
+    <script src="{{ asset('lims') }}/master/master_product_resales_goods/master_product_resales_goods.js?v={{ filemtime(public_path('lims/master/master_product_resales_goods/master_product_resales_goods.js')) }}"></script>
 @endpush

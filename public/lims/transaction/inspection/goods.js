@@ -245,10 +245,7 @@ $('#btn_save_header').on('click', function(){
         $('#inspection_header_table').DataTable().destroy();
         var data = ''
         for(i =0 ; i < response.length; i ++){
-            const d = new Date(response[i].created_at)
-            const date = d.toISOString().split('T')[0];
-            const time = d.toTimeString().split(' ')[0];
-            const dateTime = date + ' ' + time
+            const dateTime = limsFormatDateTime(response[i].created_at)
             var status ='';
             var button_approval =''
             switch(response[i].status){
@@ -617,9 +614,6 @@ $('#btn_save_header').on('click', function(){
                     }).columns.adjust()
                 });
                 $('.table_detail tbody').append(``);
-                const d = new Date(response[i].created_at)
-                const date = d.toISOString().split('T')[0];
-                const time = d.toTimeString().split(' ')[0];
                 var lock_button =''
                 var add_button = response[i].lock == 1 ?'' : ` <button title="Add Progress" class="add btn btn-sm btn-success mr-2" data-inspection ="${escapeHtml(response[i].detail_inspection_code)}" data-toggle="modal" data-target="#addSubDetailInspection">
                                         <i class="fa-solid fa-plus"></i>
@@ -753,15 +747,8 @@ $('#btn_save_header').on('click', function(){
             var time = '';
             var info = `<button class="btn btn-sm ml-2 btn-dark btn-small"><i class="fa-solid fa-question fa-2xs"></i></button>`;
             if (history[i]) {
-                const d = new Date(history[i].updated_at);
                 if (history[i].status != 0) {
-                    // Format date as 'd F Y'
-                    date = d.toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                    });
-                    time = d.toTimeString().split(' ')[0];
+                    date = limsFormatDateTime(history[i].updated_at)
                 }
                 switch (history[i].status) {
                     case 0:
@@ -788,7 +775,7 @@ $('#btn_save_header').on('click', function(){
                                         ${info}
                                     </div>
                                     <div class="text-right text-muted">
-                                        <small style="font-size:9px !important">${date} ${time}</small>
+                                        <small style="font-size:9px !important">${date}</small>
                                     </div>
                                 </div>
                                 <p style="font-size:10px !important" class="text-sm mb-0">${escapeHtml(remark)}</p>
@@ -807,10 +794,7 @@ $('#btn_save_header').on('click', function(){
         $('#history_table').DataTable().destroy();
 
         for (var i = 0; i < history.length; i++) {
-            const d = new Date(history[i].created_at);
-            const date = d.toISOString().split('T')[0];
-            const time = d.toTimeString().split(' ')[0];
-            const dateTime = `${date} ${time}`;
+            const dateTime = limsFormatDateTime(history[i].created_at);
 
             var creatorStyle = '';
             var machineStyle = '';

@@ -3,12 +3,8 @@ var CURRENT_TRX_CODE = ''
 var CURRENT_HEADER = null
 
 function formatDateStandard(raw) {
-    if (!raw) return '-'
-    const d = new Date(raw)
-    if (isNaN(d.getTime())) return raw
-    const date = d.toISOString().split('T')[0]
-    const time = d.toTimeString().split(' ')[0]
-    return date + ' ' + time
+    // format seragam YYYY-mm-dd HH:ii:ss (helper.js), tanpa geser timezone
+    return limsFormatDateTime(raw)
 }
 
 function typeBadge(t) {
