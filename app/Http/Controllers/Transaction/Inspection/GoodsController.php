@@ -658,7 +658,8 @@ class GoodsController extends Controller
                                 </table>';
 
 
-            $mpdf           = new PDF();
+            // tempDir wajib ke storage: vendor/ milik root di container, mpdf 500 kalau mkdir di sana
+            $mpdf           = new PDF(['tempDir' => storage_path('app/mpdf')]);
             $mpdf->SetHTMLHeader($header);
             $mpdf->SetHTMLFooter($footer);
             $mpdf->AddPage(

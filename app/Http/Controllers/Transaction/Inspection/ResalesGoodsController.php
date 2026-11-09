@@ -597,7 +597,8 @@ class ResalesGoodsController extends Controller
                                </table>';
         $footerHtml = '<table width="100%" style="font-size:8px; border-top:1px solid #ccc;color:#666;"><tr><td width="50%">Disclaimer: Dokumen ini dicetak otomatis oleh sistem LIMS PT Pralon.</td><td width="50%" align="right">Halaman {PAGENO}/{nbpg}</td></tr></table>';
 
-        $mpdf = new \Mpdf\Mpdf();
+        // tempDir wajib ke storage: vendor/ milik root di container, mpdf 500 kalau mkdir di sana
+        $mpdf = new \Mpdf\Mpdf(['tempDir' => storage_path('app/mpdf')]);
         $mpdf->SetHTMLHeader($headerHtml);
         $mpdf->SetHTMLFooter($footerHtml);
         $mpdf->AddPage('L', '', '', '', '', 2, 2, 18, 18, 2, 0);

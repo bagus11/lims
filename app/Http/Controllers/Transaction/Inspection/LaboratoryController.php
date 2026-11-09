@@ -530,6 +530,8 @@ class LaboratoryController extends Controller
         }
 
         $mpdf = new \Mpdf\Mpdf([
+            // tempDir wajib ke storage: vendor/ milik root di container, mpdf 500 kalau mkdir di sana
+            'tempDir' => storage_path('app/mpdf'),
             'format' => 'A4',
             'margin_top' => 8,
             'margin_bottom' => 8,
