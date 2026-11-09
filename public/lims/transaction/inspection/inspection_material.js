@@ -487,24 +487,8 @@ function mappingTable(response){
                         type = 'Pellet HDPE'
                 }
 
-                switch(response[i].status){
-                    case 0 :
-                        status_table = 'Draft'
-                        break
-                    case 1 :
-                        status_table = 'In Progress'
-                        break
-                    case 2 :
-                        status_table = 'Approval Progress'
-                        break
-                    case 3 :
-                        status_table = 'DONE'
-                        break
-
-                    case 4:
-                        status_table="Rejected"
-
-                }
+                // badge seragam lintas menu (lims-ui.css + helper.js)
+                status_table = limsStatusBadge(response[i].status, { 4: 'Rejected' })
                 var btn_lock =''
                 var btn_edit = ''
                 var btn_approval = ''

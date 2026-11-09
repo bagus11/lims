@@ -370,12 +370,8 @@ function formatLaboratoryStandard(standard, unit) {
 }
 
 function laboratoryStatus(status) {
-    status = parseInt(status)
-    if (status === 0) return '<span class="laboratory-status badge-secondary"><i class="fa-solid fa-file"></i> Draft</span>'
-    if (status === 1) return '<span class="laboratory-status badge-primary"><i class="fa-solid fa-flask"></i> In Progress</span>'
-    if (status === 2) return '<span class="laboratory-status badge-info"><i class="fa-solid fa-hourglass-half"></i> Approval</span>'
-    if (status === 3) return '<span class="laboratory-status badge-success"><i class="fa-solid fa-circle-check"></i> Done</span>'
-    return '<span class="laboratory-status badge-danger"><i class="fa-solid fa-rotate-left"></i> Revision</span>'
+    // badge seragam lintas menu; label khusus Lab utk status 2 & 4
+    return limsStatusBadge(status, { 2: 'Approval', 4: 'Revision' })
 }
 
 function laboratoryEvaluation(evaluation) {

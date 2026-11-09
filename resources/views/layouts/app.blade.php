@@ -27,6 +27,8 @@
 
         <!-- Argon CSS -->
         <link type="text/css" href="{{ asset('argon') }}/css/argon.css?v=1.0.0" rel="stylesheet">
+        <!-- LIMS shared UI (badge status, tombol tabel, select2, modal) -->
+        <link type="text/css" href="{{ asset('lims') }}/css/lims-ui.css?v=1.0.0" rel="stylesheet">
         <style>
             .card{
                 border-radius: 20px !important;

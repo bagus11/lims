@@ -532,3 +532,22 @@ function pieChart(title, label, data, color, type, id) {
         options: option
     });
 }
+
+// ===== Badge status transaksi seragam lintas menu =====
+// status: 0 draft/new, 1 in progress, 2 approval progress, 3 done, 4 reject/revision
+// labels: override label per status, mis. {0: 'New'} untuk Inspection Goods
+function limsStatusBadge(status, labels) {
+    status = parseInt(status)
+    labels = labels || {}
+    var map = {
+        0: { label: 'Draft', cls: 'badge-secondary', icon: 'fa-file' },
+        1: { label: 'In Progress', cls: 'badge-primary', icon: 'fa-spinner' },
+        2: { label: 'Approval Progress', cls: 'badge-info', icon: 'fa-hourglass-half' },
+        3: { label: 'Done', cls: 'badge-success', icon: 'fa-circle-check' },
+        4: { label: 'Reject', cls: 'badge-danger', icon: 'fa-rotate-left' }
+    }
+    var item = map[status]
+    if (!item) return '<span class="lims-status badge-light">-</span>'
+    var label = labels[status] || item.label
+    return '<span class="lims-status ' + item.cls + '"><i class="fa-solid ' + item.icon + '"></i> ' + label + '</span>'
+}

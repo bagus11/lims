@@ -1,0 +1,77 @@
+/* =========================================================================
+   LIMS UI — gaya bersama lintas halaman (transaksi, master, setting).
+   Tujuan: satu bahasa visual untuk badge status, tombol aksi tabel,
+   select2, dan spacing form/modal. Dimuat setelah argon.css.
+   ========================================================================= */
+
+/* ---- Badge status seragam (dipakai limsStatusBadge di helper.js) ---- */
+.lims-status,
+.laboratory-status {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: .35rem .65rem;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+/* ---- Tombol ikon di dalam tabel: geometri seragam ---- */
+table td .btn-sm {
+    border-radius: 8px;
+    min-width: 32px;
+    padding: .32rem .5rem;
+}
+
+/* ---- select2 serasi dengan .form-control Bootstrap 4 / Argon ---- */
+.select2-container--default .select2-selection--single {
+    height: calc(1.8125rem + 10px);
+    border: 1px solid #cad1d7;
+    border-radius: .375rem;
+    display: flex;
+    align-items: center;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: normal;
+    color: #8898aa;
+    padding-left: .75rem;
+    width: 100%;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 100%;
+}
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--open .select2-selection--single,
+.select2-container--default.select2-container--focus .select2-selection--multiple,
+.select2-container--default.select2-container--open .select2-selection--multiple {
+    border-color: #179BAE;
+}
+.select2-container--default .select2-selection--multiple {
+    border: 1px solid #cad1d7;
+    border-radius: .375rem;
+    min-height: calc(1.8125rem + 10px);
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #179BAE;
+}
+.select2-dropdown {
+    border: 1px solid #cad1d7;
+}
+
+/* ---- Form & modal: spacing label konsisten ---- */
+.modal-body p {
+    margin-bottom: .35rem;
+    font-size: .8125rem;
+    color: #525f7f;
+}
+.modal-body .form-control {
+    font-size: .8125rem;
+}
+
+/* ---- Header kartu: judul seragam ---- */
+.cardTitle {
+    font-size: 1rem;
+    color: #32325d;
+}

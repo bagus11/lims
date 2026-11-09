@@ -148,14 +148,8 @@ function initSelect2() {
 }
 
 function statusBadge(status) {
-    status = parseInt(status)
-    var icon = '', label = '', cls = ''
-    if (status === 0) { icon = 'fa-file'; label = 'Draft'; cls = 'secondary' }
-    else if (status === 1) { icon = 'fa-spinner fa-spin'; label = 'In Progress'; cls = 'primary' }
-    else if (status === 2) { icon = 'fa-hourglass-half'; label = 'Approval Progress'; cls = 'info' }
-    else if (status === 3) { icon = 'fa-circle-check'; label = 'Done'; cls = 'success' }
-    else { icon = 'fa-question'; label = status; cls = 'light' }
-    return '<span class="badge badge-' + cls + ' ml-1" style="font-size:10px"><i class="fas ' + icon + ' mr-1"></i>' + label + '</span>'
+    // badge seragam lintas menu (lims-ui.css + helper.js)
+    return limsStatusBadge(status)
 }
 
 function mappingTable(data) {

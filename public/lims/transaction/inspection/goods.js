@@ -253,13 +253,13 @@ $('#btn_save_header').on('click', function(){
             var button_approval =''
             switch(response[i].status){
                 case 0:
-                        status = `<span style="font-size:8px !important" class="btn btn-block btn-outline-default">NEW</span>`
+                        status = limsStatusBadge(0, { 0: 'New' })
                     break
                 case 1:
-                        status = `<span style="font-size:8px !important" class="btn btn-block btn-outline-info">In Progress</span>`
+                        status = limsStatusBadge(1)
                     break
                 case 2:
-                        status = `<span style="font-size:8px !important" class="btn btn-block btn-outline-warning">Approval Progress</span>`
+                        status = limsStatusBadge(2)
                         button_approval  =`
                              <button class="approval_header btn btn-sm btn-primary"
                              data-locationid="${response[i].location_id}"
@@ -274,13 +274,13 @@ $('#btn_save_header').on('click', function(){
                         `
                     break
                 case 3:
-                        status = `<span style="font-size:8px !important" class="btn btn-block btn-outline-success">DONE</span>`
+                        status = limsStatusBadge(3)
                     break
                 case 4:
-                        status = `<span style="font-size:8px !important" class="btn btn-block btn-outline-danger">Reject</span>`
+                        status = limsStatusBadge(4)
                     break
                 case '' :
-                        status ='Done'
+                        status = limsStatusBadge(3)
                 break
 
             }
