@@ -608,7 +608,7 @@ class ResalesGoodsController extends Controller
             'approval'   => $approval,
             'set_approval' => $set_approval,
         ]));
-        ob_clean();
+        while (ob_get_level()) { ob_end_clean(); } // buffer bisa kosong di php-fpm (output_buffering off), ob_clean() polos malah error
         $filename = 'LIMS_Resales_Goods_' . str_replace('/', '_', $trxCode) . '_' . date('Ymd_Hi') . '.pdf';
         $mpdf->Output($filename, 'I');
         exit;

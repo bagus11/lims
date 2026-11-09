@@ -677,7 +677,7 @@ class GoodsController extends Controller
             ); // margin footer
             $mpdf->WriteHTML($cetak);
             // Output a PDF file directly to the browser
-            ob_clean();
+            while (ob_get_level()) { ob_end_clean(); } // buffer bisa kosong di php-fpm (output_buffering off), ob_clean() polos malah error
             $mpdf->Output('LIMS_Inspection_Goods_' . str_replace('/', '_', $detail_code) . '_' . date('Ymd_Hi') . '.pdf', 'I');
     }
     function getWallThickness(Request $request) {

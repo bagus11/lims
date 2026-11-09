@@ -539,7 +539,7 @@ class LaboratoryController extends Controller
             'margin_right' => 8,
         ]);
         $mpdf->WriteHTML(view('report.inspection.report_laboratory', $report)->render());
-        ob_clean();
+        while (ob_get_level()) { ob_end_clean(); } // buffer bisa kosong di php-fpm (output_buffering off), ob_clean() polos malah error
 
         $filename = 'LIMS_Laboratory_' . str_replace('/', '_', $report['header']->laboratory_code) . '_' . date('Ymd_Hi') . '.pdf';
         $mpdf->Output($filename, 'I');

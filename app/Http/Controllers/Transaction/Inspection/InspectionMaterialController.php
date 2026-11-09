@@ -597,7 +597,7 @@ class InspectionMaterialController extends Controller
             ); // margin footer
             $mpdf->WriteHTML($cetak);
             // Output a PDF file directly to the browser
-            ob_clean();
+            while (ob_get_level()) { ob_end_clean(); } // buffer bisa kosong di php-fpm (output_buffering off), ob_clean() polos malah error
             $mpdf->Output($name.' ('.date('Y-m-d').').pdf', 'I');
     }
 }
