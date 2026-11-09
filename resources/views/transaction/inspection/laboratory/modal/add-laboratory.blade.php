@@ -72,12 +72,27 @@
                             <option value="">Choose Product Type</option>
                             <option value="Pralon">Pralon</option>
                             <option value="PE Pipe">PE Pipe</option>
-                            <option value="MS K 6741">MS K 6741</option>
+                            <option value="JIS K 6741">JIS K 6741</option>
                             <option value="Telkom">Telkom</option>
                             <option value="Fitting">Fitting</option>
                             <option value="Electric">Electric</option>
                         </select>
                         <span class="product_type_error text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <p for="">Customer</p>
+                        <input type="text" id="laboratory_add_customer_name" class="form-control" placeholder="Opsional">
+                        <span class="customer_name_error text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <p for="">Proyek</p>
+                        <input type="text" id="laboratory_add_project_name" class="form-control" placeholder="Opsional">
+                        <span class="project_name_error text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <p for="">Dibuat Untuk</p>
+                        <input type="text" id="laboratory_add_made_for" class="form-control" placeholder="Opsional">
+                        <span class="made_for_error text-danger"></span>
                     </div>
                 </div>
             </div>

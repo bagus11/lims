@@ -1,9 +1,9 @@
 @php
     /**
      * Record of Laboratory Testing -- form 03/QC/12-1999 Rev-00.
-     * Rendered by mpdf for the PDF and by Maatwebsite (FromView) for the
-     * spreadsheet; $excel drops the bits PhpSpreadsheet's HTML reader cannot
-     * digest (nested tables, images).
+     * Dirender mpdf untuk PDF saja; export Excel punya builder native sendiri
+     * (LaboratoryReportExport) supaya layout spreadsheet tidak bergantung pada
+     * konversi HTML.
      */
     $excel = $excel ?? false;
 
@@ -23,16 +23,18 @@
     $methodCode = optional(optional($header->productMethodRelation)->methodRelation)->code ?: data_get($header->method_snapshot, 'code');
     $methodApplied = strtoupper((string) $methodCode);
 
-    $productTypes = ['Pralon', 'PE Pipe', 'MS K 6741', 'Telkom', 'Fitting', 'Electric'];
+    // Form aslinya menulis "JIS K 6741"; data lama tersimpan sebagai "MS K 6741"
+    $productTypes = ['Pralon', 'PE Pipe', 'JIS K 6741', 'Telkom', 'Fitting', 'Electric'];
+    $headerProductType = $header->product_type === 'MS K 6741' ? 'JIS K 6741' : $header->product_type;
 
     // the four signature slots are fixed by the form; names come from whoever
     // actually approved, in step order, and stay blank when nobody has yet
     $approvers = $history->where('status', 1)->pluck('userRelation.name')->filter()->values();
     $signatures = [
-        'V. FACTORY MGR.' => $approvers->get(0),
+        'V&nbsp; FACTORY MGR.' => $approvers->get(0),
         'VI. QC. Chift' => $approvers->get(1),
         'VII. Reporter' => optional($header->userRelation)->name,
-        'VIII. Kana' => $approvers->get(2),
+        'VIII. Karu' => $approvers->get(2),
     ];
 
     $tick = function ($checked) {
@@ -101,6 +103,16 @@
         <td colspan="3">: {{ $specification }}</td>
     </tr>
     <tr>
+        <td>Customer</td>
+        <td>: {{ $header->customer_name ?: '-' }}</td>
+        <td>Proyek</td>
+        <td>: {{ $header->project_name ?: '-' }}</td>
+    </tr>
+    <tr>
+        <td>Dibuat Untuk</td>
+        <td colspan="3">: {{ $header->made_for ?: '-' }}</td>
+    </tr>
+    <tr>
         <td colspan="4" class="section">III&nbsp;&nbsp; TEST RESULT :</td>
     </tr>
     <tr>
@@ -111,7 +123,7 @@
         </td>
         <td colspan="2">
             @foreach ($productTypes as $type)
-                {!! $tick($header->product_type === $type) !!} {{ $type }}@if (!$loop->last) &nbsp;@endif
+                {!! $tick($headerProductType === $type) !!} {{ $type }}@if (!$loop->last) &nbsp;@endif
                 @if ($loop->iteration % 3 === 0)<br>@endif
             @endforeach
         </td>
@@ -121,13 +133,16 @@
 <table class="frame">
     <thead>
         <tr>
-            <th style="width:4%">NO</th>
-            <th style="width:15%">ITEM</th>
-            <th style="width:25%">SPECIES</th>
-            <th style="width:13%">SPECIFICATION</th>
-            <th style="width:22%">FIGURE MEASURED</th>
-            <th style="width:11%">INCHARGE</th>
-            <th style="width:10%">EVALUATION</th>
+            <th style="width:4%" rowspan="2">NO</th>
+            <th style="width:15%" rowspan="2">ITEM</th>
+            <th style="width:25%" rowspan="2">SPECIES</th>
+            <th style="width:13%" rowspan="2">SPECIFICATION</th>
+            <th style="width:22%" rowspan="2">FIGURE MEASURED</th>
+            <th colspan="2">CHECKER</th>
+        </tr>
+        <tr>
+            <th style="width:11%; font-size:7pt">INCHARGE</th>
+            <th style="width:10%; font-size:7pt">EVALUATION</th>
         </tr>
     </thead>
     <tbody>
@@ -172,17 +187,21 @@
     </tr>
 </table>
 
-<table class="frame">
+{{-- Baris tanda tangan mengikuti form asli: label + garis dalam satu baris --}}
+<table class="no-border" style="margin-top:6px;">
     <tr>
         @foreach ($signatures as $label => $name)
-            <th style="width:25%">{{ $label }}</th>
-        @endforeach
-    </tr>
-    <tr>
-        @foreach ($signatures as $label => $name)
-            <td class="center" style="height:55px; vertical-align:bottom;">
-                {{ $name ?: '' }}
-                <div style="border-top:1px solid #000; margin-top:2px;">&nbsp;</div>
+            <td style="width:25%; vertical-align:bottom;">
+                <table class="no-border" style="width:100%">
+                    <tr>
+                        <td style="width:46%; vertical-align:bottom; font-size:7pt;"><b>{!! $label !!}</b> :</td>
+                        <td style="width:54%; vertical-align:bottom;" class="center">
+                            <div style="height:38px; vertical-align:bottom;">&nbsp;</div>
+                            {{ $name ?: '' }}
+                            <div style="border-top:1px solid #000;">&nbsp;</div>
+                        </td>
+                    </tr>
+                </table>
             </td>
         @endforeach
     </tr>

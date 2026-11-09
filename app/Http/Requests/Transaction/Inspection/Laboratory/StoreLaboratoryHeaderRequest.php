@@ -23,6 +23,9 @@ class StoreLaboratoryHeaderRequest extends FormRequest
             'location_id' => 'required|integer',
             'shift' => 'nullable|integer|min:1|max:3',
             'machine_id' => 'nullable|exists:machines,id',
+            'customer_name' => 'nullable|string|max:255',
+            'project_name' => 'nullable|string|max:255',
+            'made_for' => 'nullable|string|max:255',
         ];
     }
 }

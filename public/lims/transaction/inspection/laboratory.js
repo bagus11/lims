@@ -89,7 +89,7 @@ $('#btn_filter_laboratory').on('click', loadLaboratoryTable)
 $('#btn_add_laboratory').on('click', function () {
     $('#addLaboratoryModal .text-danger').html('')
     $('#laboratory_add_product_id, #laboratory_add_product_method_id, #laboratory_add_location_id, #laboratory_add_machine_id').val('').trigger('change')
-    $('#laboratory_add_report_no, #laboratory_add_production_code, #laboratory_add_material_lot, #laboratory_add_temperature, #laboratory_add_humidity').val('')
+    $('#laboratory_add_report_no, #laboratory_add_production_code, #laboratory_add_material_lot, #laboratory_add_temperature, #laboratory_add_humidity, #laboratory_add_customer_name, #laboratory_add_project_name, #laboratory_add_made_for').val('')
     $('#laboratory_add_product_type').val('').trigger('change')
     $('#laboratory_add_shift').val('1').trigger('change')
     $('#laboratory_add_test_date').val(laboratoryLocalDate())
@@ -127,7 +127,10 @@ $('#btn_save_laboratory_header').on('click', function () {
         machine_id: $('#laboratory_add_machine_id').val(),
         temperature: $('#laboratory_add_temperature').val(),
         humidity: $('#laboratory_add_humidity').val(),
-        product_type: $('#laboratory_add_product_type').val()
+        product_type: $('#laboratory_add_product_type').val(),
+        customer_name: $('#laboratory_add_customer_name').val(),
+        project_name: $('#laboratory_add_project_name').val(),
+        made_for: $('#laboratory_add_made_for').val()
     }
     postCallback('addProductLaboratory', data, function (response) {
         swal.close()
@@ -168,7 +171,10 @@ function renderLaboratorySummary(header) {
         location: (location.name || '-') + ' \u00b7 Shift ' + (header.shift || '-'),
         production_code: header.production_code_number || '-',
         material_lot: header.material_lot_number || '-',
-        report_no: header.report_no || '-'
+        report_no: header.report_no || '-',
+        customer: header.customer_name || '-',
+        project: header.project_name || '-',
+        made_for: header.made_for || '-'
     }
     Object.keys(values).forEach(function (key) {
         $('#label_laboratory_' + key).html(': ' + laboratoryEscape(values[key]))

@@ -27,6 +27,12 @@
                         <div class="col-4"><p id="label_laboratory_material_lot"></p></div>
                         <div class="col-2"><p>Report No.</p></div>
                         <div class="col-4"><p id="label_laboratory_report_no"></p></div>
+                        <div class="col-2"><p>Customer</p></div>
+                        <div class="col-4"><p id="label_laboratory_customer"></p></div>
+                        <div class="col-2"><p>Proyek</p></div>
+                        <div class="col-4"><p id="label_laboratory_project"></p></div>
+                        <div class="col-2"><p>Dibuat Untuk</p></div>
+                        <div class="col-4"><p id="label_laboratory_made_for"></p></div>
                     </div>
                 </fieldset>
 
