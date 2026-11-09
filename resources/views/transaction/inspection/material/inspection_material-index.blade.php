@@ -102,5 +102,5 @@
  @include('transaction.inspection.material.modal.log-apporval')
 @endsection
 @push('js')
-    <script src="{{ asset('lims') }}/transaction/inspection/inspection_material.js"></script>
+    <script src="{{ asset('lims') }}/transaction/inspection/inspection_material.js?v={{ filemtime(public_path('lims/transaction/inspection/inspection_material.js')) }}"></script>
 @endpush

@@ -247,5 +247,5 @@
 @endsection
 
 @push('js')
-    <script src="{{ asset('lims') }}/transaction/inspection/laboratory.js"></script>
+    <script src="{{ asset('lims') }}/transaction/inspection/laboratory.js?v={{ filemtime(public_path('lims/transaction/inspection/laboratory.js')) }}"></script>
 @endpush

@@ -28,7 +28,7 @@
         <!-- Argon CSS -->
         <link type="text/css" href="{{ asset('argon') }}/css/argon.css?v=1.0.0" rel="stylesheet">
         <!-- LIMS shared UI (badge status, tombol tabel, select2, modal) -->
-        <link type="text/css" href="{{ asset('lims') }}/css/lims-ui.css?v=1.0.0" rel="stylesheet">
+        <link type="text/css" href="{{ asset('lims') }}/css/lims-ui.css?v={{ filemtime(public_path('lims/css/lims-ui.css')) }}" rel="stylesheet">
         <style>
             .card{
                 border-radius: 20px !important;
@@ -284,7 +284,7 @@ tr.shown td.subdetails-click {
 
         @csrf
 
-        <script src="{{ asset('lims') }}/helper.js"></script>
+        <script src="{{ asset('lims') }}/helper.js?v={{ filemtime(public_path('lims/helper.js')) }}"></script>
         <script>
           $(document).ready(function() {
             // Initialize select2 globally for initial elements

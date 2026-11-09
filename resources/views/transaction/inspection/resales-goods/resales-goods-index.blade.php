@@ -143,5 +143,5 @@
     @include('transaction.inspection.resales-goods.modal.print-report')
 @endsection
 @push('js')
-    <script src="{{ asset('lims') }}/transaction/inspection/resales_goods.js"></script>
+    <script src="{{ asset('lims') }}/transaction/inspection/resales_goods.js?v={{ filemtime(public_path('lims/transaction/inspection/resales_goods.js')) }}"></script>
 @endpush

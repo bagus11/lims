@@ -103,5 +103,5 @@
     @include('transaction.inspection.goods.modal.add-inspection_header')
 @endsection
 @push('js')
-    <script src="{{ asset('lims') }}/transaction/inspection/goods.js"></script>
+    <script src="{{ asset('lims') }}/transaction/inspection/goods.js?v={{ filemtime(public_path('lims/transaction/inspection/goods.js')) }}"></script>
 @endpush
