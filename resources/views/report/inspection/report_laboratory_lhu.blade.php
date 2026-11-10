@@ -39,17 +39,23 @@
 <style>
     body { font-family: sans-serif; font-size: 9.5pt; color: #000; }
     table { border-collapse: collapse; }
-    .kop td { vertical-align: top; }
-    .kop-address { font-size: 7.5pt; line-height: 1.35; }
-    .kop-address .kop-label { width: 58px; }
-    .rule-red { border-bottom: 2.5px solid #e11d2e; margin: 4px 0 10px; }
+    .kop td { vertical-align: middle; }
+    .kop-address { font-size: 7.2pt; line-height: 1.3; }
+    .kop-address td { vertical-align: top; padding-bottom: 4px; }
+    .kop-address .kop-label { width: 52px; white-space: nowrap; }
+    .kop-address .kop-colon { width: 7px; }
+    .rule-red { border-bottom: 2.5px solid #e11d2e; margin: 6px 0 12px; }
     .title { text-align: center; font-size: 11.5pt; font-weight: bold; margin: 2px 0 12px; }
     .meta td { padding: 1px 0; font-size: 9.5pt; }
     .section-title { font-weight: bold; font-size: 10pt; padding-top: 10px; }
     .kv td { padding: 1.5px 0; }
     .hasil { width: 100%; margin-top: 4px; }
-    .hasil th, .hasil td { border: 1px solid #000; padding: 5px 7px; font-size: 9pt; vertical-align: top; }
+    .hasil th, .hasil td { border: 1px solid #000; padding: 6px 8px; font-size: 9pt; vertical-align: top; }
     .hasil th { text-align: center; font-weight: bold; }
+    /* tabel dalam-sel: baris label dan baris nilai dibuat identik supaya
+       Terbesar/Terkecil/Rata-rata sejajar persis dengan angkanya */
+    .hasil table.lines { width: 100%; border-collapse: collapse; }
+    .hasil table.lines td { border: 0; padding: 0 0 2px; font-size: 9pt; line-height: 1.35; vertical-align: top; }
     .hasil .sub { padding-left: 14px; }
     .center { text-align: center; }
     .sig { width: 100%; margin-top: 26px; }
@@ -62,28 +68,28 @@
 {{-- ===== KOP SURAT ===== --}}
 <table class="kop" style="width:100%">
     <tr>
-        <td style="width:34%; vertical-align:middle;">
+        <td style="width:36%;">
             @if (!empty($logo))
-                <img src="{{ $logo }}" style="width:150px">
+                <img src="{{ $logo }}" style="width:165px">
             @else
                 <b style="font-size:16pt; color:#e11d2e;">PRALON</b>
             @endif
         </td>
-        <td style="width:66%">
+        <td style="width:64%">
             <table class="kop-address" style="width:100%">
                 <tr>
-                    <td class="kop-label"><b>Head Office</b></td>
-                    <td style="width:8px">:</td>
+                    <td class="kop-label"><b>Head&nbsp;Office</b></td>
+                    <td class="kop-colon">:</td>
                     <td>Synergy Building #08-08, Jl. Jalur Sutera Barat 17 Alam Sutera, Serpong Tangerang 15143 - Indonesia<br>Phone : +6221 304 38808&nbsp;&nbsp;Fax : +6221 304 38801</td>
                 </tr>
                 <tr>
-                    <td class="kop-label"><b>Factory 1</b></td>
-                    <td>:</td>
+                    <td class="kop-label"><b>Factory&nbsp;1</b></td>
+                    <td class="kop-colon">:</td>
                     <td>Jl. Raya Bogor KM. 32.5, Cimanggis, Depok - Jawa Barat<br>Phone : (021) 874 1028 (Hunting)&nbsp;&nbsp;Fax : (021) 874 0913</td>
                 </tr>
                 <tr>
-                    <td class="kop-label"><b>Factory 2</b></td>
-                    <td>:</td>
+                    <td class="kop-label"><b>Factory&nbsp;2</b></td>
+                    <td class="kop-colon">:</td>
                     <td>Dusun Gintung Kebon RT 12&amp;13 RW 03 Desa Gintung Kerta, Kec. Klari - 41371, Kab. Karawang, Jawa Barat - Indonesia<br>Phone : (0267) 861 7238/88 (Hunting)&nbsp;&nbsp;Fax : (0267) 861 7228</td>
                 </tr>
             </table>
@@ -142,23 +148,27 @@
                 $syarat = trim(($row['species'] ? $row['species'] : '') . ($row['specification'] !== '-' && $row['specification'] !== '' ? "\n" . $row['specification'] : ''));
             @endphp
             <tr>
-                <td>
-                    {{ $row['sequence'] }}.&nbsp; {{ $row['item'] }}
-                    @if ($multi)
-                        <br><span class="sub">&#8227; Terbesar{{ $unitText }}</span>
-                        <br><span class="sub">&#8227; Terkecil{{ $unitText }}</span>
-                        <br><span class="sub">&#8227; Rata-rata{{ $unitText }}</span>
-                    @endif
-                </td>
-                <td class="center">
-                    @if ($multi)
-                        <br>{{ $fmt($values->max()) }}
-                        <br>{{ $fmt($values->min()) }}
-                        <br><b>{{ is_numeric(str_replace(',', '.', (string) $row['figure'])) ? $fmt(str_replace(',', '.', (string) $row['figure'])) : $row['figure'] }}</b>
-                    @else
-                        <b>{{ $row['figure'] }}</b>{{ $row['unit'] && $row['figure'] !== '-' ? ' ' . $row['unit'] : '' }}
-                    @endif
-                </td>
+                @if ($multi)
+                    <td>
+                        <table class="lines">
+                            <tr><td>{{ $row['sequence'] }}.&nbsp; {{ $row['item'] }}</td></tr>
+                            <tr><td class="sub">&#8227; Terbesar{{ $unitText }}</td></tr>
+                            <tr><td class="sub">&#8227; Terkecil{{ $unitText }}</td></tr>
+                            <tr><td class="sub">&#8227; Rata-rata{{ $unitText }}</td></tr>
+                        </table>
+                    </td>
+                    <td>
+                        <table class="lines">
+                            <tr><td class="center">&nbsp;</td></tr>
+                            <tr><td class="center">{{ $fmt($values->max()) }}</td></tr>
+                            <tr><td class="center">{{ $fmt($values->min()) }}</td></tr>
+                            <tr><td class="center"><b>{{ is_numeric(str_replace(',', '.', (string) $row['figure'])) ? $fmt(str_replace(',', '.', (string) $row['figure'])) : $row['figure'] }}</b></td></tr>
+                        </table>
+                    </td>
+                @else
+                    <td>{{ $row['sequence'] }}.&nbsp; {{ $row['item'] }}</td>
+                    <td class="center"><b>{{ $row['figure'] }}</b>{{ $row['unit'] && $row['figure'] !== '-' ? ' ' . $row['unit'] : '' }}</td>
+                @endif
                 <td>{!! $syarat !== '' ? nl2br(e($syarat)) : '&nbsp;' !!}</td>
                 <td class="center">{{ $row['evaluation'] === 'GOOD' ? 'Memenuhi' : ($row['evaluation'] ? 'Tidak Memenuhi' : '-') }}</td>
             </tr>
