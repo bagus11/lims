@@ -138,7 +138,8 @@
                 $multi = count($row['measurements']) > 1;
                 $values = collect($row['measurements'])->map(fn ($value) => (float) $value);
                 $unitText = $row['unit'] ? ' (' . $row['unit'] . ')' : '';
-                $syarat = trim(($row['species'] ? $row['species'] : '') . ($row['specification'] !== '-' && $row['specification'] !== '' ? "\n" . $row['specification'] . ($row['unit'] ? ' ' . $row['unit'] : '') : ''));
+                // specification dari formatReportStandard sudah menyertakan satuan
+                $syarat = trim(($row['species'] ? $row['species'] : '') . ($row['specification'] !== '-' && $row['specification'] !== '' ? "\n" . $row['specification'] : ''));
             @endphp
             <tr>
                 <td>
