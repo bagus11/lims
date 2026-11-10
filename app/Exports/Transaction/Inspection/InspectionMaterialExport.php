@@ -119,7 +119,8 @@ class InspectionMaterialExport extends NativeReportExport
         $this->border("A{$sigLabel}:D{$sigName}");
         $this->rowHeight($sigName, 46);
 
-        foreach (['A' => 24, 'B' => 28, 'C' => 4, 'D' => 24, 'E' => 28, 'F' => 14] as $col => $w) {
+        // C cukup lebar karena blok tanda tangan memakai kolom A-D
+        foreach (['A' => 24, 'B' => 28, 'C' => 18, 'D' => 24, 'E' => 28, 'F' => 14] as $col => $w) {
             $this->colWidth($col, $w);
         }
     }

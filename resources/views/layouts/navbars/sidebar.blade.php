@@ -43,7 +43,8 @@
                 <div class="row">
                     <div class="col-6 collapse-brand">
                         <a href="{{ route('home') }}">
-                            <img src="{{ asset('argon') }}/img/brand/blue.png">
+                            {{-- logo mengikuti aset aplikasi (sama dengan brand sidebar), bukan logo bawaan Argon --}}
+                            <img src="{{ asset('lims') }}/logo.png" alt="{{ config('app.name', 'LIMS') }}" style="max-height:36px; width:auto;">
                         </a>
                     </div>
                     <div class="col-6 collapse-close">

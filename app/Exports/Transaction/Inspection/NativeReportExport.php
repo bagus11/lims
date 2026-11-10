@@ -35,7 +35,10 @@ abstract class NativeReportExport implements FromArray, WithEvents, WithTitle
     /** Tambah satu baris; kembalikan nomor baris spreadsheet-nya (1-based). */
     protected function row(array $cells): int
     {
-        $this->rows[] = $cells;
+        // baris benar-benar kosong ([]) dibuang Laravel-Excel sehingga seluruh
+        // isi bergeser naik dan koordinat styling meleset — selipkan satu sel
+        // string kosong agar baris tetap tercipta
+        $this->rows[] = $cells === [] ? [''] : $cells;
 
         return count($this->rows);
     }
