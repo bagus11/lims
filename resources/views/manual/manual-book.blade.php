@@ -615,6 +615,10 @@
                     sekali di awal.
                 </li>
             </ul>
+            <figure class="manual-shot">
+                <img src="{{ asset('manual/images/setting-akun.png') }}" alt="Halaman Setting Akun dengan kartu Ubah Kata Sandi di kiri dan kanvas Tanda Tangan di kanan">
+                <figcaption>Halaman Setting Akun: kata sandi di kiri, kanvas tanda tangan di kanan.</figcaption>
+            </figure>
         </div>
 
         <div class="manual-card" id="manual-menus">
@@ -1030,9 +1034,18 @@
             </p>
 
             <h4>Mencetak laporan</h4>
+            <p>
+                Ada dua keluaran: <b>PDF</b> berformat LHU resmi (Laporan Pengujian Pipa PVC)
+                dan <b>Excel</b> berformat formulir internal Record of Laboratory Testing
+                (03/QC/12-1999 Rev-00). Saat menekan tombol PDF, sistem menanyakan mode cetak:
+            </p>
+            <ul>
+                <li><b>Dengan Kop (kertas polos)</b> &mdash; PDF lengkap dengan kop alamat dan bilah merah kontak di kaki halaman.</li>
+                <li><b>Tanpa Kop (kertas berkop)</b> &mdash; isi laporan saja, dengan ruang kosong di atas dan bawah; pakai mode ini bila mencetak di kertas kop pracetak yang disediakan kantor.</li>
+            </ul>
             <figure class="manual-shot">
-                <img src="{{ asset('manual/images/report-preview.png') }}" alt="Hasil cetak Record of Laboratory Testing dengan kondisi pengujian, tabel 13 parameter beserta hasil ukur dan evaluasi, kolom komentar, dan blok tanda tangan">
-                <figcaption>PDF dan Excel memakai tata letak yang sama, mengikuti formulir 03/QC/12-1999 Rev-00 &mdash; termasuk grup kolom CHECKER dan blok tanda tangan satu baris (V FACTORY MGR, VI QC Chift, VII Reporter, VIII Karu).</figcaption>
+                <img src="{{ asset('manual/images/report-preview.png') }}" alt="Hasil cetak LHU Laporan Pengujian Pipa PVC: kop surat Pralon, keterangan contoh, tabel hasil uji, kesimpulan, dan tiga penandatangan">
+                <figcaption>PDF berformat LHU: kop surat, keterangan contoh, tabel hasil uji, kesimpulan, dan tanda tangan Factory Manager, Kabag QC, serta petugas laboratorium (gambar tanda tangan diambil dari Setting Akun).</figcaption>
             </figure>
             <div class="manual-table-wrap">
                 <table class="manual-table">
@@ -1291,7 +1304,7 @@
             <ul>
                 <li><b>Export PDF &amp; Excel diperbaiki</b> &mdash; tombol cetak di semua menu transaksi sempat gagal (error 500) di server; kini seluruh PDF dan Excel berfungsi normal.</li>
                 <li><b>Excel per transaksi di semua menu</b> &mdash; Inspection Material dan Inspection Goods kini punya pilihan Excel yang benar-benar berfungsi di modal ekspornya; Excel Resales Goods dan LAB ditulis ulang sehingga rapi dibuka di spreadsheet, bukan lagi hasil konversi tampilan web.</li>
-                <li><b>Report LAB mengikuti formulir asli</b> &mdash; tata letak menyesuaikan formulir 03/QC/12-1999 Rev-00 (grup kolom CHECKER, blok tanda tangan V&ndash;VIII termasuk VIII Karu, label JIS K 6741), dan form New Test mendapat isian opsional <b>Customer</b>, <b>Proyek</b>, dan <b>Dibuat Untuk</b> yang ikut tercetak.</li>
+                <li><b>PDF LAB kini berformat LHU resmi</b> &mdash; Laporan Pengujian Pipa PVC lengkap dengan kop surat, keterangan contoh, tabel hasil uji, kesimpulan otomatis, dan tanda tangan dari Setting Akun; tersedia dua mode cetak (dengan kop, atau tanpa kop untuk kertas berkop). Excel tetap memakai formulir internal 03/QC/12-1999 Rev-00. Form New Test mendapat isian opsional <b>Customer</b>, <b>Proyek</b>, <b>Dibuat Untuk</b>, <b>Nama Contoh Uji</b>, <b>Keadaan Contoh</b>, dan <b>Petunjuk Pengambilan Contoh</b> yang ikut tercetak.</li>
                 <li><b>Setting Akun</b> &mdash; menu avatar kanan atas kini berisi Setting &amp; Logout; dari sana setiap pengguna bisa mengganti kata sandi dan menggambar tanda tangan untuk report (lihat bagian <a href="#manual-akun">Setting Akun</a>).</li>
                 <li><b>Tampilan diseragamkan</b> &mdash; badge status transaksi kini sama di keempat menu (Draft/New, In Progress, Approval Progress, Done, Reject), format tanggal seragam <code>YYYY-mm-dd HH:ii:ss</code>, dan modal approval Resales Goods di Dashboard ditata ulang (informasi transaksi + hasil sample + keputusan dalam satu tampilan).</li>
                 <li><b>Perbaikan kecil</b> &mdash; modal Edit Role User di User Access tidak lagi kehilangan nilai terpilih saat dibuka.</li>
