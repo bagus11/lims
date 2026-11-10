@@ -264,10 +264,218 @@
         .manual-page .manual-card { padding: 20px; }
         .manual-page h1.manual-title { font-size: 24px; }
     }
+
+    /* ===== rangka dua kolom: rail navigasi + isi ===== */
+    .manual-page .manual-shell {
+        display: grid;
+        grid-template-columns: 252px minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+    }
+    .manual-page .manual-rail {
+        position: sticky;
+        top: 86px;
+        max-height: calc(100vh - 106px);
+        overflow-y: auto;
+        background: #fff;
+        border: 1px solid var(--manual-rule);
+        border-radius: 14px;
+        padding: 16px 14px;
+        scrollbar-width: thin;
+    }
+    .manual-page .manual-rail-search {
+        position: relative;
+        margin-bottom: 14px;
+    }
+    .manual-page .manual-rail-search input {
+        width: 100%;
+        border: 1px solid var(--manual-rule);
+        border-radius: 8px;
+        padding: 8px 30px 8px 12px;
+        font-size: 13px;
+        color: var(--manual-ink);
+        background: #f7faf9;
+        outline: none;
+    }
+    .manual-page .manual-rail-search input:focus {
+        border-color: #179BAE;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(23, 155, 174, .12);
+    }
+    .manual-page .manual-rail-search .manual-rail-clear {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: 0;
+        background: none;
+        color: var(--manual-faint);
+        font-size: 14px;
+        cursor: pointer;
+        padding: 2px 6px;
+        display: none;
+    }
+    .manual-page .manual-rail-count {
+        font-size: 11px;
+        color: var(--manual-faint);
+        margin: -6px 0 10px;
+        display: none;
+    }
+    .manual-page .manual-rail strong {
+        display: block;
+        font-size: 10px;
+        letter-spacing: .13em;
+        text-transform: uppercase;
+        color: var(--manual-faint);
+        margin: 14px 0 5px;
+    }
+    .manual-page .manual-rail strong:first-of-type { margin-top: 2px; }
+    .manual-page .manual-rail a {
+        display: block;
+        font-size: 12.5px;
+        line-height: 1.35;
+        color: var(--manual-soft);
+        padding: 5px 8px 5px 11px;
+        border-left: 2px solid var(--manual-rule);
+        border-radius: 0 6px 6px 0;
+        text-decoration: none;
+    }
+    .manual-page .manual-rail a:hover,
+    .manual-page .manual-rail a:focus {
+        color: #179BAE;
+        border-left-color: #179BAE;
+        background: #f2fafb;
+        text-decoration: none;
+    }
+    .manual-page .manual-rail a.is-active {
+        color: #107889;
+        border-left-color: #179BAE;
+        background: #e9f7f9;
+        font-weight: 600;
+    }
+    .manual-page .manual-rail a.is-hidden,
+    .manual-page .manual-rail strong.is-hidden { display: none; }
+
+    /* progress baca */
+    .manual-progressbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        width: 0;
+        background: #179BAE;
+        z-index: 1080;
+        transition: width .1s linear;
+    }
+
+    /* tombol kembali ke atas */
+    .manual-backtop {
+        position: fixed;
+        right: 26px;
+        bottom: 26px;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        border: 0;
+        background: #179BAE;
+        color: #fff;
+        font-size: 16px;
+        box-shadow: 0 10px 24px rgba(23, 155, 174, .35);
+        cursor: pointer;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(8px);
+        transition: opacity .2s ease, transform .2s ease;
+        z-index: 1070;
+    }
+    .manual-backtop.is-visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .manual-backtop:focus { outline: 2px solid #0c6b63; outline-offset: 2px; }
+
+    /* saat pencarian aktif: kartu & judul bagian yang tidak cocok disembunyikan */
+    .manual-page .manual-card.is-filtered,
+    .manual-page .manual-part.is-filtered,
+    .manual-page .manual-hero.is-filtered,
+    .manual-page .manual-toc.is-filtered { display: none; }
+    .manual-page .manual-empty {
+        display: none;
+        background: #fff;
+        border: 1px dashed var(--manual-rule);
+        border-radius: 14px;
+        padding: 34px;
+        text-align: center;
+        color: var(--manual-faint);
+        font-size: 13px;
+    }
+    .manual-page .manual-empty.is-visible { display: block; }
+
+    @media (max-width: 991.98px) {
+        .manual-page .manual-shell { grid-template-columns: 1fr; }
+        .manual-page .manual-rail { display: none; }
+        .manual-backtop { right: 16px; bottom: 16px; }
+    }
+    @media (min-width: 992px) {
+        /* di desktop TOC lama digantikan rail */
+        .manual-page .manual-toc { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .manual-progressbar, .manual-backtop { transition: none; }
+    }
+    @media print {
+        .manual-page .manual-rail,
+        .manual-progressbar,
+        .manual-backtop { display: none !important; }
+        .manual-page .manual-shell { display: block; }
+        .manual-page .manual-card.is-filtered,
+        .manual-page .manual-part.is-filtered { display: block; }
+    }
 </style>
+
+<div class="manual-progressbar" id="manualProgress"></div>
 
 <div class="row mx-2 mt-4 d-flex justify-content-center manual-page">
     <div class="col-12">
+      <div class="manual-shell">
+
+        <aside class="manual-rail" id="manualRail" aria-label="Navigasi buku panduan">
+            <div class="manual-rail-search">
+                <input type="search" id="manualSearch" placeholder="Cari di panduan&hellip;" aria-label="Cari di panduan" autocomplete="off">
+                <button type="button" class="manual-rail-clear" id="manualSearchClear" title="Bersihkan pencarian">&times;</button>
+            </div>
+            <p class="manual-rail-count" id="manualSearchCount"></p>
+            <nav id="manualRailNav">
+                <strong>Bagian 1 &mdash; Pengaturan</strong>
+                <a href="#manual-dashboard">Dashboard</a>
+                <a href="#manual-akun">Setting Akun</a>
+                <a href="#manual-menus">Menus</a>
+                <a href="#manual-role">Role Permission</a>
+                <a href="#manual-user">User Access</a>
+                <a href="#manual-approval">Approval</a>
+                <strong>Bagian 2 &mdash; Data Master</strong>
+                <a href="#manual-product">Master Product</a>
+                <a href="#manual-category">Category Machine</a>
+                <a href="#manual-machine">Master Machine</a>
+                <a href="#manual-material">Material</a>
+                <a href="#manual-resales-master">Resales Goods</a>
+                <a href="#manual-lab-master">Master Lab</a>
+                <strong>Bagian 3 &mdash; Transaksi</strong>
+                <a href="#manual-trx-material">Inspection Material</a>
+                <a href="#manual-trx-goods">Inspection Goods</a>
+                <a href="#manual-trx-resales">Inspection Resales Goods</a>
+                <a href="#manual-trx-lab">LAB</a>
+                <strong>Bagian 4 &mdash; Alur End-to-End</strong>
+                <a href="#manual-flow-konsep">Siklus hidup transaksi</a>
+                <a href="#manual-flow-resales">Resales Goods: awal&ndash;akhir</a>
+                <a href="#manual-flow-lab">LAB: awal&ndash;akhir</a>
+                <a href="#manual-flow-goods">Inspection Goods: awal&ndash;akhir</a>
+                <a href="#manual-flow-material">Material + alur Reject</a>
+                <strong>Bagian 5 &mdash; Referensi</strong>
+                <a href="#manual-status">Status transaksi</a>
+                <a href="#manual-trouble">Kalau macet</a>
+                <a href="#manual-changelog">Riwayat pembaruan</a>
+            </nav>
+        </aside>
+
+        <div class="manual-content" id="manualContent">
 
         <div class="manual-hero">
             <div class="manual-eyebrow">Manual Penggunaan</div>
@@ -1090,11 +1298,152 @@
             </ul>
         </div>
 
+        <div class="manual-empty" id="manualEmpty">
+            Tidak ada bagian yang cocok dengan kata kunci itu.<br>
+            Coba kata lain, misalnya nama menu (&ldquo;approval&rdquo;, &ldquo;lab&rdquo;) atau masalah yang dialami (&ldquo;tidak muncul&rdquo;).
+        </div>
+
         <p class="text-muted" style="font-size:12px; margin: 22px 0 40px;">
             Buku panduan LIMS PT Pralon &middot; halaman ini bisa dicetak langsung dari browser
             (Ctrl/Cmd + P).
         </p>
 
+        </div>{{-- /manual-content --}}
+      </div>{{-- /manual-shell --}}
     </div>
 </div>
+
+<button type="button" class="manual-backtop" id="manualBackTop" title="Kembali ke atas" aria-label="Kembali ke atas">&#8593;</button>
+
+<script>
+(function () {
+    'use strict'
+    var rail = document.getElementById('manualRail')
+    var navLinks = Array.prototype.slice.call(document.querySelectorAll('#manualRailNav a'))
+    var groups = Array.prototype.slice.call(document.querySelectorAll('#manualRailNav strong'))
+    var cards = Array.prototype.slice.call(document.querySelectorAll('#manualContent .manual-card'))
+    var parts = Array.prototype.slice.call(document.querySelectorAll('#manualContent .manual-part'))
+    var hero = document.querySelector('#manualContent .manual-hero')
+    var toc = document.querySelector('#manualContent .manual-toc')
+    var searchInput = document.getElementById('manualSearch')
+    var searchClear = document.getElementById('manualSearchClear')
+    var searchCount = document.getElementById('manualSearchCount')
+    var emptyState = document.getElementById('manualEmpty')
+    var progress = document.getElementById('manualProgress')
+    var backTop = document.getElementById('manualBackTop')
+
+    // ---------- klik navigasi: scroll halus ----------
+    navLinks.forEach(function (link) {
+        link.addEventListener('click', function (e) {
+            var target = document.querySelector(link.getAttribute('href'))
+            if (!target) return
+            e.preventDefault()
+            var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+            history.replaceState(null, '', link.getAttribute('href'))
+        })
+    })
+
+    // ---------- scrollspy: tandai bagian yang sedang dibaca ----------
+    var spyTargets = navLinks
+        .map(function (link) { return document.querySelector(link.getAttribute('href')) })
+        .filter(Boolean)
+    function updateSpy() {
+        var line = 120 // garis baca: sedikit di bawah navbar
+        var current = null
+        for (var i = 0; i < spyTargets.length; i++) {
+            if (spyTargets[i].getBoundingClientRect().top <= line) current = spyTargets[i]
+        }
+        navLinks.forEach(function (link) {
+            var active = current && link.getAttribute('href') === '#' + current.id
+            link.classList.toggle('is-active', !!active)
+            if (active && rail) {
+                var lt = link.offsetTop, st = rail.scrollTop, h = rail.clientHeight
+                if (lt < st + 60 || lt > st + h - 60) rail.scrollTop = lt - h / 2
+            }
+        })
+    }
+
+    // ---------- progress baca + tombol ke atas ----------
+    function updateProgress() {
+        var doc = document.documentElement
+        var max = doc.scrollHeight - window.innerHeight
+        progress.style.width = (max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0) + '%'
+        backTop.classList.toggle('is-visible', window.scrollY > 600)
+    }
+    var ticking = false
+    window.addEventListener('scroll', function () {
+        if (ticking) return
+        ticking = true
+        requestAnimationFrame(function () { updateSpy(); updateProgress(); ticking = false })
+    }, { passive: true })
+    backTop.addEventListener('click', function () {
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
+    })
+
+    // ---------- pencarian: saring kartu & navigasi ----------
+    var searchIndex = cards.map(function (card) {
+        return { el: card, text: card.textContent.toLowerCase() }
+    })
+    function applyFilter(raw) {
+        var q = raw.trim().toLowerCase()
+        var searching = q.length >= 2
+        searchClear.style.display = raw.length ? 'block' : 'none'
+
+        var visible = 0
+        searchIndex.forEach(function (item) {
+            var match = !searching || item.text.indexOf(q) !== -1
+            item.el.classList.toggle('is-filtered', !match)
+            if (searching && match) visible++
+        })
+        // hero dan TOC statis disembunyikan saat sedang mencari; kartu intro
+        // ("Urutan kerja") ikut tersaring lewat searchIndex seperti kartu lain
+        ;[hero, toc].forEach(function (el) {
+            if (el) el.classList.toggle('is-filtered', searching)
+        })
+        // judul bagian tampil hanya jika masih ada kartunya yang terlihat
+        parts.forEach(function (part) {
+            var node = part.nextElementSibling, any = false
+            while (node && !node.classList.contains('manual-part')) {
+                if (node.classList.contains('manual-card') && !node.classList.contains('is-filtered')) { any = true; break }
+                node = node.nextElementSibling
+            }
+            part.classList.toggle('is-filtered', searching && !any)
+        })
+        // navigasi rail mengikuti hasil saringan
+        navLinks.forEach(function (link) {
+            var target = document.querySelector(link.getAttribute('href'))
+            var shown = target && !target.classList.contains('is-filtered')
+            link.classList.toggle('is-hidden', searching && !shown)
+        })
+        groups.forEach(function (group) {
+            var node = group.nextElementSibling, any = false
+            while (node && node.tagName !== 'STRONG') {
+                if (!node.classList.contains('is-hidden')) { any = true; break }
+                node = node.nextElementSibling
+            }
+            group.classList.toggle('is-hidden', searching && !any)
+        })
+
+        emptyState.classList.toggle('is-visible', searching && visible === 0)
+        searchCount.style.display = searching ? 'block' : 'none'
+        searchCount.textContent = searching ? visible + ' bagian cocok' : ''
+        if (!searching) updateSpy()
+    }
+    searchInput.addEventListener('input', function () { applyFilter(searchInput.value) })
+    searchClear.addEventListener('click', function () {
+        searchInput.value = ''
+        applyFilter('')
+        searchInput.focus()
+    })
+    searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { searchInput.value = ''; applyFilter('') }
+    })
+    window.addEventListener('beforeprint', function () { searchInput.value = ''; applyFilter('') })
+
+    updateSpy()
+    updateProgress()
+})()
+</script>
 @endsection
