@@ -417,7 +417,27 @@ function laboratoryReportCode(element) {
 }
 
 $(document).on('click', '.laboratory-export-pdf', function () {
-    window.open('printLaboratoryPdf?laboratory_code=' + encodeURIComponent(laboratoryReportCode(this)), '_blank')
+    var code = laboratoryReportCode(this)
+    // dua mode cetak: lengkap (kop+footer) atau polos untuk kertas kop pracetak
+    Swal.fire({
+        title: 'Cetak LHU',
+        text: 'Pilih mode cetak sesuai kertas yang dipakai.',
+        icon: 'question',
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'Dengan Kop (kertas polos)',
+        denyButtonText: 'Tanpa Kop (kertas berkop)',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#179BAE',
+        denyButtonColor: '#525f7f'
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            window.open('printLaboratoryPdf?laboratory_code=' + encodeURIComponent(code), '_blank')
+        } else if (result.isDenied) {
+            window.open('printLaboratoryPdf?letterhead=0&laboratory_code=' + encodeURIComponent(code), '_blank')
+        }
+    })
+    return
 })
 
 $(document).on('click', '.laboratory-export-excel', function () {

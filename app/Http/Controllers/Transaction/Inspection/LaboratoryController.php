@@ -535,18 +535,24 @@ class LaboratoryController extends Controller
             abort(403, 'You are not allowed to access this laboratory transaction');
         }
 
+        // letterhead=0 -> cetak di kertas kop pracetak: tanpa kop & footer,
+        // margin atas/bawah dilonggarkan agar isi jatuh di bawah kop kertas
+        $letterhead = $request->get('letterhead', '1') !== '0';
+
         $mpdf = new \Mpdf\Mpdf([
             // tempDir wajib ke storage: vendor/ milik root di container, mpdf 500 kalau mkdir di sana
             'tempDir' => storage_path('app/mpdf'),
             'format' => 'A4',
-            'margin_top' => 10,
-            'margin_bottom' => 16,
+            'margin_top' => $letterhead ? 10 : 48,
+            'margin_bottom' => $letterhead ? 16 : 42,
             'margin_left' => 12,
             'margin_right' => 12,
         ]);
-        // bilah merah kontak perusahaan di kaki tiap halaman, mengikuti dokumen LHU resmi
-        $mpdf->SetHTMLFooter('<table width="100%" style="background-color:#e11d2e; color:#ffffff; font-size:8pt;"><tr><td align="center" style="padding:4px 0;"><b>email : info@pralon.com&nbsp;&nbsp;|&nbsp;&nbsp;website : www.pralon.com</b></td></tr></table>');
-        $mpdf->WriteHTML(view('report.inspection.report_laboratory_lhu', $report)->render());
+        if ($letterhead) {
+            // bilah merah kontak perusahaan di kaki tiap halaman, mengikuti dokumen LHU resmi
+            $mpdf->SetHTMLFooter('<table width="100%" style="background-color:#e11d2e; color:#ffffff; font-size:8pt;"><tr><td align="center" style="padding:4px 0;"><b>email : info@pralon.com&nbsp;&nbsp;|&nbsp;&nbsp;website : www.pralon.com</b></td></tr></table>');
+        }
+        $mpdf->WriteHTML(view('report.inspection.report_laboratory_lhu', $report + ['letterhead' => $letterhead])->render());
         while (ob_get_level()) { ob_end_clean(); } // buffer bisa kosong di php-fpm (output_buffering off), ob_clean() polos malah error
 
         $filename = 'LIMS_Laboratory_' . str_replace('/', '_', $report['header']->laboratory_code) . '_' . date('Ymd_Hi') . '.pdf';

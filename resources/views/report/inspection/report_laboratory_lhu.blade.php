@@ -65,7 +65,8 @@
     .nowrap { white-space: nowrap; }
 </style>
 
-{{-- ===== KOP SURAT ===== --}}
+{{-- ===== KOP SURAT (dilewati saat cetak di kertas kop pracetak) ===== --}}
+@if ($letterhead ?? true)
 <table class="kop" style="width:100%">
     <tr>
         <td style="width:36%;">
@@ -97,6 +98,7 @@
     </tr>
 </table>
 <div class="rule-red"></div>
+@endif
 
 <div class="title">LAPORAN PENGUJIAN PIPA PVC</div>
 
