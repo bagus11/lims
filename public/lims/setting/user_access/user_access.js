@@ -24,34 +24,33 @@
          // Edit Role User   
              $('#role_user_table').on('click','.editRoleUser', function(){
                  var id = $(this).data('id');
-                 selectName('getUser','selectUserEdit','User')
-                 selectName('getRole','selectRoleEdit','User')
-                 $.ajax({
-                     url: 'detailRoleUser',
-                     type: "get",
-                     dataType: 'json',
-                     data:{
-                         'id':id
-                     },
-                     async: true,
-                     beforeSend: function() {
-                         SwalLoading('Please wait ...');
-                     },
-                     success: function(response) {
-                         swal.close();
-                         $('#userIdEdit').val(id)
-                         $('#selectUserEdit').val(id)
-                         $('#selectUserEdit').select2().trigger('change');
-                         $('#roleIdEdit').val(response.detail.role_id)
-                         $('#selectRoleEdit').val(response.detail.role_id)
-                         $('#selectRoleEdit').select2().trigger('change');
-                     },
-                     error: function(response) {
-                         swal.close();
-                         toastr['error']('Failed to delete record, please contact ICT Developer');
+                 // opsi & detail dimuat bersamaan, nilai baru di-set SETELAH
+                 // ketiganya selesai — dulu selectName() balapan dengan detail
+                 // sehingga pilihan tertimpa ulang jadi placeholder
+                 SwalLoading('Please wait ...');
+                 $.when(
+                     $.get('getUser'),
+                     $.get('getRole'),
+                     $.get('detailRoleUser', { id: id })
+                 ).done(function(userResp, roleResp, detailResp){
+                     swal.close();
+                     var fill = function(selectId, placeholder, rows){
+                         var html = '<option value="">Choose ' + placeholder + '</option>'
+                         $.each(rows || [], function(i, row){
+                             html += '<option value="' + row.id + '">' + escapeHtml(row.name) + '</option>'
+                         })
+                         $('#' + selectId).html(html)
                      }
-                 });   
-                 
+                     fill('selectUserEdit', 'User', userResp[0].data)
+                     fill('selectRoleEdit', 'Role', roleResp[0].data)
+                     $('#userIdEdit').val(id)
+                     $('#selectUserEdit').val(String(id)).trigger('change')
+                     $('#roleIdEdit').val(detailResp[0].detail.role_id)
+                     $('#selectRoleEdit').val(String(detailResp[0].detail.role_id)).trigger('change')
+                 }).fail(function(){
+                     swal.close();
+                     toastr['error']('Failed to get data, please contact ICT Developer');
+                 });
              })
              onChange('selectRoleEdit','roleIdEdit')
              onChange('selectUserEdit','userIdEdit')

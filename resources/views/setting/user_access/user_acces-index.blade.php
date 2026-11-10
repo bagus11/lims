@@ -62,5 +62,5 @@
 @include('setting.user_access.modal.edit_rolePermission')
 @endsection
 @push('js')
-    <script src="{{ asset('lims') }}/setting/user_access/user_access.js"></script>
+    <script src="{{ asset('lims') }}/setting/user_access/user_access.js?v={{ filemtime(public_path('lims/setting/user_access/user_access.js')) }}"></script>
 @endpush
