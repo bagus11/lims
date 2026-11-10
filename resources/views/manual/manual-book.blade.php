@@ -299,6 +299,7 @@
                 <div class="manual-toc-col">
                     <strong>Bagian 1 &mdash; Pengaturan</strong>
                     <a href="#manual-dashboard">Dashboard</a>
+                    <a href="#manual-akun">Setting Akun</a>
                     <a href="#manual-menus">Menus</a>
                     <a href="#manual-role">Role Permission</a>
                     <a href="#manual-user">User Access</a>
@@ -332,6 +333,7 @@
                     <strong>Bagian 5 &mdash; Referensi</strong>
                     <a href="#manual-status">Status transaksi</a>
                     <a href="#manual-trouble">Kalau macet</a>
+                    <a href="#manual-changelog">Riwayat pembaruan</a>
                 </div>
             </div>
         </div>
@@ -384,6 +386,27 @@
                     Jangan memakai angka-angka tersebut untuk pelaporan.
                 </p>
             </div>
+        </div>
+
+        <div class="manual-card" id="manual-akun">
+            <h3>Setting Akun</h3>
+            <p class="manual-path">Avatar pojok kanan atas &rarr; Setting</p>
+            <p>
+                Menu di balik foto profil kini hanya berisi dua pilihan: <b>Setting</b> dan
+                <b>Logout</b>. Setting membuka halaman akun dengan dua kartu:
+            </p>
+            <ul>
+                <li>
+                    <b>Ubah Kata Sandi</b> &mdash; masukkan kata sandi lama, lalu kata sandi baru
+                    (minimal 8 karakter) dua kali. Kata sandi lama yang salah akan ditolak.
+                </li>
+                <li>
+                    <b>Tanda Tangan</b> &mdash; gambar tanda tangan memakai mouse atau layar
+                    sentuh di kotak yang tersedia, lalu simpan. Tanda tangan ini yang dicetak
+                    pada blok pengesahan report PDF, jadi setiap approver sebaiknya mengisinya
+                    sekali di awal.
+                </li>
+            </ul>
         </div>
 
         <div class="manual-card" id="manual-menus">
@@ -687,7 +710,8 @@
             </ul>
             <p>
                 Tombol bergambar orang membuka <b>Log Approval</b> untuk melihat siapa saja yang
-                sudah menyetujui, dan tombol printer mencetak laporannya.
+                sudah menyetujui, dan tombol printer membuka pilihan ekspor: <b>PDF</b> atau
+                <b>Excel</b> &mdash; keduanya berisi data yang sama.
             </p>
         </div>
 
@@ -712,7 +736,8 @@
             <p>
                 Tersedia form khusus <b>Wall Thickness</b> untuk mencatat tebal dinding per titik,
                 serta <b>History Progress</b> dan <b>Report Progress</b> untuk melihat dan
-                mengekspor rekap pemeriksaan.
+                mengekspor rekap pemeriksaan &mdash; rekapnya bisa diunduh sebagai <b>PDF</b>
+                maupun <b>Excel</b>.
             </p>
             <div class="manual-note">
                 <b>Filter tanggal sudah diperbaiki</b>
@@ -765,7 +790,10 @@
             <p>
                 Klik <b>New Test</b>. Pilih produk lebih dulu, karena pilihan metode menyesuaikan
                 produk. Isi tanggal uji, nomor laporan, shift, kode produksi, lot material, lokasi,
-                mesin, serta kondisi ruang: suhu, kelembapan, dan jenis produk.
+                mesin, serta kondisi ruang: suhu, kelembapan, dan jenis produk. Tersedia juga tiga
+                isian opsional &mdash; <b>Customer</b>, <b>Proyek</b>, dan <b>Dibuat Untuk</b> &mdash;
+                yang ikut tercetak pada bagian II formulir report; isi bila pengujian dilakukan
+                untuk pesanan atau proyek tertentu.
             </p>
             <figure class="manual-shot">
                 <img src="{{ asset('manual/images/lab-new-test.png') }}" alt="Modal Create Product Laboratory Test dengan isian produk, metode, tanggal, shift, kode produksi, lot material, lokasi, mesin, suhu, kelembapan, dan jenis produk">
@@ -796,7 +824,7 @@
             <h4>Mencetak laporan</h4>
             <figure class="manual-shot">
                 <img src="{{ asset('manual/images/report-preview.png') }}" alt="Hasil cetak Record of Laboratory Testing dengan kondisi pengujian, tabel 13 parameter beserta hasil ukur dan evaluasi, kolom komentar, dan blok tanda tangan">
-                <figcaption>PDF dan Excel memakai tata letak yang sama, mengikuti formulir 03/QC/12-1999 Rev-00.</figcaption>
+                <figcaption>PDF dan Excel memakai tata letak yang sama, mengikuti formulir 03/QC/12-1999 Rev-00 &mdash; termasuk grup kolom CHECKER dan blok tanda tangan satu baris (V FACTORY MGR, VI QC Chift, VII Reporter, VIII Karu).</figcaption>
             </figure>
             <div class="manual-table-wrap">
                 <table class="manual-table">
@@ -805,6 +833,7 @@
                         <tr><td class="manual-field">REPORT NO</td><td>Field Report No. saat membuat transaksi</td></tr>
                         <tr><td class="manual-field">Date OF Tested</td><td>Test Date, ditulis dalam bahasa Indonesia</td></tr>
                         <tr><td class="manual-field">Shift / Temp. / Humd.</td><td>Shift dalam angka Romawi, Temperature, Humidity</td></tr>
+                        <tr><td class="manual-field">Customer / Proyek / Dibuat Untuk</td><td>Tiga isian opsional pada form New Test</td></tr>
                         <tr><td class="manual-field">Kolom ITEM</td><td>Nama parameter di Master Lab</td></tr>
                         <tr><td class="manual-field">Kolom SPECIES</td><td>Description parameter di Master Lab</td></tr>
                         <tr><td class="manual-field">Kolom SPECIFICATION</td><td>Dirakit dari Operator, batas, dan toleransi</td></tr>
@@ -1044,6 +1073,21 @@
 
             <h4>Tombol cetak tidak kelihatan</h4>
             <p>Transaksi belum sampai tahap approval. Selesaikan pengisian lalu kirim untuk disetujui.</p>
+        </div>
+
+        <div class="manual-card" id="manual-changelog">
+            <h3>Riwayat pembaruan</h3>
+            <p class="manual-path">Perubahan sistem yang perlu diketahui pengguna</p>
+
+            <h4>November 2026</h4>
+            <ul>
+                <li><b>Export PDF &amp; Excel diperbaiki</b> &mdash; tombol cetak di semua menu transaksi sempat gagal (error 500) di server; kini seluruh PDF dan Excel berfungsi normal.</li>
+                <li><b>Excel per transaksi di semua menu</b> &mdash; Inspection Material dan Inspection Goods kini punya pilihan Excel yang benar-benar berfungsi di modal ekspornya; Excel Resales Goods dan LAB ditulis ulang sehingga rapi dibuka di spreadsheet, bukan lagi hasil konversi tampilan web.</li>
+                <li><b>Report LAB mengikuti formulir asli</b> &mdash; tata letak menyesuaikan formulir 03/QC/12-1999 Rev-00 (grup kolom CHECKER, blok tanda tangan V&ndash;VIII termasuk VIII Karu, label JIS K 6741), dan form New Test mendapat isian opsional <b>Customer</b>, <b>Proyek</b>, dan <b>Dibuat Untuk</b> yang ikut tercetak.</li>
+                <li><b>Setting Akun</b> &mdash; menu avatar kanan atas kini berisi Setting &amp; Logout; dari sana setiap pengguna bisa mengganti kata sandi dan menggambar tanda tangan untuk report (lihat bagian <a href="#manual-akun">Setting Akun</a>).</li>
+                <li><b>Tampilan diseragamkan</b> &mdash; badge status transaksi kini sama di keempat menu (Draft/New, In Progress, Approval Progress, Done, Reject), format tanggal seragam <code>YYYY-mm-dd HH:ii:ss</code>, dan modal approval Resales Goods di Dashboard ditata ulang (informasi transaksi + hasil sample + keputusan dalam satu tampilan).</li>
+                <li><b>Perbaikan kecil</b> &mdash; modal Edit Role User di User Access tidak lagi kehilangan nilai terpilih saat dibuka.</li>
+            </ul>
         </div>
 
         <p class="text-muted" style="font-size:12px; margin: 22px 0 40px;">
