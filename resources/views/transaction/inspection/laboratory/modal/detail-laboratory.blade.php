@@ -33,6 +33,12 @@
                         <div class="col-4"><p id="label_laboratory_project"></p></div>
                         <div class="col-2"><p>Dibuat Untuk</p></div>
                         <div class="col-4"><p id="label_laboratory_made_for"></p></div>
+                        <div class="col-2"><p>Nama Contoh Uji</p></div>
+                        <div class="col-4"><p id="label_laboratory_sample_name"></p></div>
+                        <div class="col-2"><p>Keadaan Contoh</p></div>
+                        <div class="col-4"><p id="label_laboratory_sample_condition"></p></div>
+                        <div class="col-2"><p>Petunjuk Pengambilan</p></div>
+                        <div class="col-4"><p id="label_laboratory_sample_instruction"></p></div>
                     </div>
                 </fieldset>
 

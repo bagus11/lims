@@ -26,6 +26,9 @@ class StoreLaboratoryHeaderRequest extends FormRequest
             'customer_name' => 'nullable|string|max:255',
             'project_name' => 'nullable|string|max:255',
             'made_for' => 'nullable|string|max:255',
+            'sample_name' => 'nullable|string|max:255',
+            'sample_condition' => 'nullable|string|max:255',
+            'sample_instruction' => 'nullable|string|max:255',
         ];
     }
 }

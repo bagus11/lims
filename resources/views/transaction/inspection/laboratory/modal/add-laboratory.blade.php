@@ -94,6 +94,21 @@
                         <input type="text" id="laboratory_add_made_for" class="form-control" placeholder="Opsional">
                         <span class="made_for_error text-danger"></span>
                     </div>
+                    <div class="col-md-4 mb-3">
+                        <p for="">Nama Contoh Uji</p>
+                        <input type="text" id="laboratory_add_sample_name" class="form-control" placeholder="mis. Pipa PVC untuk Saluran Air Minum">
+                        <span class="sample_name_error text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <p for="">Keadaan Contoh</p>
+                        <input type="text" id="laboratory_add_sample_condition" class="form-control" placeholder="mis. Satu batang dalam keadaan baik">
+                        <span class="sample_condition_error text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <p for="">Petunjuk Pengambilan Contoh</p>
+                        <input type="text" id="laboratory_add_sample_instruction" class="form-control" placeholder="mis. Diambil dari Logistik">
+                        <span class="sample_instruction_error text-danger"></span>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer justify-content-end">

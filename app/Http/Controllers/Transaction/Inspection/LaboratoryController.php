@@ -225,6 +225,9 @@ class LaboratoryController extends Controller
                 'customer_name' => $request->customer_name ? trim($request->customer_name) : null,
                 'project_name' => $request->project_name ? trim($request->project_name) : null,
                 'made_for' => $request->made_for ? trim($request->made_for) : null,
+                'sample_name' => $request->sample_name ? trim($request->sample_name) : null,
+                'sample_condition' => $request->sample_condition ? trim($request->sample_condition) : null,
+                'sample_instruction' => $request->sample_instruction ? trim($request->sample_instruction) : null,
                 'machine_id' => $request->machine_id ?: null,
                 'status' => 0,
                 'current_approval' => 0,
@@ -536,12 +539,14 @@ class LaboratoryController extends Controller
             // tempDir wajib ke storage: vendor/ milik root di container, mpdf 500 kalau mkdir di sana
             'tempDir' => storage_path('app/mpdf'),
             'format' => 'A4',
-            'margin_top' => 8,
-            'margin_bottom' => 8,
-            'margin_left' => 8,
-            'margin_right' => 8,
+            'margin_top' => 10,
+            'margin_bottom' => 16,
+            'margin_left' => 12,
+            'margin_right' => 12,
         ]);
-        $mpdf->WriteHTML(view('report.inspection.report_laboratory', $report)->render());
+        // bilah merah kontak perusahaan di kaki tiap halaman, mengikuti dokumen LHU resmi
+        $mpdf->SetHTMLFooter('<table width="100%" style="background-color:#e11d2e; color:#ffffff; font-size:8pt;"><tr><td align="center" style="padding:4px 0;"><b>email : info@pralon.com&nbsp;&nbsp;|&nbsp;&nbsp;website : www.pralon.com</b></td></tr></table>');
+        $mpdf->WriteHTML(view('report.inspection.report_laboratory_lhu', $report)->render());
         while (ob_get_level()) { ob_end_clean(); } // buffer bisa kosong di php-fpm (output_buffering off), ob_clean() polos malah error
 
         $filename = 'LIMS_Laboratory_' . str_replace('/', '_', $report['header']->laboratory_code) . '_' . date('Ymd_Hi') . '.pdf';
