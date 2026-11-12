@@ -30,9 +30,9 @@
                     <div class="col-md-4 mb-3">
                         <p for="">Shift</p>
                         <select id="laboratory_add_shift" class="form-control">
-                            <option value="1">Shift 1</option>
-                            <option value="2">Shift 2</option>
-                            <option value="3">Shift 3</option>
+                            @for ($shift = 1; $shift <= config('lims.lab_shifts'); $shift++)
+                                <option value="{{ $shift }}">Shift {{ $shift }}</option>
+                            @endfor
                         </select>
                         <span class="shift_error text-danger"></span>
                     </div>

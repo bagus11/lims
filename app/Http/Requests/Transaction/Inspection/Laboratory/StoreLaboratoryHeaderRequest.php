@@ -21,7 +21,7 @@ class StoreLaboratoryHeaderRequest extends FormRequest
             'production_code_number' => 'nullable|string|max:255',
             'material_lot_number' => 'nullable|string|max:255',
             'location_id' => 'required|integer',
-            'shift' => 'nullable|integer|min:1|max:3',
+            'shift' => 'nullable|integer|min:1|max:' . config('lims.lab_shifts'),
             'machine_id' => 'nullable|exists:machines,id',
             'customer_name' => 'nullable|string|max:255',
             'project_name' => 'nullable|string|max:255',
