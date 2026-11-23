@@ -119,13 +119,15 @@
                     $('#'+id).empty()
                     $('#'+id).append('<option value ="">Choose '+ name +'</option>');
                     $.each(response.data,function(i,data){
-                        $('#'+id).append('<option data-name="'+ data.name +'" value="'+data.id+'">' + data.name +'</option>');
+                        // Mesin ditampilkan dengan nomor uniknya; entitas lain tak punya no_machine
+                        var label = data.name + (data.no_machine ? ' (' + data.no_machine + ')' : '')
+                        $('#'+id).append('<option data-name="'+ data.name +'" value="'+data.id+'">' + label +'</option>');
                     });
                 },
                 error: function(response) {
                     toastr['error']('Failed to get data, please contact Developer');
                 }
-            });   
+            });
     }
     function getActiveItemTransaction(url,data,id,name){
         $.ajax({

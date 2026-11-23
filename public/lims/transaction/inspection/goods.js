@@ -9,6 +9,14 @@ function goodsFilterData() {
         'to': $('#to').val(),
     }
 }
+/**
+ * Identitas mesin ditampilkan nama + nomor mesin (no_machine unik di master),
+ * karena nama saja bisa kembar antar mesin.
+ */
+function machineLabel(machine) {
+    if (!machine) return ''
+    return machine.name + (machine.no_machine ? ' (' + machine.no_machine + ')' : '')
+}
 getCallback('getInspectionGoods',goodsFilterData(), function(response){
     swal.close()
 
@@ -149,9 +157,9 @@ $('#btn_save_header').on('click', function(){
             $('#select_inspector_edit').select2().trigger('change')
             // Update the HTML content of the tab progress element
             $('#time_edit').val(response.detail.time)
-            $('#machine_edit').val(response.detail.machine_relation.name)
+            $('#machine_edit').val(machineLabel(response.detail.machine_relation))
             $('#product_edit').val(response.detail.product_id)
-            $('#manufacturing_code_edit').val(response.detail.product_relation.marking)
+            $('#manufacturing_code_edit').val(response.detail.manufacturing_code)
             $('#length_of_pipe_edit').val(response.detail.length_of_pipe)
             $('#material_edit').val(response.detail.material_relation.id)
             $('#tape_diameter_edit').val(response.detail.tape_diameter)
@@ -357,9 +365,9 @@ $('#btn_save_header').on('click', function(){
 
             $('#label_user_id').html(': ' + escapeHtml(response.detail.user_relation.name))
             $('#label_time').val(response.detail.time)
-            $('#label_machine').html(': ' + escapeHtml(response.detail.machine_relation.name))
+            $('#label_machine').html(': ' + escapeHtml(machineLabel(response.detail.machine_relation)))
             $('#label_product').html(': ' + escapeHtml(response.detail.product_relation.marking))
-            $('#label_manufacturing_code').html(': ' + escapeHtml(response.detail.product_relation.marking))
+            $('#label_manufacturing_code').html(': ' + escapeHtml(response.detail.manufacturing_code))
             $('#label_length_of_pipe').html(': ' + escapeHtml(response.detail.length_of_pipe))
             $('#label_material').html(': ' + escapeHtml(response.detail.material_relation.name))
             $('#label_tape_diameter').html(': ' + escapeHtml(response.detail.tape_diameter))
@@ -506,7 +514,7 @@ $('#btn_save_header').on('click', function(){
             $('#select_material_edit').select2().trigger('change')
             // Update the HTML content of the tab progress element
             $('#time_edit').val(response.detail.time)
-            $('#machine_edit').val(response.detail.machine_relation.name)
+            $('#machine_edit').val(machineLabel(response.detail.machine_relation))
             $('#product_edit').val(response.detail.product_id)
             $('#manufacturing_code_edit').val(response.detail.manufacturing_code)
             $('#length_of_pipe_edit').val(response.detail.length_of_pipe)
@@ -713,9 +721,9 @@ $('#btn_save_header').on('click', function(){
             $('#label_inspector').html(response.detail.inspector_relation !== null ? ': ' + escapeHtml(response.detail.inspector_relation.name) : ': ')
             $('#label_user_id').html(': ' + escapeHtml(response.detail.user_relation.name))
             $('#label_time').val(response.detail.time)
-            $('#label_machine').html(': ' + escapeHtml(response.detail.machine_relation.name))
+            $('#label_machine').html(': ' + escapeHtml(machineLabel(response.detail.machine_relation)))
             $('#label_product').html(': ' + escapeHtml(response.detail.product_relation.marking))
-            $('#label_manufacturing_code').html(': ' + escapeHtml(response.detail.product_relation.marking))
+            $('#label_manufacturing_code').html(': ' + escapeHtml(response.detail.manufacturing_code))
             $('#label_length_of_pipe').html(': ' + escapeHtml(response.detail.length_of_pipe))
             $('#label_material').html(': ' + escapeHtml(response.detail.material_relation.name))
             $('#label_tape_diameter').html(': ' + escapeHtml(response.detail.tape_diameter))
@@ -834,7 +842,7 @@ $('#btn_save_header').on('click', function(){
                     <td style="width:10%;text-align:center">${dateTime}</td>
                     <td style="width:10%;${creatorStyle}">${escapeHtml(history[i].creator_relation.name)}</td>
                     <td style="width:10%;${inspectorStyle}">${escapeHtml(history[i].inspector_relation.name)}</td>
-                    <td style="width:10%;${machineStyle}">${escapeHtml(history[i].machine_relation.name)}</td>
+                    <td style="width:10%;${machineStyle}">${escapeHtml(machineLabel(history[i].machine_relation))}</td>
                     <td style="width:10%;${productStyle}">${escapeHtml(history[i].product_relation.marking)}</td>
                     <td style="width:10%;${manufacturingCodeStyle}">${escapeHtml(history[i].manufacturing_code)}</td>
                     <td style="text-align:center;${lengthOfPipeStyle}">${escapeHtml(history[i].length_of_pipe)}</td>
