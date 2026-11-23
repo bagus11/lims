@@ -21,6 +21,11 @@
                             <input type="text" id="add_size" name="size" class="form-control" placeholder="Contoh: DN 200, 1 Inch, dll">
                             <span class="size_error text-danger"></span>
                         </div>
+                        <div class="col-md-12 mt-2">
+                            <p for="">UoM (Satuan Pengukuran)</p>
+                            <input type="text" id="add_uom" name="uom" class="form-control" placeholder="Contoh: mm, inch, pcs">
+                            <span class="uom_error text-danger"></span>
+                        </div>
                         <div class="col-md-12 mt-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <p class="mb-0"><strong>Specification (Symbol &amp; Standard Value)</strong></p>

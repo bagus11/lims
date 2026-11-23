@@ -16,6 +16,7 @@ class StoreResalesGoodsRequest extends FormRequest
         return [
             'name' => 'required',
             'size' => 'nullable',
+            'uom' => 'nullable|string|max:50',
             'spesification' => 'nullable',
         ];
     }

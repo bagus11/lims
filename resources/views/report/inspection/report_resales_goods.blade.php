@@ -189,7 +189,7 @@
     <table class="table" style="margin-top: 5px !important;">
         <tr>
             <th style="width: 50%; text-align: left;">
-                <p><b>NO POF</b> : {{ $header->no_pf ? $header->no_pf : '-' }}</p>
+                <p><b>NO. PF</b> : {{ $header->no_pf ? $header->no_pf : '-' }}</p>
                 <p><b>KETERANGAN</b> : {!! $header->keterangan ? nl2br(e($header->keterangan)) : '<span style="color:#999;">-</span>' !!}</p>
             </th>
             <th style="width: 50%; text-align: right;">

@@ -17,6 +17,7 @@ class UploadMasterProductResalesGoods implements ToModel, WithHeadingRow, WithCa
         }
 
         $size = trim($row['size'] ?? '');
+        $uom = trim($row['uom'] ?? '');
 
         $spesification = [];
         for ($i = 1; $i <= 10; $i++) {
@@ -37,6 +38,7 @@ class UploadMasterProductResalesGoods implements ToModel, WithHeadingRow, WithCa
 
         if ($existing) {
             $existing->update([
+                'uom' => $uom != '' ? $uom : $existing->uom,
                 'spesification' => $spesification,
             ]);
             return null;
@@ -45,6 +47,7 @@ class UploadMasterProductResalesGoods implements ToModel, WithHeadingRow, WithCa
         return new MasterProductResalesGood([
             'name' => $name,
             'size' => $size,
+            'uom' => $uom != '' ? $uom : null,
             'spesification' => $spesification,
         ]);
     }

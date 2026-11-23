@@ -17,6 +17,7 @@ class UpdateResalesGoodsRequest extends FormRequest
             'id' => 'required',
             'name' => 'required',
             'size' => 'nullable',
+            'uom' => 'nullable|string|max:50',
             'spesification' => 'nullable',
         ];
     }

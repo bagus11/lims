@@ -49,6 +49,7 @@ class MasterProductResalesGoodController extends Controller
             $post = [
                 'name' => $request->name,
                 'size' => $request->size ?? '',
+                'uom' => $request->uom !== null && trim($request->uom) !== '' ? trim($request->uom) : null,
                 'spesification' => $spesification,
             ];
 
@@ -82,6 +83,7 @@ class MasterProductResalesGoodController extends Controller
             $post = [
                 'name' => $request->name,
                 'size' => $request->size ?? '',
+                'uom' => $request->uom !== null && trim($request->uom) !== '' ? trim($request->uom) : null,
                 'spesification' => $spesification,
             ];
 
@@ -179,6 +181,7 @@ class MasterProductResalesGoodController extends Controller
         $headers = [
             'name',
             'size',
+            'uom',
             'spec_1_symbol', 'spec_1_value',
             'spec_2_symbol', 'spec_2_value',
             'spec_3_symbol', 'spec_3_value',
@@ -195,6 +198,7 @@ class MasterProductResalesGoodController extends Controller
             [
                 'Fitting D 200 mm',
                 'DN 200',
+                'mm',
                 'D', '201.0',
                 'd', '160.3',
                 'L', '405',
@@ -209,6 +213,7 @@ class MasterProductResalesGoodController extends Controller
             [
                 'Socket PVC 1 Inch',
                 '1 Inch',
+                'mm',
                 'D', '32.0',
                 'd', '25.0',
                 'L', '48',

@@ -54,6 +54,14 @@ function mappingTable(data) {
                 }
             },
             {
+                data: 'uom',
+                className: 'text-center',
+                render: function (data, type, row) {
+                    if (!data || data == '') return '<span class="text-muted">-</span>';
+                    return escapeHtml(data);
+                }
+            },
+            {
                 data: 'spesification',
                 className: 'text-center',
                 render: function (data, type, row) {
@@ -152,6 +160,7 @@ $('#addMasterProductResalesGoods').on('shown.bs.modal', function () {
     }
     $('#add_name').val('');
     $('#add_size').val('');
+    $('#add_uom').val('');
     $('.name_error').html('');
     $('.size_error').html('');
     $('.spesification_error').html('');
@@ -168,6 +177,7 @@ $('#master_product_resales_goods_table').on('click', '.btn_edit', function () {
         $('.spesification_error').html('');
         $('#edit_name').val(response.detail.name);
         $('#edit_size').val(response.detail.size ? response.detail.size : '');
+        $('#edit_uom').val(response.detail.uom ? response.detail.uom : '');
         $('#edit_spec_container').html('');
 
         var specList = [];
@@ -221,6 +231,7 @@ $('#btn_submit_add').on('click', function () {
     var postData = {
         'name': $('#add_name').val(),
         'size': $('#add_size').val(),
+        'uom': $('#add_uom').val(),
         'spesification': $('#add_spesification').val()
     };
     postCallback('addMasterProductResalesGoods', postData, function (response) {
@@ -243,6 +254,7 @@ $('#btn_submit_edit').on('click', function () {
         'id': $('#edit_id').val(),
         'name': $('#edit_name').val(),
         'size': $('#edit_size').val(),
+        'uom': $('#edit_uom').val(),
         'spesification': $('#edit_spesification').val()
     };
     postCallback('updateMasterProductResalesGoods', postData, function (response) {

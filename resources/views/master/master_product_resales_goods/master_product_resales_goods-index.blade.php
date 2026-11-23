@@ -50,6 +50,7 @@
                                 <th scope="col" class="sort" style="text-align: center" data-sort="id">ID</th>
                                 <th scope="col" class="sort" style="text-align: center" data-sort="name">Name</th>
                                 <th scope="col" class="sort" style="text-align: center" data-sort="size">Size</th>
+                                <th scope="col" class="sort" style="text-align: center" data-sort="uom">UoM</th>
                                 <th scope="col" class="sort" style="text-align: center" data-sort="spesification">Specification</th>
                                 <th scope="col" class="sort" style="text-align: center" data-sort="created_at">Created At</th>
                                 <th scope="col" class="sort" style="text-align: center">Action</th>
