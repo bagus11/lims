@@ -96,9 +96,14 @@
                     <td style="border:none;">{{ $header->produsenRelation->name ?? 'N/A' }}</td>
                 </tr>
                 <tr>
-                    <td style="border:none; width:100px;">Jumlah</td>
+                    <td style="border:none; width:100px;">Jumlah Sak</td>
                     <td style="border:none; width:10px;">:</td>
-                    <td style="border:none;">{{ $detail->amount ?? '' }} Kg</td>
+                    <td style="border:none;">{{ $detail->amount ?? '' }} Sak</td>
+                </tr>
+                <tr>
+                    <td style="border:none;">Total Berat</td>
+                    <td style="border:none;">:</td>
+                    <td style="border:none;">{{ $detail->weight ?? '' }} kg</td>
                 </tr>
                 <tr>
                     <td style="border:none;">Sertifikat</td>

@@ -83,9 +83,14 @@
         <td class="header-info" style="vertical-align:top;">
             <table style="border:none;">
                 <tr>
-                    <td style="border:none; width:100px;">Jumlah</td>
+                    <td style="border:none; width:100px;">Jumlah Sak</td>
                     <td style="border:none; width:10px;">:</td>
-                    <td style="border:none;">{{ $header->amount ?? '' }} Kg</td>
+                    <td style="border:none;">{{ $detail->amount ?? '' }} Sak</td>
+                </tr>
+                <tr>
+                    <td style="border:none;">Total Berat</td>
+                    <td style="border:none;">:</td>
+                    <td style="border:none;">{{ $detail->weight ?? '' }} kg</td>
                 </tr>
                 <tr>
                     <td style="border:none;">Sertifikat</td>
@@ -232,7 +237,7 @@
                 <td class="numeric" style="border:none;">{{ $header->volatile_matter ?? 'N/A' }}</td>
             </tr>
             <tr>
-                <td style="border:none;">JUMLAH SAK</td>
+                <td style="border:none;">AMOUNT / SAK</td>
                 <td class="numeric" style="border:none;">{{ $header->amount ?? 'N/A' }}</td>
             </tr>
             <tr>

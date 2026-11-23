@@ -73,17 +73,17 @@
                              <span class="message_error brand_error text-red block "></span>
                         </div>
                         <div class="col-2 mt-2">
-                             <p>Amount</p>
+                             <p>Jumlah Sak</p>
                         </div>
                         <div class="col-4">
-                             <input type="number" class="form-control" id="amount">
+                             <input type="number" class="form-control" id="amount" placeholder="Jumlah sak per kedatangan">
                              <span class="message_error amount_error text-red block "></span>
                         </div>
                         <div class="col-2 mt-2">
-                             <p>Weight</p>
+                             <p>Total Berat (kg)</p>
                         </div>
                         <div class="col-4">
-                             <input type="number" class="form-control" id="weight">
+                             <input type="number" class="form-control" id="weight" placeholder="Total berat material per kedatangan">
                              <span class="message_error weight_error text-red block "></span>
                         </div>
                         <div class="col-2 mt-2">
