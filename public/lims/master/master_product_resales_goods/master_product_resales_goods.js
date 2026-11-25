@@ -4,12 +4,12 @@ function generateSpecRowHtml(prefix, symbol, value) {
     return '<div class="form-row spec-row align-items-center">' +
         '<div class="col-4">' +
         '  <div class="input-group">' +
-        '    <input type="text" class="form-control ' + prefix + '_spec_symbol" placeholder="Contoh: D, d, L, Z, H, T, dll" value="' + symbolVal + '">' +
+        '    <input type="text" class="form-control ' + prefix + '_spec_symbol" placeholder="Satu simbol, contoh: D" value="' + symbolVal + '">' +
         '  </div>' +
         '</div>' +
         '<div class="col-6">' +
         '  <div class="input-group">' +
-        '    <input type="text" class="form-control ' + prefix + '_spec_value" placeholder="Contoh: 201.0, 160.3, 405, 91, 250" value="' + valueVal + '">' +
+        '    <input type="text" class="form-control ' + prefix + '_spec_value" placeholder="Satu nilai target, contoh: 201.0" value="' + valueVal + '">' +
         '  </div>' +
         '</div>' +
         '<div class="col-2">' +

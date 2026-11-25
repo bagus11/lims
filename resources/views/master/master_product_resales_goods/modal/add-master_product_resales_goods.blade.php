@@ -34,8 +34,10 @@
                                 </button>
                             </div>
                             <small class="text-muted">
-                                <b>Symbol</b> = nama kolom/header (contoh: <code>D, d, L, Z, H, T</code>).<br>
-                                <b>Value</b> = nilai standard/target untuk simbol tersebut (contoh: <code>201.0, 160.3, 405, 91, 250</code>).
+                                Satu baris = satu simbol dengan <b>satu</b> nilai target.
+                                <b>Symbol</b> = nama kolom/header pada report, <b>Value</b> = nilai standard untuk simbol itu.<br>
+                                Contoh: <code>D</code> &rarr; <code>201.0</code>, <code>d</code> &rarr; <code>160.3</code>, <code>L</code> &rarr; <code>405</code>.<br>
+                                <i>Kolom Value belum mendukung rentang/toleransi (batas atas &amp; bawah) &mdash; isi satu nilai target saja.</i>
                             </small>
                         </div>
                         <div class="col-md-12 mt-2">
