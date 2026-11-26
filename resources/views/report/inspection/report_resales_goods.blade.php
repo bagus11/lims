@@ -115,6 +115,12 @@
         @endif
     </table>
 
+    @if ($pr && $pr->drawing)
+        <div style="text-align:center; margin-top:8px;">
+            <img src="{{ $pr->drawing }}" alt="Drawing produk" style="max-width:100%; max-height:260px;">
+        </div>
+    @endif
+
     <table class="table-stepper" style="margin-top : 5px !important">
         <thead>
             <tr>

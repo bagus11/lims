@@ -50,6 +50,7 @@ class MasterProductResalesGoodController extends Controller
                 'name' => $request->name,
                 'size' => $request->size ?? '',
                 'uom' => $request->uom !== null && trim($request->uom) !== '' ? trim($request->uom) : null,
+                'drawing' => $request->drawing !== null && trim($request->drawing) !== '' ? trim($request->drawing) : null,
                 'spesification' => $spesification,
             ];
 
@@ -84,6 +85,7 @@ class MasterProductResalesGoodController extends Controller
                 'name' => $request->name,
                 'size' => $request->size ?? '',
                 'uom' => $request->uom !== null && trim($request->uom) !== '' ? trim($request->uom) : null,
+                'drawing' => $request->drawing !== null && trim($request->drawing) !== '' ? trim($request->drawing) : null,
                 'spesification' => $spesification,
             ];
 

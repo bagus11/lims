@@ -27,6 +27,14 @@
                             <input type="text" id="edit_uom" name="uom" class="form-control" placeholder="Contoh: mm, inch, pcs">
                             <span class="uom_error text-danger"></span>
                         </div>
+                        <div class="col-md-12 mt-2">
+                            <p for="">Drawing Produk</p>
+                            <input type="file" id="edit_drawing_file" class="form-control-file" accept="image/*">
+                            <small class="text-muted">Pilih berkas baru untuk mengganti. Maksimal 2 MB.</small>
+                            <span class="drawing_error text-danger d-block"></span>
+                            <div id="edit_drawing_preview" class="mt-2"></div>
+                            <input type="hidden" id="edit_drawing">
+                        </div>
                         <div class="col-md-12 mt-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <p class="mb-0"><strong>Specification (Symbol, Nilai &amp; Toleransi)</strong></p>

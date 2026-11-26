@@ -1,4 +1,54 @@
 var SPEC_FIELDS = ['symbol', 'value', 'tolerance', 'min', 'max'];
+var DRAWING_MAX_BYTES = 2 * 1024 * 1024;
+
+function renderDrawingPreview(prefix, dataUri) {
+    var $box = $('#' + prefix + '_drawing_preview');
+    if (!dataUri) {
+        $box.html('<span class="text-muted" style="font-size:12px;">Belum ada drawing.</span>');
+        return;
+    }
+    $box.html(
+        '<img src="' + escapeHtml(dataUri) + '" alt="Drawing" ' +
+        '     style="max-width:100%; max-height:180px; border:1px solid #e3e3e3; padding:4px;">' +
+        '<button type="button" class="btn btn-sm btn-outline-danger ml-2 btn_remove_drawing" data-prefix="' + prefix + '">' +
+        '  <i class="fas fa-trash"></i> Hapus' +
+        '</button>'
+    );
+}
+
+/**
+ * Drawing disimpan sebagai data URI base64 (pola yang sama dengan tanda tangan
+ * user), supaya mPDF bisa langsung mencetaknya tanpa direktori upload.
+ */
+function bindDrawingInput(prefix) {
+    $('#' + prefix + '_drawing_file').on('change', function () {
+        var file = this.files && this.files[0];
+        var $err = $('.drawing_error');
+        $err.html('');
+        if (!file) return;
+        if (file.size > DRAWING_MAX_BYTES) {
+            $err.html('Ukuran gambar maksimal 2 MB.');
+            this.value = '';
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('#' + prefix + '_drawing').val(e.target.result);
+            renderDrawingPreview(prefix, e.target.result);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+$(document).on('click', '.btn_remove_drawing', function () {
+    var prefix = $(this).data('prefix');
+    $('#' + prefix + '_drawing').val('');
+    $('#' + prefix + '_drawing_file').val('');
+    renderDrawingPreview(prefix, '');
+});
+
+bindDrawingInput('add');
+bindDrawingInput('edit');
 
 function generateSpecRowHtml(prefix, spec) {
     var s = spec || {};
@@ -201,6 +251,10 @@ $('#addMasterProductResalesGoods').on('shown.bs.modal', function () {
     $('#add_name').val('');
     $('#add_size').val('');
     $('#add_uom').val('');
+    $('#add_drawing').val('');
+    $('#add_drawing_file').val('');
+    renderDrawingPreview('add', '');
+    $('.drawing_error').html('');
     $('.name_error').html('');
     $('.size_error').html('');
     $('.spesification_error').html('');
@@ -218,6 +272,10 @@ $('#master_product_resales_goods_table').on('click', '.btn_edit', function () {
         $('#edit_name').val(response.detail.name);
         $('#edit_size').val(response.detail.size ? response.detail.size : '');
         $('#edit_uom').val(response.detail.uom ? response.detail.uom : '');
+        $('#edit_drawing').val(response.detail.drawing ? response.detail.drawing : '');
+        $('#edit_drawing_file').val('');
+        $('.drawing_error').html('');
+        renderDrawingPreview('edit', response.detail.drawing ? response.detail.drawing : '');
         $('#edit_spec_container').html('');
 
         var specList = [];
@@ -285,6 +343,7 @@ $('#btn_submit_add').on('click', function () {
         'name': $('#add_name').val(),
         'size': $('#add_size').val(),
         'uom': $('#add_uom').val(),
+        'drawing': $('#add_drawing').val(),
         'spesification': $('#add_spesification').val()
     };
     postCallback('addMasterProductResalesGoods', postData, function (response) {
@@ -308,6 +367,7 @@ $('#btn_submit_edit').on('click', function () {
         'name': $('#edit_name').val(),
         'size': $('#edit_size').val(),
         'uom': $('#edit_uom').val(),
+        'drawing': $('#edit_drawing').val(),
         'spesification': $('#edit_spesification').val()
     };
     postCallback('updateMasterProductResalesGoods', postData, function (response) {
