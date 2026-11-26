@@ -208,6 +208,7 @@ Route::group(['middleware' => 'auth'], function () {
 			Route::get('/getProductLaboratoryDetail', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@getProductLaboratoryDetail')->name('getProductLaboratoryDetail');
 			Route::post('/saveLaboratoryMeasurement', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@saveLaboratoryMeasurement')->name('saveLaboratoryMeasurement');
 			Route::post('/lockProductLaboratory', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@lockProductLaboratory')->name('lockProductLaboratory');
+			Route::post('/syncLaboratoryConfiguration', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@syncLaboratoryConfiguration')->name('syncLaboratoryConfiguration');
 			Route::post('/saveLaboratoryComment', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@saveLaboratoryComment')->name('saveLaboratoryComment');
 			Route::get('/printLaboratoryPdf', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@printLaboratoryPdf')->name('printLaboratoryPdf');
 			Route::get('/exportLaboratoryExcel', 'App\Http\Controllers\Transaction\Inspection\LaboratoryController@exportLaboratoryExcel')->name('exportLaboratoryExcel');

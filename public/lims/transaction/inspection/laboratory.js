@@ -195,6 +195,9 @@ function renderLaboratorySummary(header) {
     var editable = !parseInt(header.lock) && [0, 1, 4].indexOf(parseInt(header.status)) !== -1
     $('#laboratory_edit_state').text(editable ? 'Results are editable.' : 'This transaction is locked.')
     $('#btn_lock_laboratory').toggle(editable && [1, 4].indexOf(parseInt(header.status)) !== -1)
+    // Snapshot transaksi terkunci tidak boleh diubah, jadi sinkronisasi hanya
+    // ditawarkan selama transaksi masih bisa diedit.
+    $('#btn_sync_laboratory').toggle(editable)
     $('#laboratory_comment').prop('disabled', !editable)
     $('#btn_save_laboratory_comment').toggle(editable)
 }
@@ -321,6 +324,30 @@ $(document).on('click', '.save-laboratory-result', function () {
             renderLaboratoryResults(result.data)
             renderLaboratoryHistory(result.history || [])
             loadLaboratoryTableNoSwal()
+        })
+    })
+})
+
+/**
+ * Konfigurasi master disalin ke transaksi saat transaksi dibuat, lalu
+ * dibekukan demi integritas audit. Tombol ini menarik perubahan master
+ * (jumlah pengukuran, wajib/opsional, standar) ke transaksi yang belum
+ * disubmit, supaya tidak perlu membuat transaksi baru.
+ */
+$('#btn_sync_laboratory').on('click', function () {
+    var code = $('#detail_laboratory_code').val()
+    Swal.fire({
+        title: 'Tarik konfigurasi master?',
+        text: 'Jumlah pengukuran, status wajib/opsional, dan standar akan mengikuti master terbaru. Hasil yang sudah diisi tetap dipertahankan.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, sinkronkan'
+    }).then(function (result) {
+        if (!result.isConfirmed) return
+        postCallback('syncLaboratoryConfiguration', { laboratory_code: code }, function (response) {
+            swal.close()
+            toastr['success'](response.meta.message)
+            openLaboratoryDetail(code)
         })
     })
 })

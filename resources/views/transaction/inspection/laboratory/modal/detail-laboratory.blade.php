@@ -73,6 +73,10 @@
                     <button type="button" class="btn btn-sm btn-outline-success laboratory-export-excel mr-2" style="display:none">
                         <i class="fa-solid fa-file-excel mr-1"></i> Excel
                     </button>
+                    <button type="button" id="btn_sync_laboratory" class="btn btn-sm btn-outline-info"
+                            title="Tarik perubahan konfigurasi master (jumlah pengukuran, wajib/opsional, standar) ke transaksi ini">
+                        <i class="fa-solid fa-rotate mr-1"></i> Sinkronkan Master
+                    </button>
                     <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
                     <button type="button" id="btn_lock_laboratory" class="btn btn-sm btn-warning">
                         <i class="fa-solid fa-lock mr-1"></i> Submit for Approval

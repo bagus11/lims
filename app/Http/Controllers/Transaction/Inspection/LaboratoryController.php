@@ -401,6 +401,166 @@ class LaboratoryController extends Controller
         return ResponseFormatter::success($result, 'Laboratory result successfully saved');
     }
 
+    /**
+     * Tarik ulang konfigurasi master ke transaksi yang belum terkunci.
+     *
+     * Snapshot sengaja bersifat point-in-time demi integritas audit, sehingga
+     * mengubah master tidak pernah mengubah transaksi yang sudah berjalan.
+     * Akibatnya, penyesuaian master (mis. jumlah pengukuran atau status wajib)
+     * tidak terlihat di transaksi yang terlanjur dibuat. Fungsi ini memberi
+     * jalan resmi untuk menariknya, dan hanya untuk transaksi yang belum
+     * disubmit — transaksi terkunci atau selesai tidak boleh berubah.
+     */
+    function syncLaboratoryConfiguration(Request $request)
+    {
+        $summary = DB::transaction(function () use ($request) {
+            $header = LaboratoryHeader::with('detailsRelation')
+                ->where('laboratory_code', $request->laboratory_code)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$header) {
+                throw ValidationException::withMessages([
+                    'laboratory_code' => ['Transaction not found.'],
+                ]);
+            }
+
+            if (!$this->canAccessLocation($header->location_id)) {
+                $this->denyAccess();
+            }
+
+            if ($header->lock || !in_array((int) $header->status, [0, 1, 4], true)) {
+                throw ValidationException::withMessages([
+                    'laboratory_code' => ['Only an unlocked transaction can be synchronised with the master configuration.'],
+                ]);
+            }
+
+            $productMethod = LaboratoryProductMethod::with(['parametersRelation.parameterRelation'])
+                ->find($header->product_method_id);
+            $product = MasterProduct::find($header->product_id);
+
+            if (!$productMethod || !$product) {
+                throw ValidationException::withMessages([
+                    'laboratory_code' => ['Master configuration for this transaction is no longer available.'],
+                ]);
+            }
+
+            $configurations = $productMethod->parametersRelation->where('status', 1)->values();
+            if ($configurations->isEmpty()) {
+                throw ValidationException::withMessages([
+                    'laboratory_code' => ['The selected laboratory method has no active parameters.'],
+                ]);
+            }
+
+            $existing = $header->detailsRelation->keyBy('product_method_parameter_id');
+            $added = 0;
+            $updated = 0;
+            $removed = 0;
+            $trimmed = 0;
+            $keptIds = [];
+
+            foreach ($configurations as $configuration) {
+                $parameter = $configuration->parameterRelation;
+                if (!$parameter || !$parameter->status) {
+                    continue;
+                }
+
+                $isNumeric = $parameter->result_type === 'numeric';
+                $snapshot = [
+                    'sequence' => $configuration->sequence,
+                    'parameter_name_snapshot' => $parameter->name,
+                    'description_snapshot' => $parameter->description,
+                    'result_type_snapshot' => $parameter->result_type,
+                    'standard_snapshot' => $this->resolveStandard($configuration, $product, $parameter->result_type),
+                    'unit_snapshot' => $configuration->unit ?: $parameter->default_unit,
+                    'calculation_type_snapshot' => $isNumeric ? $configuration->calculation_type : 'NONE',
+                    'measurement_count_snapshot' => $isNumeric ? ($configuration->measurement_count ?: 1) : null,
+                    'is_required_snapshot' => $configuration->is_required,
+                ];
+
+                $detail = $existing->get($configuration->id);
+                if (!$detail) {
+                    $detail = LaboratoryDetail::create($snapshot + [
+                        'laboratory_header_id' => $header->id,
+                        'product_method_parameter_id' => $configuration->id,
+                    ]);
+                    $added++;
+                    $keptIds[] = $detail->id;
+                    continue;
+                }
+
+                $detail->update($snapshot);
+                $updated++;
+                $keptIds[] = $detail->id;
+
+                // Jumlah pengukuran bisa menyusut. Nilai di atas batas baru
+                // dibuang supaya hasil tersimpan tidak mengandung titik ukur
+                // yang sudah tidak diakui konfigurasi.
+                if ($isNumeric && $snapshot['measurement_count_snapshot']) {
+                    $trimmed += LaboratoryMeasurement::where('laboratory_detail_id', $detail->id)
+                        ->where('sequence', '>', $snapshot['measurement_count_snapshot'])
+                        ->delete();
+                }
+
+                $this->recalculateDetail($detail->fresh());
+            }
+
+            // Parameter yang dicabut dari master hanya dibuang bila belum
+            // berisi hasil apa pun; yang sudah diisi dibiarkan agar pekerjaan
+            // inspektor tidak hilang diam-diam.
+            foreach ($header->detailsRelation as $detail) {
+                if (in_array($detail->id, $keptIds, true)) {
+                    continue;
+                }
+                $hasResult = $detail->result_value !== null
+                    || $detail->boolean_result !== null
+                    || ($detail->text_result !== null && trim($detail->text_result) !== '');
+                if ($hasResult) {
+                    continue;
+                }
+                LaboratoryMeasurement::where('laboratory_detail_id', $detail->id)->delete();
+                $detail->delete();
+                $removed++;
+            }
+
+            return compact('added', 'updated', 'removed', 'trimmed');
+        });
+
+        return ResponseFormatter::success(
+            $summary,
+            'Konfigurasi master ditarik: ' . $summary['updated'] . ' parameter diperbarui, '
+                . $summary['added'] . ' ditambah, ' . $summary['removed'] . ' dilepas.'
+        );
+    }
+
+    /**
+     * Hitung ulang hasil & evaluasi sebuah detail numerik dari measurement yang
+     * tersimpan. Dipakai setelah konfigurasi berubah, supaya angka hasil tidak
+     * tertinggal memakai aturan kalkulasi lama.
+     */
+    private function recalculateDetail(LaboratoryDetail $detail): void
+    {
+        if ($detail->result_type_snapshot !== 'numeric') {
+            return;
+        }
+
+        $values = LaboratoryMeasurement::where('laboratory_detail_id', $detail->id)
+            ->orderBy('sequence')
+            ->pluck('value')
+            ->all();
+
+        if (empty($values)) {
+            $detail->update(['result_value' => null, 'evaluation' => null]);
+            return;
+        }
+
+        $result = $this->calculateNumericResult($values, $detail->calculation_type_snapshot);
+        $detail->update([
+            'result_value' => $result,
+            'evaluation' => $this->evaluateNumeric($result, (array) $detail->standard_snapshot),
+        ]);
+    }
+
     function lockProductLaboratory(Request $request, LockLaboratoryRequest $lockRequest)
     {
         $lockRequest->validated();
