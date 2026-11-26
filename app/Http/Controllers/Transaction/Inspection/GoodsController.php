@@ -90,11 +90,25 @@ class GoodsController extends Controller
         $query = InspectionGood::with([
             'locationRelation',
             'machineRelation',
-        ])
-        ->whereBetween('created_at', [
-            $request->from . ' 00:00:00',
-            $request->to . ' 23:59:59',
         ]);
+
+        // Tanpa guard ini, tanggal yang dikosongkan menghasilkan perbandingan
+        // dengan string ' 00:00:00' sehingga tabel kosong total tanpa pesan.
+        // Perilakunya kini sama dengan Material & Resales: kosong = tak disaring.
+        if ($request->from && $request->to) {
+            $query->whereBetween('created_at', [
+                $request->from . ' 00:00:00',
+                $request->to . ' 23:59:59',
+            ]);
+        }
+
+        if ($request->office) {
+            $query->where('location_id', $request->office);
+        }
+
+        if ($request->status !== null && $request->status !== '') {
+            $query->where('status', $request->status);
+        }
 
         // Scope per role: all (GM/Super Admin) = semua, location (Admin) =
         // lokasinya sendiri, own (User) = hanya transaksi buatannya.
@@ -106,7 +120,7 @@ class GoodsController extends Controller
             $query->where('user_id', $user->id);
         }
 
-        $data = $query->get();
+        $data = $query->orderBy('id', 'desc')->get();
 
         return response()->json([
             'data' => $data,

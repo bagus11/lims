@@ -7,8 +7,19 @@ function goodsFilterData() {
     return {
         'from': $('#from').val(),
         'to': $('#to').val(),
+        'office': $('#officeFilter').val(),
+        'status': $('#statusFilter').val(),
     }
 }
+// Dropdown Office sebelumnya hanya berisi "All Office" dan tidak pernah diisi
+// daftar kantor, sehingga terlihat ada tapi tak bisa dipakai.
+getCallbackNoSwal('getLocation', null, function (response) {
+    var options = '<option value="">* - All Office</option>'
+    $.each(response.data, function (i, location) {
+        options += '<option value="' + location.id + '">' + escapeHtml(location.name) + '</option>'
+    })
+    $('#officeFilter').html(options).trigger('change')
+})
 /**
  * Di layar transaksi mesin ditulis "no mesin - nama mesin"; nomor didahulukan
  * karena itu yang unik di master, sedangkan nama bisa kembar. Report hanya
@@ -465,10 +476,11 @@ $('#btn_save_header').on('click', function(){
                   text: response.meta.message,
                   icon: "success"
                 });
-            })
-            getCallbackNoSwal('getInspectionGoods',goodsFilterData(), function(response){
-                swal.close()
-                mappingTable(response.data)
+                // Refresh harus di dalam callback; di luar, ia berjalan paralel
+                // dengan POST lock sehingga tabel sering menampilkan status lama.
+                getCallbackNoSwal('getInspectionGoods',goodsFilterData(), function(response){
+                    mappingTable(response.data)
+                })
             })
           }
         });

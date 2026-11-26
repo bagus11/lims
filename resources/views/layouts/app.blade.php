@@ -294,6 +294,28 @@ tr.shown td.subdetails-click {
                 minimumResultsForSearch: 0
             });
 
+            // Kotak filter adalah .dropdown-menu Bootstrap. Select2 biasanya
+            // merender panel pilihannya ke <body>, sehingga Bootstrap menganggap
+            // klik opsi sebagai klik di luar dan langsung menutup kotak filter
+            // sebelum user sempat menekan tombol Filter. Dua hal di bawah
+            // menahan itu: panel select2 dipaksa dirender di dalam #filter,
+            // lalu klik apa pun di dalam #filter tidak diteruskan ke document.
+            $('#filter').find('.select2').each(function () {
+                var $select = $(this);
+                if ($select.data('select2')) {
+                    $select.select2('destroy');
+                }
+                $select.select2({
+                    dropdownParent: $('#filter'),
+                    dropdownCssClass: "selectOption2",
+                    width: '100%',
+                    minimumResultsForSearch: Infinity
+                });
+            });
+            $(document).on('click', '#filter', function (e) {
+                e.stopPropagation();
+            });
+
             // Set up AJAX
             $.ajaxSetup({
                 headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }

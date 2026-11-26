@@ -7,8 +7,19 @@ function materialFilterData() {
     return {
         'from': $('#from').val(),
         'to': $('#to').val(),
+        'office': $('#officeFilter').val(),
+        'status': $('#statusFilter').val(),
     }
 }
+// Dropdown Office sebelumnya hanya berisi "All Office" dan tidak pernah diisi
+// daftar kantor, sehingga terlihat ada tapi tak bisa dipakai.
+getCallbackNoSwal('getLocation', null, function (response) {
+    var options = '<option value="">* - All Office</option>'
+    $.each(response.data, function (i, location) {
+        options += '<option value="' + location.id + '">' + escapeHtml(location.name) + '</option>'
+    })
+    $('#officeFilter').html(options).trigger('change')
+})
 /**
  * Satu-satunya pintu muat ulang tabel. Semua jalur refresh lewat sini supaya
  * tidak ada lagi yang mengirim payload kosong dan mengabaikan rentang tanggal.
@@ -295,8 +306,10 @@ $('#btn_save_pellet').on('click', function(){
                     text: response.meta.message,
                     icon: "success"
                   });
+                  // Refresh harus di dalam callback; di luar, ia berjalan paralel
+                  // dengan POST lock sehingga tabel sering menampilkan status lama.
+                  reloadMaterialTable()
               })
-              reloadMaterialTable()
             }
           });
 

@@ -50,15 +50,12 @@
                                                 <option value="1">In Progress</option>
                                                 <option value="2">Approval</option>
                                                 <option value="3">Done</option>
+                                                <option value="4">Revision</option>
                                             </select>
                                         </div>
                                     </div>
 
                                     <div class="mt-2 mb-2 d-flex justify-content-end">
-                                        <button class="btn btn-info btn-sm mr-1" id="btnReportWO">
-                                            <i class="fas fa-print"></i>  Print
-                                        </button>
-
                                         <button class="btn btn-warning btn-sm" id="btnFilter">
                                             <i class="fa-solid fa-filter"></i> Filter
                                         </button>

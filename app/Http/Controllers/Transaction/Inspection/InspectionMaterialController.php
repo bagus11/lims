@@ -99,6 +99,15 @@ class InspectionMaterialController extends Controller
             $query->whereBetween(DB::raw('DATE(created_at)'), [$request->from, $request->to]);
         }
 
+        // Kolom lokasi di tabel ini bernama `location`, bukan `location_id`.
+        if ($request->office) {
+            $query->where('location', $request->office);
+        }
+
+        if ($request->status !== null && $request->status !== '') {
+            $query->where('status', $request->status);
+        }
+
         return response()->json([
             'data'=>$query->orderBy('id', 'desc')->get()
         ]);
