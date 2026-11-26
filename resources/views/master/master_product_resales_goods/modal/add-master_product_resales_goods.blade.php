@@ -29,7 +29,10 @@
                         <div class="col-md-12 mt-2">
                             <p for="">Drawing Produk</p>
                             <input type="file" id="add_drawing_file" class="form-control-file" accept="image/*">
-                            <small class="text-muted">Gambar teknik yang akan dicetak di report. Maksimal 2 MB.</small>
+                            <small class="text-muted">
+                                Gambar (PNG/JPG) yang akan dicetak di dalam report. Maksimal 2 MB.
+                                Untuk melampirkan drawing berupa PDF, simpan produk ini dahulu lalu buka Edit.
+                            </small>
                             <span class="drawing_error text-danger d-block"></span>
                             <div id="add_drawing_preview" class="mt-2"></div>
                             <input type="hidden" id="add_drawing">

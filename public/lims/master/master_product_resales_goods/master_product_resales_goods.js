@@ -40,6 +40,81 @@ function bindDrawingInput(prefix) {
     });
 }
 
+/* Lampiran drawing PDF per produk — tidak dicetak di report, hanya diunduh. */
+
+function drawingAttachmentSize(bytes) {
+    var size = parseInt(bytes, 10);
+    if (!size) return '-';
+    if (size < 1024) return size + ' B';
+    if (size < 1024 * 1024) return (size / 1024).toFixed(0) + ' KB';
+    return (size / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+function loadDrawingAttachments(productId) {
+    var $list = $('#drawing_attachment_list');
+    if (!productId) {
+        $list.html('');
+        return;
+    }
+    getCallbackNoSwal('getResalesAttachments', {
+        owner_type: 'product',
+        owner_key: productId,
+        kind: 'drawing'
+    }, function (resp) {
+        var rows = resp.data || [];
+        if (!rows.length) {
+            $list.html('<div class="text-muted small">Belum ada lampiran drawing.</div>');
+            return;
+        }
+        var html = '';
+        $.each(rows, function (i, attachment) {
+            var icon = String(attachment.mime_type).indexOf('pdf') !== -1
+                ? '<i class="fas fa-file-pdf text-danger mr-2"></i>'
+                : '<i class="fas fa-file-image text-primary mr-2"></i>';
+            html += '<div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2" style="font-size:12px;">' +
+                '  <div>' + icon + escapeHtml(attachment.file_name) +
+                '    <span class="text-muted ml-2" style="font-size:11px;">' + drawingAttachmentSize(attachment.file_size) + '</span>' +
+                '  </div>' +
+                '  <div>' +
+                '    <a class="btn btn-sm btn-outline-primary mr-1" target="_blank" href="downloadResalesAttachment?id=' + encodeURIComponent(attachment.id) + '"><i class="fas fa-eye"></i></a>' +
+                '    <button type="button" class="btn btn-sm btn-outline-danger btn_delete_drawing_attachment" data-id="' + attachment.id + '"><i class="fas fa-trash"></i></button>' +
+                '  </div>' +
+                '</div>';
+        });
+        $list.html(html);
+    });
+}
+
+$(document).on('change', '#drawing_attachment_file', function () {
+    var file = this.files && this.files[0];
+    var productId = $('#edit_id').val();
+    if (!file || !productId) return;
+
+    var form = new FormData();
+    form.append('attachment', file);
+    form.append('owner_type', 'product');
+    form.append('owner_key', productId);
+    form.append('kind', 'drawing');
+
+    var input = this;
+    postAttachment('uploadResalesAttachment', form, true, function (response) {
+        swal.close();
+        input.value = '';
+        toastr['success'](response.meta.message);
+        loadDrawingAttachments(productId);
+    });
+});
+
+$(document).on('click', '.btn_delete_drawing_attachment', function () {
+    var id = $(this).data('id');
+    if (!confirm('Hapus lampiran drawing ini?')) return;
+    postCallback('deleteResalesAttachment', { id: id }, function (response) {
+        swal.close();
+        toastr['success'](response.meta.message);
+        loadDrawingAttachments($('#edit_id').val());
+    });
+});
+
 $(document).on('click', '.btn_remove_drawing', function () {
     var prefix = $(this).data('prefix');
     $('#' + prefix + '_drawing').val('');
@@ -276,6 +351,7 @@ $('#master_product_resales_goods_table').on('click', '.btn_edit', function () {
         $('#edit_drawing_file').val('');
         $('.drawing_error').html('');
         renderDrawingPreview('edit', response.detail.drawing ? response.detail.drawing : '');
+        loadDrawingAttachments(id);
         $('#edit_spec_container').html('');
 
         var specList = [];

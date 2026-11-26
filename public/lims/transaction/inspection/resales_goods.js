@@ -285,6 +285,94 @@ $(document).on('input', '#detail_spec_container .detail_spec_value', function ()
     evaluateSpecInput($(this))
 })
 
+/* ------------------------------------------------------------------ */
+/* Lampiran sertifikat vendor (PDF/gambar), opsional per transaksi.    */
+/* ------------------------------------------------------------------ */
+
+function formatFileSize(bytes) {
+    var size = parseInt(bytes, 10)
+    if (!size) return '-'
+    if (size < 1024) return size + ' B'
+    if (size < 1024 * 1024) return (size / 1024).toFixed(0) + ' KB'
+    return (size / 1024 / 1024).toFixed(1) + ' MB'
+}
+
+function attachmentRowHtml(attachment, editable) {
+    var icon = String(attachment.mime_type).indexOf('pdf') !== -1
+        ? '<i class="fa-solid fa-file-pdf text-danger mr-2"></i>'
+        : '<i class="fa-solid fa-file-image text-primary mr-2"></i>'
+    var remove = editable
+        ? '<button type="button" class="btn btn-sm btn-outline-danger btn_delete_attachment" data-id="' + attachment.id + '" title="Hapus"><i class="fa-solid fa-trash-can"></i></button>'
+        : ''
+
+    return '<div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2">' +
+        '  <div>' + icon + escapeHtml(attachment.file_name) +
+        '    <span class="text-muted ml-2" style="font-size:11px;">' + formatFileSize(attachment.file_size) + '</span>' +
+        '  </div>' +
+        '  <div>' +
+        '    <a class="btn btn-sm btn-outline-primary mr-1" target="_blank" href="downloadResalesAttachment?id=' + encodeURIComponent(attachment.id) + '">' +
+        '      <i class="fa-solid fa-eye"></i> Lihat' +
+        '    </a>' + remove +
+        '  </div>' +
+        '</div>'
+}
+
+function loadCertificateAttachments(code, editable) {
+    var $list = $('#certificate_attachment_list')
+    var $action = $('#certificate_attachment_action')
+
+    $action.html(editable
+        ? '<label class="btn btn-sm btn-success mb-0" style="font-size:11px;">' +
+          '  <i class="fa-solid fa-upload mr-1"></i> Unggah' +
+          '  <input type="file" id="certificate_attachment_file" accept="application/pdf,image/*" hidden>' +
+          '</label>'
+        : '<span class="text-muted" style="font-size:11px;">Terkunci</span>')
+
+    getCallbackNoSwal('getResalesAttachments', {
+        owner_type: 'transaction',
+        owner_key: code,
+        kind: 'certificate'
+    }, function (resp) {
+        var rows = resp.data || []
+        if (!rows.length) {
+            $list.html('<div class="text-muted small py-1">Belum ada lampiran. Unggah bila vendor menyertakan inspection report.</div>')
+            return
+        }
+        var html = ''
+        $.each(rows, function (i, attachment) { html += attachmentRowHtml(attachment, editable) })
+        $list.html(html)
+    })
+}
+
+$(document).on('change', '#certificate_attachment_file', function () {
+    var file = this.files && this.files[0]
+    if (!file || !CURRENT_TRX_CODE) return
+
+    var form = new FormData()
+    form.append('attachment', file)
+    form.append('owner_type', 'transaction')
+    form.append('owner_key', CURRENT_TRX_CODE)
+    form.append('kind', 'certificate')
+
+    var input = this
+    postAttachment('uploadResalesAttachment', form, true, function (response) {
+        swal.close()
+        input.value = ''
+        toastr['success'](response.meta.message)
+        loadCertificateAttachments(CURRENT_TRX_CODE, true)
+    })
+})
+
+$(document).on('click', '.btn_delete_attachment', function () {
+    var id = $(this).data('id')
+    if (!confirm('Hapus lampiran ini?')) return
+    postCallback('deleteResalesAttachment', { id: id }, function (response) {
+        swal.close()
+        toastr['success'](response.meta.message)
+        loadCertificateAttachments(CURRENT_TRX_CODE, true)
+    })
+})
+
 function generateSpecRowHtml(spec, editableSymbol, rowIdx) {
     var s = normalizeSpec(spec)
     var sym = s.symbol
@@ -594,8 +682,11 @@ $(document).ready(function () {
             var header = findHeaderByCode(resp.data, code)
             if (header) {
                 $('#detailSummaryContainer').html(buildHeaderSummaryHtml(header))
+                // Transaksi terkunci tidak boleh diubah, termasuk lampirannya.
+                loadCertificateAttachments(code, parseInt(header.status, 10) < 2)
             } else {
                 $('#detailSummaryContainer').html('<div class="col text-danger small text-center py-2">Header not found.</div>')
+                loadCertificateAttachments(code, false)
             }
         })
         getCallbackNoSwal('getResalesGoodDetails', { transaction_code: code }, function (resp) {

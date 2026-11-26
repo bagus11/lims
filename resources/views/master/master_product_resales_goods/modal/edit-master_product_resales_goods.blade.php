@@ -30,10 +30,27 @@
                         <div class="col-md-12 mt-2">
                             <p for="">Drawing Produk</p>
                             <input type="file" id="edit_drawing_file" class="form-control-file" accept="image/*">
-                            <small class="text-muted">Pilih berkas baru untuk mengganti. Maksimal 2 MB.</small>
+                            <small class="text-muted">Gambar (PNG/JPG) inilah yang dicetak di dalam report. Maksimal 2 MB.</small>
                             <span class="drawing_error text-danger d-block"></span>
                             <div id="edit_drawing_preview" class="mt-2"></div>
                             <input type="hidden" id="edit_drawing">
+                        </div>
+                        <div class="col-md-12 mt-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <p class="mb-0">
+                                    <strong>Drawing PDF</strong>
+                                    <span class="text-muted">(opsional, lampiran)</span>
+                                </p>
+                                <label class="btn btn-sm btn-success mb-0" style="font-size:11px;">
+                                    <i class="fas fa-upload mr-1"></i> Unggah
+                                    <input type="file" id="drawing_attachment_file" accept="application/pdf,image/*" hidden>
+                                </label>
+                            </div>
+                            <small class="text-muted">
+                                Berkas PDF tidak dicetak di dalam report, tetapi tersimpan sebagai
+                                lampiran yang bisa dibuka dan dicetak terpisah.
+                            </small>
+                            <div id="drawing_attachment_list" class="mt-2"></div>
                         </div>
                         <div class="col-md-12 mt-3">
                             <div class="d-flex justify-content-between align-items-center">

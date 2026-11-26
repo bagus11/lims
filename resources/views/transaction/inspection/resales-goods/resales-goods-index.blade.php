@@ -84,6 +84,22 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card shadow-sm border-light">
+                                <div class="card-header d-flex justify-content-between align-items-center py-2">
+                                    <b style="font-size:12px">
+                                        <i class="fa-solid fa-paperclip mr-1"></i> LAMPIRAN CERTIFICATE
+                                        <span class="text-muted font-weight-normal">(opsional)</span>
+                                    </b>
+                                    <span id="certificate_attachment_action"></span>
+                                </div>
+                                <div class="card-body p-3" id="certificate_attachment_list" style="font-size: 13px;">
+                                    <div class="text-center text-muted small py-2">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row mb-2">
                         <div class="col-6">
                             <b id="detailHeaderInfo" style="font-size: 12px;"></b>

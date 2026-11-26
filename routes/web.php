@@ -193,6 +193,10 @@ Route::group(['middleware' => 'auth'], function () {
             Route::post('/deleteResalesGoodsDetail', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@deleteResalesGoodsDetail')->name('deleteResalesGoodsDetail');
             Route::post('/lockResalesGoods', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@lockResalesGoods')->name('lockResalesGoods');
             Route::post('/deleteResalesGoods', 'App\Http\Controllers\Transaction\Inspection\ResalesGoodsController@deleteResalesGoods')->name('deleteResalesGoods');
+            Route::get('/getResalesAttachments', 'App\Http\Controllers\Transaction\Inspection\ResalesAttachmentController@getResalesAttachments')->name('getResalesAttachments');
+            Route::get('/downloadResalesAttachment', 'App\Http\Controllers\Transaction\Inspection\ResalesAttachmentController@downloadResalesAttachment')->name('downloadResalesAttachment');
+            Route::post('/uploadResalesAttachment', 'App\Http\Controllers\Transaction\Inspection\ResalesAttachmentController@uploadResalesAttachment')->name('uploadResalesAttachment');
+            Route::post('/deleteResalesAttachment', 'App\Http\Controllers\Transaction\Inspection\ResalesAttachmentController@deleteResalesAttachment')->name('deleteResalesAttachment');
         // Resales Goods
 
 		// Product Laboratory
