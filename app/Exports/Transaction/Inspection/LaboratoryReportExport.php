@@ -64,8 +64,10 @@ class LaboratoryReportExport implements FromArray, WithTitle, WithEvents, WithCo
             $header->humidity,
         ]);
 
+        // Baris ini cukup menyebut nama produknya saja. Sebelumnya ia merangkai
+        // seri + ukuran + marking sehingga isinya berulang dan panjang.
         $product = $header->productRelation;
-        $specification = $product ? trim($product->seri . ' ' . $product->ukuran . ' ' . $product->marking) : '-';
+        $specification = $product ? (trim((string) $product->marking) ?: '-') : '-';
 
         $methodCode = optional(optional($header->productMethodRelation)->methodRelation)->code ?: data_get($header->method_snapshot, 'code');
         $methodApplied = strtoupper((string) $methodCode);

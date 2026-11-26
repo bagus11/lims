@@ -303,6 +303,31 @@ $(document).on('change', '.laboratory-field-source_type', function () {
     updateConfigurationVisibility($(this).closest('.laboratory-config-row'))
 })
 
+/**
+ * Server menolak kombinasi Calculation = None dengan Measurement Count > 1
+ * ("Calculation NONE requires exactly one measurement"), dan penolakan itu
+ * membatalkan SELURUH penyimpanan parameter. Akibatnya jumlah measurement
+ * terlihat seperti tidak pernah tersimpan. Dua penyesuaian di bawah membuat
+ * kombinasi terlarang itu tidak bisa terbentuk sejak awal.
+ */
+$(document).on('input change', '.laboratory-field-measurement_count', function () {
+    var row = $(this).closest('.laboratory-config-row')
+    var count = parseInt($(this).val(), 10)
+    var calculation = row.find('.laboratory-field-calculation_type')
+    if (count > 1 && calculation.val() === 'NONE') {
+        calculation.val('AVG')
+        toastr['info']('Calculation diisi Average karena measurement lebih dari satu.')
+    }
+})
+$(document).on('change', '.laboratory-field-calculation_type', function () {
+    var row = $(this).closest('.laboratory-config-row')
+    var count = parseInt(row.find('.laboratory-field-measurement_count').val(), 10)
+    if ($(this).val() === 'NONE' && count > 1) {
+        row.find('.laboratory-field-measurement_count').val(1)
+        toastr['info']('Measurement diisi 1 karena Calculation None hanya menerima satu pengukuran.')
+    }
+})
+
 function updateConfigurationVisibility(row) {
     var numeric = row.data('result-type') === 'numeric'
     row.find('.numeric-config').toggle(numeric)
