@@ -22,7 +22,22 @@ class MasterProductResalesGoodController extends Controller
 
     function getMasterProductResalesGoods()
     {
-        $data = MasterProductResalesGood::orderBy('id', 'desc')->get();
+        // Kolom drawing berisi gambar base64 yang bisa megabyte-an. Tanpa
+        // select eksplisit, daftar master menarik seluruh gambar sekaligus.
+        // Pratinjau gambar diambil per produk lewat getDetailResalesGoods.
+        $data = MasterProductResalesGood::select(
+            'id',
+            'name',
+            'size',
+            'uom',
+            'spesification',
+            'created_at',
+            'updated_at'
+        )
+            ->selectRaw('CASE WHEN drawing IS NULL OR drawing = "" THEN 0 ELSE 1 END AS has_drawing')
+            ->orderBy('id', 'desc')
+            ->get();
+
         return response()->json([
             'data' => $data,
         ]);

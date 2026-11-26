@@ -28,7 +28,9 @@ class ResalesGoodsController extends Controller
 
     function getOptionLists() {
         $locations  = MasterLocation::all();
-        $products   = MasterProductResalesGood::all();
+        // Tanpa select eksplisit, daftar opsi ikut menarik kolom drawing
+        // (gambar base64) milik SETIAP produk — tidak satupun dipakai di sini.
+        $products   = MasterProductResalesGood::select('id', 'name', 'size', 'uom', 'spesification')->get();
         $suppliers  = Supplier::all();
         $inspectors = User::select('id', 'name')->orderBy('name')->get();
 
@@ -45,7 +47,11 @@ class ResalesGoodsController extends Controller
     function getResalesGood(Request $request) {
         $query = ResalesGood::with([
             'locationRelation',
-            'productRelation',
+            // Batasi kolom: relasi produk membawa kolom drawing (gambar
+            // base64) yang tidak dipakai di daftar maupun modal lock.
+            'productRelation' => function ($q) {
+                $q->select('id', 'name', 'size', 'uom', 'spesification');
+            },
             'inspectorRelation',
             'supplierRelation',
             'produsenRelation',
