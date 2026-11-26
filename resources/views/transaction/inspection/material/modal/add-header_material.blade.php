@@ -90,14 +90,14 @@
                              <p>Certificate</p>
                         </div>
                         <div class="col-4">
-                             <input type="text" class="form-control" id="certificate">
+                             <input type="text" class="form-control" id="certificate" placeholder="No. certificate COA, isi - bila tidak ada COA">
                              <span class="message_error certificate_error text-red block "></span>
                         </div>
                         <div class="col-2 mt-2">
                              <p>Standard</p>
                         </div>
                         <div class="col-4">
-                             <input type="text" class="form-control" id="standard">
+                             <input type="text" class="form-control" id="standard" placeholder="Contoh: SNI 06-0084-2002, atau SNI / ASTM saja">
                              <span class="message_error standard_error text-red block "></span>
                         </div>
                         <div class="col-2 mt-2">
