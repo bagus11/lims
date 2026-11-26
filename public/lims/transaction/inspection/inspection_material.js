@@ -1,7 +1,33 @@
 
-getCallback('getInspectionMaterial', null, function(response){
+/**
+ * Baca input filter saat dipanggil, bukan sekali saat script load, supaya
+ * mengubah tanggal lalu menekan Filter benar-benar berpengaruh.
+ */
+function materialFilterData() {
+    return {
+        'from': $('#from').val(),
+        'to': $('#to').val(),
+    }
+}
+/**
+ * Satu-satunya pintu muat ulang tabel. Semua jalur refresh lewat sini supaya
+ * tidak ada lagi yang mengirim payload kosong dan mengabaikan rentang tanggal.
+ */
+function reloadMaterialTable() {
+    getCallbackNoSwal('getInspectionMaterial', materialFilterData(), function(response){
+        mappingTable(response.data)
+    })
+}
+
+getCallback('getInspectionMaterial', materialFilterData(), function(response){
     swal.close()
    mappingTable(response.data)
+})
+$('#btnFilter').on('click', function(){
+    getCallback('getInspectionMaterial', materialFilterData(), function(response){
+        swal.close()
+        mappingTable(response.data)
+    })
 })
 
 $('#btn_add_header').on('click', function(){
@@ -57,9 +83,7 @@ $("#btn_save_header").on('click', function(){
         swal.close()
         toastr['success'](response.meta.message)
         $('#addInspectionHeader').modal('hide')
-        getCallbackNoSwal('getInspectionMaterial', null, function(response){
-            mappingTable(response.data)
-        })
+        reloadMaterialTable()
     })
 })
 $('#inspection_material_table').on('click','.resin',function(){
@@ -193,9 +217,7 @@ $('#btn_update_density_properties').on('click', function(){
         swal.close()
         toastr['success'](response.meta.message)
         $('#resinInspectionModal').modal('hide')
-        getCallbackNoSwal('getInspectionMaterial', null, function(response){
-            mappingTable(response.data)
-        })
+        reloadMaterialTable()
     })
 })
 $('#inspection_material_table').on('click','.pellet',function(){
@@ -247,9 +269,7 @@ $('#btn_save_pellet').on('click', function(){
         swal.close()
         toastr['success'](response.meta.message)
         $('#pelletInspectionModal').modal('hide')
-        getCallbackNoSwal('getInspectionMaterial', null, function(response){
-            mappingTable(response.data)
-        })
+        reloadMaterialTable()
     })
 })
 // Lock Inspection
@@ -276,9 +296,7 @@ $('#btn_save_pellet').on('click', function(){
                     icon: "success"
                   });
               })
-              getCallbackNoSwal('getInspectionMaterial', null, function(response){
-                mappingTable(response.data)
-            })
+              reloadMaterialTable()
             }
           });
 
