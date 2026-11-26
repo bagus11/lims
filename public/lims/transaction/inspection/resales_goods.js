@@ -377,8 +377,8 @@ function clearHeaderForm() {
     $('#select_type').val('').trigger('change')
     $('#location_id,#product_id,#inspector_id,#supplier_id,#produsen_id').val('')
     $('#quantity').val(1)
-    $('#standard,#certificate,#brand,#packaging').val('')
-    $('.location_id_error,.product_id_error,.inspector_id_error,.supplier_id_error,.produsen_id_error,.type_error,.quantity_error').html('')
+    $('#standard,#certificate,#brand,#packaging,#no_pf').val('')
+    $('.location_id_error,.product_id_error,.inspector_id_error,.supplier_id_error,.produsen_id_error,.type_error,.quantity_error,.no_pf_error').html('')
 }
 
 function clearDetailForm() {
@@ -515,7 +515,8 @@ $(document).ready(function () {
             standard: $('#standard').val(),
             certificate: $('#certificate').val(),
             brand: $('#brand').val(),
-            packaging: $('#packaging').val()
+            packaging: $('#packaging').val(),
+            no_pf: $('#no_pf').val()
         }
         postCallback('addResalesGoodsHeader', postData, function (response) {
             swal.close()
@@ -610,6 +611,9 @@ $(document).ready(function () {
         getCallbackNoSwal('getResalesGood', { from: '', to: '' }, function (resp) {
             var header = findHeaderByCode(resp.data, code)
             if (header) {
+                // No. PF biasanya sudah diisi saat transaksi dibuat; tampilkan
+                // supaya PIC tidak perlu mengetik ulang saat lock.
+                if (header.no_pf) { $('#lock_no_pf').val(header.no_pf) }
                 var infoHtml = '<i class="fas fa-exclamation-triangle mr-1"></i> '
                 infoHtml += 'Anda akan <b>LOCK</b> transaksi <b class="text-primary">' + escapeHtml(header.transaction_code) + '</b>'
                 if (header.productRelation) {
@@ -626,14 +630,7 @@ $(document).ready(function () {
         var code = $('#lock_transaction_code').val() || ''
         var noPf = ($('#lock_no_pf').val() || '').trim()
         var keterangan = ($('#lock_keterangan').val() || '').trim()
-        var hasErr = false
-        if (noPf === '') {
-            $('.lock_no_pf_error').html('<i class="fas fa-exclamation-circle mr-1"></i>Nomor PF wajib diisi')
-            hasErr = true
-        } else {
-            $('.lock_no_pf_error').html('')
-        }
-        if (hasErr) { toastr['error']('Perbaiki data sebelum submit'); return }
+        $('.lock_no_pf_error').html('')
         if (code === '') { toastr['error']('Transaction code missing'); return }
         postCallback('lockResalesGoods', { transaction_code: code, no_pf: noPf, keterangan: keterangan }, function (response) {
             swal.close()

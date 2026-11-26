@@ -17,8 +17,8 @@
                         </p>
                     </div>
                     <div class="col-md-12 mt-3">
-                        <p>No. PF <span class="text-danger">*</span></p>
-                        <input type="text" class="form-control" id="lock_no_pf" placeholder="Masukkan Nomor PF">
+                        <p>No. PF</p>
+                        <input type="text" class="form-control" id="lock_no_pf" placeholder="(Opsional) terisi otomatis bila sudah diisi di awal">
                         <span class="lock_no_pf_error text-danger"></span>
                     </div>
                     <div class="col-md-12 mt-2">

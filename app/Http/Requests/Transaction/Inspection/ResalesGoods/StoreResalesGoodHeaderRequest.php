@@ -26,6 +26,7 @@ class StoreResalesGoodHeaderRequest extends FormRequest
             'packaging'     => 'nullable|string|max:255',
             'certificate'   => 'nullable|string|max:255',
             'standard'      => 'nullable|string|max:255',
+            'no_pf'         => 'nullable|string|max:100',
         ];
     }
 }

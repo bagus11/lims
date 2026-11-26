@@ -61,13 +61,18 @@
                         <p>Certificate</p>
                         <input type="text" id="certificate" class="form-control" placeholder="No. Certificate">
                     </div>
-                    <div class="col-md-6 mt-2">
+                    <div class="col-md-4 mt-2">
                         <p>Brand</p>
                         <input type="text" id="brand" class="form-control" placeholder="Brand">
                     </div>
-                    <div class="col-md-6 mt-2">
+                    <div class="col-md-4 mt-2">
                         <p>Packaging</p>
                         <input type="text" id="packaging" class="form-control" placeholder="Packaging">
+                    </div>
+                    <div class="col-md-4 mt-2">
+                        <p>No. PF</p>
+                        <input type="text" id="no_pf" class="form-control" placeholder="Boleh diisi nanti saat lock">
+                        <span class="no_pf_error text-danger"></span>
                     </div>
                </div>
             </div>

@@ -214,6 +214,7 @@ class ResalesGoodsController extends Controller
                     'quantity'          => $request->quantity,
                     'standard'          => $request->standard,
                     'type'              => $request->type,
+                    'no_pf'             => $request->no_pf ? trim($request->no_pf) : null,
                     'current_approval'  => 0,
                     'status'            => 0,
                     'created_by'        => auth()->user()->id,
@@ -302,7 +303,7 @@ class ResalesGoodsController extends Controller
         // try {
             $request->validate([
                 'transaction_code' => 'required|string',
-                'no_pf'            => 'required|string|max:100',
+                'no_pf'            => 'nullable|string|max:100',
                 'keterangan'       => 'nullable|string|max:1000',
             ]);
 
@@ -351,10 +352,16 @@ class ResalesGoodsController extends Controller
                 );
             }
 
+            // No. PF boleh sudah diisi saat transaksi dibuat; kosong di form lock
+            // berarti "tidak diubah", bukan "dihapus".
+            $lockNoPf = $request->no_pf !== null && trim($request->no_pf) !== ''
+                ? trim($request->no_pf)
+                : $header->no_pf;
+
             $postUpdateHeader = [
                 'status'            => 2,
                 'current_approval'  => 1,
-                'no_pf'             => $request->no_pf ? trim($request->no_pf) : null,
+                'no_pf'             => $lockNoPf,
                 'keterangan'        => $request->keterangan ? trim($request->keterangan) : null,
             ];
 
