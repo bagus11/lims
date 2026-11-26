@@ -162,8 +162,8 @@
                     $('#'+id).empty()
                     $('#'+id).append('<option value ="">Choose '+ name +'</option>');
                     $.each(response.data,function(i,data){
-                        // Mesin ditampilkan dengan nomor uniknya; entitas lain tak punya no_machine
-                        var label = data.name + (data.no_machine ? ' (' + data.no_machine + ')' : '')
+                        // Mesin ditulis "no mesin - nama"; entitas lain tak punya no_machine
+                        var label = data.no_machine ? data.no_machine + ' - ' + data.name : data.name
                         $('#'+id).append('<option data-name="'+ data.name +'" value="'+data.id+'">' + label +'</option>');
                     });
                 },

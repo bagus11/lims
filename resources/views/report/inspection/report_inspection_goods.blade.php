@@ -36,7 +36,7 @@
             </tr>
             <tr>
                 @foreach ($data as $item)
-                    <th>{{ $item->machineRelation->name }}{{ $item->machineRelation->no_machine ? ' ('.$item->machineRelation->no_machine.')' : '' }}</th>
+                    <th>{{ $item->machineRelation->no_machine ?: $item->machineRelation->name }}</th>
                 @endforeach
             </tr>
         </thead>

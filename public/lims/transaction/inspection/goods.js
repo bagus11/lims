@@ -10,12 +10,14 @@ function goodsFilterData() {
     }
 }
 /**
- * Identitas mesin ditampilkan nama + nomor mesin (no_machine unik di master),
- * karena nama saja bisa kembar antar mesin.
+ * Di layar transaksi mesin ditulis "no mesin - nama mesin"; nomor didahulukan
+ * karena itu yang unik di master, sedangkan nama bisa kembar. Report hanya
+ * mencetak nomornya saja.
  */
 function machineLabel(machine) {
     if (!machine) return ''
-    return machine.name + (machine.no_machine ? ' (' + machine.no_machine + ')' : '')
+    if (!machine.no_machine) return machine.name
+    return machine.no_machine + ' - ' + machine.name
 }
 getCallback('getInspectionGoods',goodsFilterData(), function(response){
     swal.close()
