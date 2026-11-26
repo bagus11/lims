@@ -29,19 +29,29 @@
                         </div>
                         <div class="col-md-12 mt-3">
                             <div class="d-flex justify-content-between align-items-center">
-                                <p class="mb-0"><strong>Specification (Symbol &amp; Standard Value)</strong></p>
+                                <p class="mb-0"><strong>Specification (Symbol, Nilai &amp; Toleransi)</strong></p>
                                 <button type="button" class="btn btn-sm btn-primary" id="btn_edit_add_spec">
                                     <i class="fas fa-plus"></i> Add Specification
                                 </button>
                             </div>
                             <small class="text-muted">
-                                Satu baris = satu simbol dengan <b>satu</b> nilai target.
-                                <b>Symbol</b> = nama kolom/header pada report, <b>Value</b> = nilai standard untuk simbol itu.<br>
-                                Contoh: <code>D</code> &rarr; <code>201.0</code>, <code>d</code> &rarr; <code>160.3</code>, <code>L</code> &rarr; <code>405</code>.<br>
-                                <i>Kolom Value belum mendukung rentang/toleransi (batas atas &amp; bawah) &mdash; isi satu nilai target saja.</i>
+                                Satu baris = satu simbol. Isi <b>Nilai</b> dan <b>± Toleransi</b>, lalu Min &amp; Max terisi
+                                otomatis. Untuk spesifikasi bergaya rentang, kosongkan Nilai &amp; Toleransi lalu isi
+                                <b>Min</b> dan <b>Max</b> langsung.<br>
+                                Contoh: <code>A</code> &rarr; <code>238 ± 1.4</code> &nbsp;|&nbsp; <code>K</code> &rarr; <code>55 s/d 58</code>.
                             </small>
                         </div>
                         <div class="col-md-12 mt-2">
+                            <div class="form-row text-muted mb-1" style="font-size:11px;">
+                                <div class="col">Symbol</div>
+                                <div class="col">Nilai</div>
+                                <div class="col">± Toleransi</div>
+                                <div class="col">Min</div>
+                                <div class="col">Max</div>
+                                <div class="col-auto" style="visibility:hidden;">
+                                    <button type="button" class="btn btn-sm"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
                             <div id="edit_spec_container">
                             </div>
                             <span class="spesification_error text-danger"></span>

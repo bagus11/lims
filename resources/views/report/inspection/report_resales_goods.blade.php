@@ -26,19 +26,17 @@
         // Build spec symbol list (ALL unique symbol from master spec + all detail specs)
         $masterSpecs = $pr && $pr->spesification ? $pr->spesification : [];
         $symbolsAll = [];       // ordered unique
-        $symbolStandard = [];   // symbol => master standard value
+        $symbolStandard = [];   // symbol => teks standar (mis. "238 ± 1.4")
+        $symbolBounds = [];     // symbol => ['min'=>float,'max'=>float] bila bisa dinilai
+
+        $symbolSpec = [];       // symbol => baris spesifikasi mentah dari master
 
         foreach($masterSpecs as $ms) {
-            if (is_array($ms)) {
-                $sym = trim($ms['symbol'] ?? '');
-                $val = trim($ms['value'] ?? '');
-            } else {
-                $sym = trim($ms);
-                $val = '';
-            }
+            $sym = \App\Helper\ResalesSpec::normalize($ms)['symbol'];
             if ($sym === '') continue;
             if (!in_array($sym, $symbolsAll, true)) $symbolsAll[] = $sym;
-            $symbolStandard[$sym] = $val;
+            $symbolSpec[$sym] = $ms;
+            $symbolStandard[$sym] = \App\Helper\ResalesSpec::text($ms);
         }
         // Add custom symbols dari detail specs (yang ga ada di master)
         foreach($details as $d) {
@@ -174,8 +172,13 @@
                         @foreach($symbolsAll as $sym)
                             @php
                                 $v = $actualBySym[$sym] ?? '';
+                                // Tandai hasil ukur yang keluar dari batas spesifikasi,
+                                // meniru stabilo pada form inspeksi manual.
+                                $outOfSpec = isset($symbolSpec[$sym])
+                                    && \App\Helper\ResalesSpec::isOutOfSpec($symbolSpec[$sym], $v);
+                                $cellStyle = 'text-align: center;' . ($outOfSpec ? ' background:#fff3cd; color:#b00020;' : '');
                             @endphp
-                            <td style="text-align: center;">{!! $v !== '' ? '<b>'.e($v).'</b>' : '<span style="color:#bbb;">&mdash;</span>' !!}</td>
+                            <td style="{{ $cellStyle }}">{!! $v !== '' ? '<b>'.e($v).'</b>' : '<span style="color:#bbb;">&mdash;</span>' !!}</td>
                         @endforeach
                         @if (count($symbolsAll) === 0)
                             <td>&nbsp;</td>

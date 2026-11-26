@@ -178,53 +178,8 @@ class MasterProductResalesGoodController extends Controller
 
     function downloadFormatCsvResalesGoods()
     {
-        $headers = [
-            'name',
-            'size',
-            'uom',
-            'spec_1_symbol', 'spec_1_value',
-            'spec_2_symbol', 'spec_2_value',
-            'spec_3_symbol', 'spec_3_value',
-            'spec_4_symbol', 'spec_4_value',
-            'spec_5_symbol', 'spec_5_value',
-            'spec_6_symbol', 'spec_6_value',
-            'spec_7_symbol', 'spec_7_value',
-            'spec_8_symbol', 'spec_8_value',
-            'spec_9_symbol', 'spec_9_value',
-            'spec_10_symbol', 'spec_10_value',
-        ];
-
-        $rows = [
-            [
-                'Fitting D 200 mm',
-                'DN 200',
-                'mm',
-                'D', '201.0',
-                'd', '160.3',
-                'L', '405',
-                'Z', '91',
-                'H', '250',
-                '', '',
-                '', '',
-                '', '',
-                '', '',
-                '', '',
-            ],
-            [
-                'Socket PVC 1 Inch',
-                '1 Inch',
-                'mm',
-                'D', '32.0',
-                'd', '25.0',
-                'L', '48',
-                'T', '2.0',
-                '', '',
-                '', '',
-                '', '',
-                '', '',
-                '', '',
-            ],
-        ];
+        $headers = MasterProductResalesGoodsFormatExport::formatHeadings();
+        $rows    = MasterProductResalesGoodsFormatExport::formatRows();
 
         $fileName = 'format_master_product_resales_goods_' . date('YmdHis') . '.csv';
         header('Content-Type: text/csv; charset=utf-8');

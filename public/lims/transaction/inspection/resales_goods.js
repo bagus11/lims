@@ -248,9 +248,48 @@ function renderDetailRowsForDetailTable(details) {
     })
 }
 
-function generateSpecRowHtml(symbol, stdValue, editableSymbol, rowIdx) {
-    var sym = (symbol || '').toString().trim()
-    var std = (stdValue === null || stdValue === undefined) ? '' : String(stdValue).trim()
+/**
+ * Samakan bentuk spesifikasi dari master: bisa objek lengkap (symbol, value,
+ * tolerance, min, max), objek lama (symbol + value saja), atau string simbol.
+ */
+function normalizeSpec(sp) {
+    var out = { symbol: '', value: '', tolerance: '', min: '', max: '' }
+    if (sp === null || sp === undefined) return out
+    if (typeof sp !== 'object') {
+        out.symbol = String(sp).trim()
+        return out
+    }
+    $.each(['symbol', 'value', 'tolerance', 'min', 'max'], function (i, field) {
+        var v = sp[field]
+        out[field] = (v === null || v === undefined) ? '' : String(v).trim()
+    })
+    return out
+}
+
+/**
+ * Warnai isian hasil ukur: merah bila di luar batas spesifikasi, hijau bila
+ * masuk. Baris tanpa batas (spesifikasi lama / non-angka) dibiarkan netral.
+ */
+function evaluateSpecInput($input) {
+    $input.removeClass('is-valid is-invalid')
+    var min = parseFloat($input.attr('data-min'))
+    var max = parseFloat($input.attr('data-max'))
+    var raw = ($input.val() || '').toString().trim().replace(',', '.')
+    if (isNaN(min) || isNaN(max) || raw === '') return
+    var actual = parseFloat(raw)
+    if (isNaN(actual)) return
+    $input.addClass(actual < min || actual > max ? 'is-invalid' : 'is-valid')
+}
+
+$(document).on('input', '#detail_spec_container .detail_spec_value', function () {
+    evaluateSpecInput($(this))
+})
+
+function generateSpecRowHtml(spec, editableSymbol, rowIdx) {
+    var s = normalizeSpec(spec)
+    var sym = s.symbol
+    var std = formatSpecStandard(s)
+    var bounds = specBounds(s)
     var isStandard = !editableSymbol
     var symAttr = escapeHtml(isStandard ? sym : '')
     var stdAttr = escapeHtml(std)
@@ -271,7 +310,8 @@ function generateSpecRowHtml(symbol, stdValue, editableSymbol, rowIdx) {
         stdHtml = '<p class="mb-0 text-center text-muted" style="font-size:12px;"><i>custom</i></p>'
     }
 
-    var valInput = '<input type="text" class="form-control detail_spec_value" style="height:40px; font-size:15px;" placeholder="Isi actual value..." data-symbol="' + escapeHtml(sym) + '">'
+    var boundsAttr = bounds ? ' data-min="' + bounds.min + '" data-max="' + bounds.max + '"' : ''
+    var valInput = '<input type="text" class="form-control detail_spec_value" style="height:40px; font-size:15px;" placeholder="Isi actual value..." data-symbol="' + escapeHtml(sym) + '"' + boundsAttr + '>'
 
     var colSym = isStandard ? 'col-4 pl-1 pr-1 text-center' : 'col-5 pl-1 pr-1'
     var colStd = 'col-2 pl-1 pr-1 text-center'
@@ -309,10 +349,7 @@ function renderDetailSpecRows(product_id) {
         html += '<div class="alert alert-light small mb-2 mt-2" style="margin-top:10px;"><i class="fas fa-info-circle text-info mr-1"></i>Product ini tidak punya spec standard di master. Klik <b>[+ Add Custom]</b> untuk menambah simbol sendiri.</div>'
     } else {
         $.each(specs, function (i, sp) {
-            var sym = '', val = ''
-            if (typeof sp === 'object') { sym = sp.symbol || ''; val = sp.value || '' }
-            else { sym = sp; val = '' }
-            html += generateSpecRowHtml(sym, val, false, 'std_' + i)
+            html += generateSpecRowHtml(sp, false, 'std_' + i)
         })
     }
     $container.html(html)
@@ -331,7 +368,7 @@ function addCustomSpecRow() {
         $container.html(header)
     }
     var count = $container.find('.spec-row').length
-    $container.append(generateSpecRowHtml('', null, true, 'custom_' + count))
+    $container.append(generateSpecRowHtml(null, true, 'custom_' + count))
 }
 
 function collectDetailSpecs() {
@@ -442,14 +479,10 @@ function openEditDetailModal(detailRowRaw) {
 
         var addedSymbols = {}
         $.each(stdSpecs, function (i, sp) {
-            var sym = '', val = ''
-            if (typeof sp === 'object') { sym = sp.symbol || ''; val = sp.value || '' }
-            else { sym = sp; val = '' }
-            sym = (sym || '').toString().trim()
+            var sym = normalizeSpec(sp).symbol
             if (!sym) return
             addedSymbols[sym] = true
-            var rowHtml = generateSpecRowHtml(sym, val, false, 'std_' + i)
-            html += rowHtml
+            html += generateSpecRowHtml(sp, false, 'std_' + i)
         })
 
         $.each(existingSpecs, function (k, sp) {
@@ -459,8 +492,7 @@ function openEditDetailModal(detailRowRaw) {
             if (!sym) return
             if (addedSymbols[sym]) return
             addedSymbols[sym] = true
-            var rowHtml = generateSpecRowHtml(sym, null, true, 'custom_' + k)
-            html += rowHtml
+            html += generateSpecRowHtml({ symbol: sym }, true, 'custom_' + k)
         })
 
         if (stdSpecs.length === 0 && Object.keys(addedSymbols).length === 0) {
@@ -477,13 +509,19 @@ function openEditDetailModal(detailRowRaw) {
                     var symStatic = $row.attr('data-sym-static') || ''
                     if (symStatic === sym) {
                         var $valInp = $row.find('.detail_spec_value')
-                        if ($valInp.length > 0 && actualVal !== '') $valInp.val(actualVal)
+                        if ($valInp.length > 0 && actualVal !== '') {
+                            $valInp.val(actualVal)
+                            evaluateSpecInput($valInp)
+                        }
                         return false
                     } else if (symStatic === '') {
                         var $symInp = $row.find('.detail_spec_symbol')
                         if ($symInp.length > 0 && ($symInp.val() || '').trim() === sym) {
                             var $valInp2 = $row.find('.detail_spec_value')
-                            if ($valInp2.length > 0 && actualVal !== '') $valInp2.val(actualVal)
+                            if ($valInp2.length > 0 && actualVal !== '') {
+                                $valInp2.val(actualVal)
+                                evaluateSpecInput($valInp2)
+                            }
                             return false
                         }
                     }

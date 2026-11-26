@@ -1,18 +1,21 @@
-function generateSpecRowHtml(prefix, symbol, value) {
-    var symbolVal = (symbol != null && symbol !== undefined) ? symbol : '';
-    var valueVal = (value != null && value !== undefined) ? value : '';
-    return '<div class="form-row spec-row align-items-center">' +
-        '<div class="col-4">' +
-        '  <div class="input-group">' +
-        '    <input type="text" class="form-control ' + prefix + '_spec_symbol" placeholder="Satu simbol, contoh: D" value="' + symbolVal + '">' +
-        '  </div>' +
-        '</div>' +
-        '<div class="col-6">' +
-        '  <div class="input-group">' +
-        '    <input type="text" class="form-control ' + prefix + '_spec_value" placeholder="Satu nilai target, contoh: 201.0" value="' + valueVal + '">' +
-        '  </div>' +
-        '</div>' +
-        '<div class="col-2">' +
+var SPEC_FIELDS = ['symbol', 'value', 'tolerance', 'min', 'max'];
+
+function generateSpecRowHtml(prefix, spec) {
+    var s = spec || {};
+    var cell = function (field, placeholder) {
+        var val = (s[field] === null || s[field] === undefined) ? '' : s[field];
+        return '<div class="col">' +
+            '  <input type="text" class="form-control form-control-sm ' + prefix + '_spec_' + field + '"' +
+            '         placeholder="' + placeholder + '" value="' + escapeHtml(val) + '">' +
+            '</div>';
+    };
+    return '<div class="form-row spec-row align-items-center mb-1">' +
+        cell('symbol', 'D') +
+        cell('value', '201.0') +
+        cell('tolerance', '0.5') +
+        cell('min', 'otomatis') +
+        cell('max', 'otomatis') +
+        '<div class="col-auto">' +
         '  <button type="button" class="btn btn-sm btn-danger btn_delete_spec">' +
         '    <i class="fas fa-trash"></i>' +
         '  </button>' +
@@ -20,20 +23,42 @@ function generateSpecRowHtml(prefix, symbol, value) {
         '</div>';
 }
 
+/**
+ * Isi Min & Max dari Nilai ± Toleransi. Tidak menimpa Min/Max yang diketik
+ * manual kecuali memang hasil hitungan sebelumnya, supaya spesifikasi bergaya
+ * rentang ("55 s/d 58") yang diisi tangan tidak hilang.
+ */
+function recalcSpecBounds($row, prefix) {
+    var num = function (field) {
+        var raw = ($row.find('.' + prefix + '_spec_' + field).val() || '').toString().trim().replace(',', '.');
+        if (raw === '') return null;
+        var n = parseFloat(raw);
+        return isNaN(n) ? null : n;
+    };
+    var value = num('value');
+    var tolerance = num('tolerance');
+    var $min = $row.find('.' + prefix + '_spec_min');
+    var $max = $row.find('.' + prefix + '_spec_max');
+    if (value === null || tolerance === null) return;
+    if ($min.data('manual') || $max.data('manual')) return;
+    $min.val(Number((value - tolerance).toFixed(4)));
+    $max.val(Number((value + tolerance).toFixed(4)));
+}
+
 function collectSpecRows(prefix) {
     var specs = [];
     var $container = (prefix == 'add') ? $('#add_spec_container') : $('#edit_spec_container');
     $container.find('.spec-row').each(function () {
-        var sym = $(this).find('.' + prefix + '_spec_symbol').val();
-        var val = $(this).find('.' + prefix + '_spec_value').val();
-        var symStr = (sym) ? sym.toString().trim() : '';
-        var valStr = (val) ? val.toString().trim() : '';
-        if (symStr != '' || valStr != '') {
-            specs.push({
-                symbol: symStr,
-                value: valStr
-            });
+        var $row = $(this);
+        var spec = {};
+        var filled = false;
+        for (var i = 0; i < SPEC_FIELDS.length; i++) {
+            var field = SPEC_FIELDS[i];
+            var raw = $row.find('.' + prefix + '_spec_' + field).val();
+            spec[field] = (raw) ? raw.toString().trim() : '';
+            if (spec[field] !== '') filled = true;
         }
+        if (filled) specs.push(spec);
     });
     return specs;
 }
@@ -76,15 +101,15 @@ function mappingTable(data) {
                                 for (var i = 0; i < specList.length; i++) {
                                     var sp = specList[i];
                                     var sym = (sp && sp.symbol) ? sp.symbol.toString() : '';
-                                    var val = (sp && sp.value !== undefined && sp.value !== null) ? sp.value.toString() : '';
-                                    if (sym == '' && val == '') continue;
-                                    html += '<span class="badge badge-info badge-spec">' + sym + (val ? ': ' + val : '') + '</span>';
+                                    var std = formatSpecStandard(sp);
+                                    if (sym == '' && std == '') continue;
+                                    html += '<span class="badge badge-info badge-spec">' + escapeHtml(sym) + (std ? ': ' + escapeHtml(std) : '') + '</span>';
                                 }
                             } else {
                                 for (var j = 0; j < specList.length; j++) {
                                     var s = specList[j];
                                     if (s && s.toString().trim() != '') {
-                                        html += '<span class="badge badge-info badge-spec">' + s + '</span>';
+                                        html += '<span class="badge badge-info badge-spec">' + escapeHtml(s) + '</span>';
                                     }
                                 }
                             }
@@ -128,12 +153,12 @@ getCallback('getMasterProductResalesGoods', null, function (response) {
 });
 
 $('#btn_add_spec').on('click', function () {
-    var rowHtml = generateSpecRowHtml('add', '', '');
+    var rowHtml = generateSpecRowHtml('add', {});
     $('#add_spec_container').append(rowHtml);
 });
 
 $('#btn_edit_add_spec').on('click', function () {
-    var rowHtml = generateSpecRowHtml('edit', '', '');
+    var rowHtml = generateSpecRowHtml('edit', {});
     $('#edit_spec_container').append(rowHtml);
 });
 
@@ -143,6 +168,21 @@ $('#add_spec_container').on('click', '.btn_delete_spec', function () {
 
 $('#edit_spec_container').on('click', '.btn_delete_spec', function () {
     $(this).closest('.spec-row').remove();
+});
+
+// Nilai ± Toleransi mengisi Min/Max otomatis; begitu Min/Max disentuh manual,
+// baris itu berhenti dihitung ulang supaya rentang "55 s/d 58" tetap utuh.
+$('#add_spec_container').on('input', '.add_spec_value, .add_spec_tolerance', function () {
+    recalcSpecBounds($(this).closest('.spec-row'), 'add');
+});
+$('#edit_spec_container').on('input', '.edit_spec_value, .edit_spec_tolerance', function () {
+    recalcSpecBounds($(this).closest('.spec-row'), 'edit');
+});
+$('#add_spec_container').on('input', '.add_spec_min, .add_spec_max', function () {
+    $(this).data('manual', true);
+});
+$('#edit_spec_container').on('input', '.edit_spec_min, .edit_spec_max', function () {
+    $(this).data('manual', true);
 });
 
 $('#addMasterProductResalesGoods').on('shown.bs.modal', function () {
@@ -155,7 +195,7 @@ $('#addMasterProductResalesGoods').on('shown.bs.modal', function () {
         { symbol: 'H', value: '' },
     ];
     for (var i = 0; i < defaultSpecs.length; i++) {
-        var rowHtml = generateSpecRowHtml('add', defaultSpecs[i].symbol, defaultSpecs[i].value);
+        var rowHtml = generateSpecRowHtml('add', defaultSpecs[i]);
         $('#add_spec_container').append(rowHtml);
     }
     $('#add_name').val('');
@@ -195,10 +235,14 @@ $('#master_product_resales_goods_table').on('click', '.btn_edit', function () {
         if (Array.isArray(specList) && specList.length > 0) {
             if (typeof specList[0] === 'object') {
                 pairArr = specList.map(function (sp) {
-                    return {
-                        symbol: (sp && sp.symbol) ? sp.symbol.toString() : '',
-                        value: (sp && sp.value !== undefined && sp.value !== null) ? sp.value.toString() : ''
-                    };
+                    var row = {};
+                    for (var k = 0; k < SPEC_FIELDS.length; k++) {
+                        var field = SPEC_FIELDS[k];
+                        row[field] = (sp && sp[field] !== undefined && sp[field] !== null)
+                            ? sp[field].toString()
+                            : '';
+                    }
+                    return row;
                 });
             } else {
                 pairArr = specList.filter(function (s) { return s && s.toString().trim() != ''; })
@@ -217,9 +261,18 @@ $('#master_product_resales_goods_table').on('click', '.btn_edit', function () {
         }
 
         for (var j = 0; j < pairArr.length; j++) {
-            var row = generateSpecRowHtml('edit', pairArr[j].symbol, pairArr[j].value);
+            var row = generateSpecRowHtml('edit', pairArr[j]);
             $('#edit_spec_container').append(row);
         }
+        // Min/Max yang datang dari master dianggap sudah final: jangan ditimpa
+        // hitungan otomatis saat user menyentuh Nilai/Toleransi.
+        $('#edit_spec_container').find('.spec-row').each(function () {
+            var $row = $(this);
+            if (($row.find('.edit_spec_min').val() || '').trim() !== '' ||
+                ($row.find('.edit_spec_max').val() || '').trim() !== '') {
+                $row.find('.edit_spec_min, .edit_spec_max').data('manual', true);
+            }
+        });
 
         $('#editMasterProductResalesGoods').modal('show');
     });

@@ -15,6 +15,49 @@
     window.escapeHtml = escapeHtml
 
     /**
+     * Teks standar spesifikasi Resales Goods. Mengikuti dua format yang dipakai
+     * form inspeksi QC: "238 ± 1.4" bila bertoleransi, "55 s/d 58" bila berupa
+     * rentang. Data master lama yang hanya punya `value` tampil apa adanya.
+     */
+    function formatSpecStandard(spec) {
+        if (!spec) return ''
+        var txt = function (k) {
+            return (spec[k] === null || spec[k] === undefined) ? '' : String(spec[k]).trim()
+        }
+        var value = txt('value'), tolerance = txt('tolerance')
+        var min = txt('min'), max = txt('max')
+        if (value !== '' && tolerance !== '') return value + ' ± ' + tolerance
+        if (min !== '' && max !== '') return min + ' s/d ' + max
+        return value
+    }
+    window.formatSpecStandard = formatSpecStandard
+
+    /**
+     * Batas bawah & atas efektif sebuah spesifikasi, dipakai menilai hasil ukur.
+     * Mengembalikan null bila spesifikasi tidak bisa dinilai otomatis (mis.
+     * data master lama tanpa toleransi, atau nilainya bukan angka).
+     */
+    function specBounds(spec) {
+        if (!spec) return null
+        var num = function (k) {
+            if (spec[k] === null || spec[k] === undefined) return null
+            var raw = String(spec[k]).trim().replace(',', '.')
+            if (raw === '') return null
+            var n = parseFloat(raw)
+            return isNaN(n) ? null : n
+        }
+        var min = num('min'), max = num('max')
+        if (min === null || max === null) {
+            var value = num('value'), tolerance = num('tolerance')
+            if (value === null || tolerance === null) return null
+            min = value - tolerance
+            max = value + tolerance
+        }
+        return { min: Math.min(min, max), max: Math.max(min, max) }
+    }
+    window.specBounds = specBounds
+
+    /**
      * Tampilkan error 422 ke span.<field>_error; field tanpa span target
      * (mis. laboratory_code, measurements, parameters.N.*) ditampilkan via
      * toastr supaya user tidak dibiarkan tanpa feedback.
